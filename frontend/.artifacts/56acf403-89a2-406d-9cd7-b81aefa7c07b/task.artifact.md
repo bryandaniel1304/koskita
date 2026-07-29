@@ -1,0 +1,4 @@
+- `[x]` Upgrade Gradle version in `gradle-wrapper.properties`
+- `[x]` Upgrade AGP version in `settings.gradle.kts`
+- `[x]` Upgrade Kotlin version in `settings.gradle.kts`
+- `[x]` Verify changes by running a build check (warnings resolved, environment-specific service error noted)

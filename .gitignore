@@ -1,0 +1,6 @@
+# Prototipe lama yang sudah tidak dipakai (data lokal dummy, tanpa koneksi backend)
+/koskita/
+
+# OS
+.DS_Store
+Thumbs.db
