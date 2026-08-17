@@ -1,0 +1,135 @@
+@startuml 03-use-case
+title Use Case Diagram - KosKita
+left to right direction
+skinparam backgroundColor White
+skinparam packageStyle rectangle
+
+actor "Tamu\n(belum login)" as Guest
+actor "Penyewa" as Tenant
+actor "Pemilik Kos" as Owner
+actor "Admin" as Admin
+
+package "Autentikasi & Akun" {
+  usecase "Daftar Akun" as UC_Register
+  usecase "Masuk" as UC_Login
+  usecase "Masuk dengan Google" as UC_GoogleLogin
+  usecase "Verifikasi 2 Langkah (2FA)" as UC_2FA
+  usecase "Atur Preferensi Notifikasi" as UC_NotifPref
+  usecase "Kelola Foto Profil" as UC_Avatar
+}
+
+package "Pencarian & Rekomendasi" {
+  usecase "Cari & Filter Kos" as UC_Search
+  usecase "Lihat Detail Kos" as UC_Detail
+  usecase "Lihat Rekomendasi Personal" as UC_Recommend
+  usecase "Bandingkan Kos" as UC_Compare
+  usecase "Lihat Peta Sebaran Kos" as UC_Map
+}
+
+package "Interaksi Kos" {
+  usecase "Simpan ke Favorit" as UC_Favorite
+  usecase "Beri Rating Privat" as UC_Rate
+  usecase "Daftar Tunggu (kos penuh)" as UC_Waitlist
+  usecase "Laporkan Kos/Ulasan" as UC_Report
+}
+
+package "Booking" {
+  usecase "Ajukan Booking" as UC_Book
+  usecase "Batalkan Booking" as UC_CancelBook
+  usecase "Lihat/Cetak Bukti Booking" as UC_Receipt
+  usecase "Tandai Sudah Dibayar (manual)" as UC_MarkPaid
+  usecase "Konfirmasi/Tolak Booking" as UC_ReviewBooking
+  usecase "Tandai Selesai Sewa" as UC_CompleteBooking
+}
+
+package "Ulasan" {
+  usecase "Tulis Ulasan\n(setelah sewa selesai)" as UC_Review
+  usecase "Balas Ulasan" as UC_ReplyReview
+}
+
+package "Komunikasi" {
+  usecase "Chat Real-time" as UC_Chat
+  usecase "Lihat Notifikasi" as UC_Notif
+}
+
+package "Kelola Kos (Pemilik)" {
+  usecase "Tambah/Ubah/Hapus Kos" as UC_ManageKos
+  usecase "Kelola Foto Kos" as UC_ManageImages
+  usecase "Kelola Tipe Kamar" as UC_ManageRoomTypes
+  usecase "Unggah Kode QRIS" as UC_QRIS
+  usecase "Ajukan Verifikasi Pemilik" as UC_OwnerVerify
+  usecase "Lihat Analitik Kos" as UC_Analytics
+}
+
+package "Administrasi (Admin)" {
+  usecase "Kelola Pengguna" as UC_AdminUsers
+  usecase "Kelola Semua Kos" as UC_AdminKos
+  usecase "Kelola Fasilitas & Aturan" as UC_AdminFacRule
+  usecase "Kelola Semua Booking" as UC_AdminBookings
+  usecase "Tinjau Laporan" as UC_AdminReports
+  usecase "Verifikasi Pemilik" as UC_AdminVerifyOwner
+  usecase "Verifikasi Kos" as UC_AdminVerifyKos
+  usecase "Kirim Pengumuman" as UC_AdminBroadcast
+  usecase "Lihat Pencarian Nihil" as UC_AdminSearchLog
+  usecase "Kelola Artikel Tips" as UC_AdminArticles
+}
+
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_GoogleLogin
+Guest --> UC_Search
+Guest --> UC_Detail
+Guest --> UC_Map
+
+Tenant --> UC_2FA
+Tenant --> UC_NotifPref
+Tenant --> UC_Avatar
+Tenant --> UC_Search
+Tenant --> UC_Detail
+Tenant --> UC_Recommend
+Tenant --> UC_Compare
+Tenant --> UC_Map
+Tenant --> UC_Favorite
+Tenant --> UC_Rate
+Tenant --> UC_Waitlist
+Tenant --> UC_Report
+Tenant --> UC_Book
+Tenant --> UC_CancelBook
+Tenant --> UC_Receipt
+Tenant --> UC_Review
+Tenant --> UC_Chat
+Tenant --> UC_Notif
+
+Owner --> UC_2FA
+Owner --> UC_NotifPref
+Owner --> UC_Avatar
+Owner --> UC_Report
+Owner --> UC_MarkPaid
+Owner --> UC_ReviewBooking
+Owner --> UC_CompleteBooking
+Owner --> UC_ReplyReview
+Owner --> UC_Chat
+Owner --> UC_Notif
+Owner --> UC_ManageKos
+Owner --> UC_ManageImages
+Owner --> UC_ManageRoomTypes
+Owner --> UC_QRIS
+Owner --> UC_OwnerVerify
+Owner --> UC_Analytics
+
+Admin --> UC_AdminUsers
+Admin --> UC_AdminKos
+Admin --> UC_AdminFacRule
+Admin --> UC_AdminBookings
+Admin --> UC_AdminReports
+Admin --> UC_AdminVerifyOwner
+Admin --> UC_AdminVerifyKos
+Admin --> UC_AdminBroadcast
+Admin --> UC_AdminSearchLog
+Admin --> UC_AdminArticles
+
+UC_Book ..> UC_2FA : <<include>>\n(jika 2FA aktif)
+UC_Review ..> UC_CompleteBooking : <<extend>>
+UC_Waitlist ..> UC_Notif : <<extend>>\n(saat kamar tersedia)
+
+@enduml

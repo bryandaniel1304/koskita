@@ -54,9 +54,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">Belum ada log interaksi.</td>
-                    </tr>
+                    @include('admin.partials.empty-row', ['colspan' => 6, 'icon' => 'bi-activity', 'text' => 'Belum ada log interaksi.'])
                 @endforelse
             </tbody>
         </table>

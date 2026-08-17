@@ -97,6 +97,49 @@ class RecommendationService
     }
 
     /**
+     * Mendapatkan rekomendasi untuk satu kos tertentu secara spesifik (untuk detail kos)
+     */
+    public function getRecommendationForKos(int $userId, Kos $kos): array
+    {
+        $user = User::with('profile', 'interactions')->findOrFail($userId);
+        
+        $profile = $user->profile;
+        if (!$profile) {
+            $profile = UserProfile::create([
+                'user_id' => $user->id,
+                'gender' => 'pria',
+                'occupation' => 'mahasiswa',
+                'budget_min' => 1000000,
+                'budget_max' => 3000000,
+                'preferred_facilities' => [],
+                'preferred_rules' => [],
+                'preferred_location' => 'Karawaci',
+            ]);
+        }
+
+        $ratingCount = $user->interactions()->whereNotNull('rating')->count();
+        $isColdStart = ($ratingCount === 0);
+
+        $koses = collect([$kos]);
+
+        $cbScores = $this->contentBasedFilter->calculateScores($profile, $koses);
+        $cfScores = $isColdStart ? [] : $this->collaborativeFilter->calculateScores($userId, $koses);
+
+        $scoreCB = $cbScores[$kos->id] ?? 0.0;
+        $scoreCF = $isColdStart ? 0.0 : ($cfScores[$kos->id] ?? 0.0);
+
+        $scoreHybrid = $this->combiner->combine($scoreCB, $scoreCF, $isColdStart);
+
+        return [
+            'score_cb' => $scoreCB,
+            'score_cf' => $scoreCF,
+            'score_hybrid' => $scoreHybrid,
+            'match_percentage' => (int) round($scoreHybrid * 100),
+            'explanation' => $this->generateExplanation($kos, $profile, $scoreCF),
+        ];
+    }
+
+    /**
      * Hasilkan daftar alasan human-readable kenapa kos ini cocok/tidak cocok
      * untuk profil pengguna. Dipakai di panel trace rekomendasi admin.
      */

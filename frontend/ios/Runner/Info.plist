@@ -45,5 +45,31 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KOSKITA butuh akses galeri foto untuk mengunggah foto kos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>KOSKITA butuh akses kamera untuk memfoto dokumen verifikasi, kode QRIS, atau foto ulasan secara langsung.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>KOSKITA memakai Face ID/Touch ID supaya kamu bisa masuk lebih cepat tanpa ketik ulang kata sandi.</string>
+	<!-- Deep link skema kustom "koskita://kos/{id}" -- setara dengan
+	     intent-filter skema kustom di AndroidManifest.xml, langsung
+	     berfungsi tanpa akun Apple Developer/entitlements tambahan.
+	     Universal Links https (setara App Link Android) SENGAJA belum
+	     ditambahkan di sini -- itu butuh capability "Associated Domains"
+	     yang cuma bisa dipasang lewat Xcode (perlu akun Apple Developer
+	     terdaftar + file apple-app-site-association di domain produksi,
+	     lihat catatan di routes/web.php backend), jadi harus disiapkan
+	     manual oleh siapa pun yang build rilis iOS-nya. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.koskita.frontend.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>koskita</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

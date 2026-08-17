@@ -11,7 +11,10 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $bookings = Booking::with('kos')
+        // 'kos.owner:id,name' WAJIB dimuat -- dipakai tombol "Chat Pemilik"
+        // di my_bookings_screen.dart (Kos.fromJson baca kos.owner.id). Tanpa
+        // ini, ownerId selalu null dan tombolnya tidak pernah muncul.
+        $bookings = Booking::with('kos.owner:id,name')
             ->where('user_id', $request->user()->id)
             ->latest()
             ->get();
@@ -29,6 +32,12 @@ class BookingController extends Controller
         ]);
 
         $kos = Kos::findOrFail($request->kos_id);
+
+        if (!$kos->hasAvailableRoom()) {
+            return response()->json([
+                'message' => 'Maaf, semua kamar di kos ini sedang penuh. Coba cari kos lain atau hubungi pemiliknya langsung.',
+            ], 422);
+        }
 
         $booking = Booking::create([
             'user_id' => $request->user()->id,

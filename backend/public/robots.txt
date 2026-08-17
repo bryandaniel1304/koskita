@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /pemilik
+Disallow: /pesan
+Disallow: /booking-saya
+Disallow: /widget
+
+Sitemap: /sitemap.xml

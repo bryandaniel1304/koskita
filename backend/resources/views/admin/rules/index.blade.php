@@ -55,7 +55,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="3" class="text-center text-muted py-4">Belum ada aturan.</td></tr>
+                    @include('admin.partials.empty-row', ['colspan' => 3, 'icon' => 'bi-clipboard-x', 'text' => 'Belum ada aturan.'])
                 @endforelse
             </tbody>
         </table>

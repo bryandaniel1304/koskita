@@ -123,7 +123,7 @@
                     {{ $bookingStatusCounts->get('cancelled', 0) }},
                     {{ $bookingStatusCounts->get('completed', 0) }},
                 ],
-                backgroundColor: '#6366F1',
+                backgroundColor: '#355DDB',
             }]
         },
         options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }

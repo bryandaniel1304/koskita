@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/booking_provider.dart';
 import '../models/kos.dart';
+import '../config/app_theme.dart';
+import '../widgets/premium_button.dart';
+import '../utils/haptics.dart';
 
 class BookingFormScreen extends StatefulWidget {
   final Kos kos;
@@ -48,121 +52,106 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     setState(() => _submitting = false);
 
     if (error == null) {
+      Haptics.success();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pengajuan booking terkirim! Menunggu konfirmasi admin.'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppTheme.success,
         ),
       );
       Navigator.of(context).pop();
     } else {
+      Haptics.error();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: const Color(0xFFEF4444)),
+        SnackBar(content: Text(error), backgroundColor: AppTheme.danger),
       );
     }
   }
 
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+      );
+
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('d MMMM yyyy');
+    final dateFormat = DateFormat('d MMMM yyyy', 'id_ID');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Text('Ajukan Booking', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-        elevation: 0.5,
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(title: const Text('Ajukan Booking')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2F6),
-                borderRadius: BorderRadius.circular(16),
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.house_rounded, color: Color(0xFF4F46E5)),
-                  const SizedBox(width: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(imageUrl: widget.kos.coverImage, width: 56, height: 56, fit: BoxFit.cover),
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: Text(widget.kos.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.kos.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 3),
+                        Text(widget.kos.location, style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            const Text('Tanggal Mulai Sewa', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            const SizedBox(height: 8),
+            const SizedBox(height: 26),
+            _label('Tanggal Mulai Sewa'),
             InkWell(
               onTap: _pickDate,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).inputDecorationTheme.fillColor,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFF4F46E5)),
+                    const Icon(Icons.calendar_today_rounded, size: 18, color: AppTheme.primary),
                     const SizedBox(width: 12),
-                    Text(dateFormat.format(_startDate)),
+                    Text(dateFormat.format(_startDate), style: const TextStyle(fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text('Durasi Sewa', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            const SizedBox(height: 8),
+            const SizedBox(height: 22),
+            _label('Durasi Sewa'),
             DropdownButtonFormField<int>(
               initialValue: _durationMonths,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              items: List.generate(12, (i) => i + 1)
-                  .map((m) => DropdownMenuItem(value: m, child: Text('$m bulan')))
-                  .toList(),
+              items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(value: m, child: Text('$m bulan'))).toList(),
               onChanged: (val) => setState(() => _durationMonths = val ?? 1),
             ),
-            const SizedBox(height: 24),
-            const Text('Catatan (opsional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            const SizedBox(height: 8),
+            const SizedBox(height: 22),
+            _label('Catatan (opsional)'),
             TextField(
               controller: _notesController,
               maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Mis. rencana pindah tanggal berapa, pertanyaan untuk admin, dll.',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+              decoration: const InputDecoration(hintText: 'Mis. rencana pindah tanggal berapa, pertanyaan untuk admin, dll.'),
             ),
-            const SizedBox(height: 32),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
-              ),
-              child: ElevatedButton(
-                onPressed: _submitting ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: _submitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('Kirim Pengajuan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
+            const SizedBox(height: 30),
+            PremiumButton(
+              label: 'Kirim Pengajuan',
+              icon: Icons.send_rounded,
+              loading: _submitting,
+              onPressed: _submitting ? null : _submit,
             ),
           ],
         ),

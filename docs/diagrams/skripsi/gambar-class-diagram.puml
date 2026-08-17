@@ -1,0 +1,97 @@
+@startuml gambar-class-diagram
+title Class Diagram - Modul Rekomendasi KOSKITA (Bab IV, sesuai cakupan Subbab 2.8.3)
+skinparam backgroundColor White
+hide empty members
+skinparam class {
+  BackgroundColor White
+  BorderColor #355DDB
+  ArrowColor #355DDB
+}
+
+class Akun {
+  # id : bigint
+  # nama : string
+  # email : string
+  --
+  + daftar()
+  + masuk()
+}
+
+class Pengguna {
+  + anggaranMin : integer
+  + anggaranMaks : integer
+  --
+  + isiProfil(data)
+  + lihatRekomendasi()
+  + lihatDetailKos(kosId)
+}
+
+class Admin {
+  --
+  + kelolaDataKos()
+}
+
+class Profil {
+  + id : bigint
+  + gender : string
+  + statusPekerjaan : string <<mahasiswa|pekerja>>
+  + statusTinggal : string
+  + anggaranMin : integer
+  + anggaranMaks : integer
+  + lokasiPreferensi : string
+  + fasilitasPreferensi : array
+}
+
+class Kos {
+  + id : bigint
+  + nama : string
+  + harga : integer
+  + tipeKos : string <<putra|putri|campur>>
+  + lokasi : string
+  + jarakKampus : double
+  + fasilitas : array
+  + aturan : array
+}
+
+class Interaksi {
+  + id : bigint
+  + rating : integer
+  + isFavorit : boolean
+  + jumlahKlik : integer
+}
+
+class RecommendationService {
+  - alpha : float = 0.6
+  --
+  + cekColdStart(penggunaId) : boolean
+  + hitungSkorContentBased(profil, kos) : float
+  + hitungSkorCollaborative(interaksi) : float
+  + gabungHybrid(skorCB, skorCF, alpha) : float
+  + getRecommendations(penggunaId) : List<Kos>
+}
+
+' ===== Relasi struktural =====
+Akun <|-- Pengguna : Generalisasi
+Akun <|-- Admin : Generalisasi
+
+Pengguna "1" *-- "0..1" Profil : Komposisi\n(profil tak berdiri sendiri\ntanpa pengguna)
+Pengguna "1" -- "0..*" Interaksi : Asosiasi
+Kos "1" -- "0..*" Interaksi : Asosiasi
+Admin "1" o-- "0..*" Kos : Agregasi\n(mengelola)
+
+' ===== Relasi dengan modul rekomendasi =====
+RecommendationService ..> Profil : membaca
+RecommendationService ..> Interaksi : membaca
+RecommendationService ..> Kos : membaca
+RecommendationService ..> Pengguna : menghasilkan\nrekomendasi untuk
+
+note bottom of Akun
+  Pada implementasi kode, Pengguna dan Admin
+  direalisasikan sebagai satu tabel "users" dengan
+  kolom "role" (bukan dua tabel terpisah). Generalisasi
+  di sini adalah penyederhanaan konseptual pada
+  tingkat perancangan, sesuai fungsi class diagram
+  yang dijelaskan pada Subbab 2.8.3.
+end note
+
+@enduml

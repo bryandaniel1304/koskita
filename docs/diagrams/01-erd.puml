@@ -1,0 +1,253 @@
+@startuml 01-erd
+title Entity Relationship Diagram - KosKita
+hide circle
+skinparam backgroundColor White
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor White
+  BorderColor #355DDB
+  ArrowColor #355DDB
+  FontSize 12
+}
+
+entity "users" as users {
+  * id : bigint
+  --
+  name : string
+  email : string <<unique>>
+  email_verified_at : timestamp
+  password : string
+  role : string <<user|owner|admin>>
+  phone : string
+  owner_verification_status : string
+  owner_verification_document : string
+  owner_verified_at : timestamp
+  qris_image_path : string
+  two_factor_enabled : boolean
+  two_factor_code : string
+  two_factor_expires_at : timestamp
+  google_id : string
+  avatar_path : string
+  notify_bookings : boolean
+  notify_messages : boolean
+  notify_waitlist : boolean
+}
+
+entity "user_profiles" as user_profiles {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  gender : string
+  occupation : string
+  budget_min : integer
+  budget_max : integer
+  preferred_facilities : json
+  preferred_rules : json
+  preferred_location : string
+}
+
+entity "koses" as koses {
+  * id : bigint
+  --
+  owner_id : bigint (FK, nullable)
+  name : string
+  price : integer
+  gender_type : string
+  location : string
+  distance_to_campus : double
+  description : text
+  image_url : string
+  total_rooms : tinyint
+  latitude : decimal
+  longitude : decimal
+  verified_at : timestamp
+}
+
+entity "facilities" as facilities {
+  * id : bigint
+  --
+  name : string
+}
+
+entity "rules" as rules {
+  * id : bigint
+  --
+  name : string
+}
+
+entity "kos_facility" as kos_facility {
+  * id : bigint
+  --
+  kos_id : bigint (FK)
+  facility_id : bigint (FK)
+}
+
+entity "kos_rule" as kos_rule {
+  * id : bigint
+  --
+  kos_id : bigint (FK)
+  rule_id : bigint (FK)
+}
+
+entity "kos_images" as kos_images {
+  * id : bigint
+  --
+  kos_id : bigint (FK)
+  path : string
+  is_cover : boolean
+  sort_order : integer
+}
+
+entity "kos_room_types" as kos_room_types {
+  * id : bigint
+  --
+  kos_id : bigint (FK)
+  name : string
+  price : integer
+  total_rooms : integer
+}
+
+entity "bookings" as bookings {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  kos_id : bigint (FK)
+  start_date : date
+  duration_months : integer
+  notes : text
+  status : enum <<pending|confirmed|rejected|cancelled|completed>>
+  admin_note : text
+  payment_status : enum <<unpaid|paid>>
+  paid_at : timestamp
+}
+
+entity "kos_reviews" as kos_reviews {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  kos_id : bigint (FK)
+  rating : tinyint
+  comment : text
+  photo_path : string
+  owner_reply : text
+  owner_replied_at : timestamp
+  ..
+  unique(user_id, kos_id)
+}
+
+entity "user_interactions" as user_interactions {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  kos_id : bigint (FK)
+  rating : integer
+  is_favorite : boolean
+  click_count : integer
+  favorited_price_snapshot : integer
+  favorited_rooms_snapshot : integer
+}
+
+entity "messages" as messages {
+  * id : bigint
+  --
+  sender_id : bigint (FK -> users)
+  receiver_id : bigint (FK -> users)
+  kos_id : bigint (FK, nullable)
+  body : text
+  photo_path : string
+  read_at : timestamp
+}
+
+entity "waitlists" as waitlists {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  kos_id : bigint (FK)
+  notified_at : timestamp
+  ..
+  unique(user_id, kos_id)
+}
+
+entity "reports" as reports {
+  * id : bigint
+  --
+  reportable_type : string
+  reportable_id : bigint
+  reporter_id : bigint (FK -> users)
+  reason : string
+  details : text
+  status : string
+  admin_note : text
+}
+
+entity "admin_broadcasts" as admin_broadcasts {
+  * id : bigint
+  --
+  title : string
+  message : text
+  target_role : enum <<nullable>>
+  created_by : bigint (FK -> users, nullable)
+}
+
+entity "articles" as articles {
+  * id : bigint
+  --
+  title : string
+  slug : string <<unique>>
+  excerpt : string
+  body : longtext
+  cover_image_url : string
+  author_id : bigint (FK -> users, nullable)
+  published_at : timestamp
+}
+
+entity "fcm_tokens" as fcm_tokens {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  token : string <<unique>>
+  device_type : string
+}
+
+entity "search_logs" as search_logs {
+  * id : bigint
+  --
+  user_id : bigint (FK, nullable)
+  keyword : string
+  location : string
+  gender_type : string
+  budget_min : integer
+  budget_max : integer
+  facility_ids : json
+}
+
+' ===== Relasi =====
+users ||--o| user_profiles
+users ||--o{ koses : "owner"
+users ||--o{ bookings
+users ||--o{ kos_reviews
+users ||--o{ user_interactions
+users ||--o{ waitlists
+users ||--o{ fcm_tokens
+users ||--o{ search_logs
+users ||--o{ reports : "reporter"
+users ||--o{ articles : "author"
+users ||--o{ admin_broadcasts : "created_by"
+users ||--o{ messages : "sender"
+users ||--o{ messages : "receiver"
+
+koses ||--o{ bookings
+koses ||--o{ kos_reviews
+koses ||--o{ user_interactions
+koses ||--o{ kos_images
+koses ||--o{ kos_room_types
+koses ||--o{ waitlists
+koses ||--o{ messages
+koses ||--o{ search_logs
+
+koses ||--o{ kos_facility
+facilities ||--o{ kos_facility
+koses ||--o{ kos_rule
+rules ||--o{ kos_rule
+
+@enduml

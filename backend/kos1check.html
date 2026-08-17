@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIU Residence Karawaci - KosKita</title>
+    <meta name="description" content="Kamar single luas 18m2. Fasilitas lengkap, nyaman, dekat dengan kampus UPH. Minimal stay 2 bulan.">
+    <meta name="csrf-token" content="FXxRfeqcrDTGmcgxKkZfsg3kUEAZZ6ZFqeeHQrHS">
+    <link rel="icon" type="image/png" href="http://127.0.0.1:8000/images/logo_icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Kritis: dideklarasikan inline supaya overlay loading langsung
+           tampil dari cat pertama (sebelum CSS eksternal selesai dimuat),
+           mencegah "flash" halaman kosong sesaat sebelum overlay muncul. */
+        #koskitaLoader {
+            position: fixed; inset: 0; z-index: 10000;
+            background: #F8FAFC;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+        #koskitaLoader.koskita-loader-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    </style>
+    <style>
+        :root {
+            --primary: #355DDB;
+            --primary-hover: #2137A2;
+            --primary-light: #7091F9;
+            --bg-light: #F8FAFC;
+            --dark: #0F172A;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--dark);
+        }
+        a { text-decoration: none; }
+        .navbar-koskita {
+            background-color: #FFF;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 14px 0;
+        }
+        .navbar-koskita .nav-link {
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.94rem;
+            padding: 8px 14px !important;
+            border-radius: 8px;
+        }
+        .navbar-koskita .nav-link.active,
+        .navbar-koskita .nav-link:hover {
+            color: var(--primary);
+            background-color: rgba(53, 93, 219, 0.08);
+        }
+        .brand-koskita {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--dark) !important;
+        }
+        .brand-koskita img {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+        .btn-primary-koskita {
+            background-color: var(--primary);
+            border: none;
+            font-weight: 700;
+            padding: 10px 22px;
+            border-radius: 10px;
+            color: #FFF;
+        }
+        .btn-primary-koskita:hover { background-color: var(--primary-hover); color: #FFF; }
+        .btn-outline-koskita {
+            border: 1.5px solid #E2E8F0;
+            font-weight: 700;
+            padding: 9px 20px;
+            border-radius: 10px;
+            color: var(--dark);
+            background: #fff;
+        }
+        .btn-outline-koskita:hover { border-color: var(--primary); color: var(--primary); }
+        .card-koskita {
+            border: 1px solid #E2E8F0;
+            border-radius: 18px;
+            background: #FFF;
+            box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.06);
+        }
+        .badge-soft {
+            background: rgba(53, 93, 219, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+        }
+        .footer-koskita {
+            background: var(--dark);
+            color: #94A3B8;
+            padding: 48px 0 24px;
+            margin-top: 80px;
+        }
+        .footer-koskita a { color: #CBD5E1; }
+        .footer-koskita a:hover { color: #FFF; }
+        .footer-koskita h6 { color: #FFF; font-weight: 700; }
+
+        /* Loading screen bermerek -- tampil sesaat di kunjungan pertama &
+           tiap kali berpindah halaman, supaya transisi terasa "hidup"
+           alih-alih halaman putih kosong sekejap. */
+        .koskita-loader-mark {
+            width: 64px; height: 64px; border-radius: 18px; object-fit: cover;
+            animation: koskita-pulse 1.4s ease-in-out infinite;
+            box-shadow: 0 8px 24px -6px rgba(53, 93, 219, 0.45);
+        }
+        .koskita-loader-ring {
+            width: 84px; height: 84px; border-radius: 50%;
+            border: 3px solid rgba(53, 93, 219, 0.15);
+            border-top-color: var(--primary);
+            position: absolute; top: 50%; left: 50%;
+            margin: -42px 0 0 -42px;
+            animation: koskita-spin 0.9s linear infinite;
+        }
+        .koskita-loader-text {
+            margin-top: 22px; font-weight: 800; letter-spacing: 0.5px;
+            color: var(--dark); font-size: 1.05rem;
+        }
+        @keyframes koskita-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        @keyframes koskita-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Skeleton shimmer utk gambar kos sebelum selesai dimuat. */
+        img.img-shimmer { background: linear-gradient(100deg, #ECEFF3 30%, #F6F8FA 50%, #ECEFF3 70%); background-size: 200% 100%; animation: koskita-shimmer 1.3s ease-in-out infinite; }
+        @keyframes koskita-shimmer { to { background-position: -200% 0; } }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+</head>
+<body>
+    <div id="koskitaLoader" aria-hidden="true">
+        <div class="position-relative d-flex flex-column align-items-center">
+            <div class="koskita-loader-ring"></div>
+            <img src="http://127.0.0.1:8000/images/logo_icon.png" alt="" class="koskita-loader-mark">
+            <span class="koskita-loader-text">KosKita</span>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-koskita sticky-top">
+        <div class="container">
+            <a class="navbar-brand brand-koskita" href="http://127.0.0.1:8000">
+                <img src="http://127.0.0.1:8000/images/logo_icon.png" alt="KosKita">
+                KosKita
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navKoskita">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navKoskita">
+                <ul class="navbar-nav mx-auto gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link " href="http://127.0.0.1:8000">Beranda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="http://127.0.0.1:8000/kos">Cari Kos</a>
+                    </li>
+                                    </ul>
+                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                                            <a href="http://127.0.0.1:8000/masuk" class="btn btn-outline-koskita">Masuk</a>
+                        <a href="http://127.0.0.1:8000/daftar" class="btn btn-primary-koskita">Daftar Gratis</a>
+                                    </div>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="container mt-4">
+                    </div>
+
+    <main>
+        <div class="container py-4">
+    <nav class="small text-muted mb-3">
+        <a href="http://127.0.0.1:8000" class="text-muted">Beranda</a> /
+        <a href="http://127.0.0.1:8000/kos" class="text-muted">Cari Kos</a> /
+        <span>CIU Residence Karawaci</span>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            
+                        <div class="card-koskita overflow-hidden mb-4">
+                                    <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&amp;fit=crop&amp;w=500&amp;q=80" class="d-block w-100 img-shimmer" style="height: 380px; object-fit: cover;" alt="CIU Residence Karawaci">
+                            </div>
+
+            <div class="card-koskita p-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                    <div>
+                        <h3 class="fw-bold mb-1">CIU Residence Karawaci</h3>
+                        <p class="text-muted mb-0"><i class="bi bi-geo-alt-fill me-1"></i>Karawaci &middot; 1.2 km dari kampus</p>
+                    </div>
+                    <span class="badge-soft text-capitalize">Kos campur</span>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3 my-3">
+                                            <span class="fw-bold"><i class="bi bi-star-fill text-warning me-1"></i>4.5 <span class="text-muted fw-normal">(2 ulasan)</span></span>
+                                        <span class="fw-bold ">
+                        <i class="bi bi-door-open-fill me-1"></i>
+                        4 kamar tersedia
+                        <span class="text-muted fw-normal">(1/5 terisi)</span>
+                    </span>
+                </div>
+
+                                    <hr>
+                    <h6 class="fw-bold">Deskripsi</h6>
+                    <p class="text-muted mb-0" style="white-space: pre-line;">Kamar single luas 18m2. Fasilitas lengkap, nyaman, dekat dengan kampus UPH. Minimal stay 2 bulan.</p>
+                
+                                    <hr>
+                    <h6 class="fw-bold">Fasilitas</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                                                    <span class="badge-soft"><i class="bi bi-check-circle-fill me-1"></i>AC</span>
+                                                    <span class="badge-soft"><i class="bi bi-check-circle-fill me-1"></i>WiFi</span>
+                                                    <span class="badge-soft"><i class="bi bi-check-circle-fill me-1"></i>KM Dalam</span>
+                                                    <span class="badge-soft"><i class="bi bi-check-circle-fill me-1"></i>Dapur</span>
+                                                    <span class="badge-soft"><i class="bi bi-check-circle-fill me-1"></i>Parkir</span>
+                                            </div>
+                
+                                    <hr>
+                    <h6 class="fw-bold">Aturan</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                                                    <span class="badge-soft" style="background: #F1F5F9; color: #475569;"><i class="bi bi-info-circle me-1"></i>Jam Malam</span>
+                                                    <span class="badge-soft" style="background: #F1F5F9; color: #475569;"><i class="bi bi-info-circle me-1"></i>Tamu Boleh Menginap</span>
+                                            </div>
+                            </div>
+
+            
+            <div class="card-koskita p-4 mb-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-map me-1"></i>Lokasi</h6>
+                <div id="petaKos" style="height: 280px; border-radius: 12px;"></div>
+                                    <p class="small text-muted mb-0 mt-2">Titik lokasi presisi belum diisi pemilik -- peta menunjukkan area Karawaci secara umum.</p>
+                            </div>
+
+            
+            <div class="card-koskita p-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-chat-square-text me-1"></i>Ulasan Penyewa (2)</h6>
+
+                
+                                    <div class="d-flex gap-3 py-3 border-bottom">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold text-white" style="width:40px;height:40px;background:var(--primary);">
+                            B
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="small">Bryan Daniel</strong>
+                                <span class="text-warning small">
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                    </span>
+                            </div>
+                                                            <p class="small text-muted mb-0 mt-1">Kosnya bersih dan pemiliknya ramah, wifi kencang!</p>
+                                                    </div>
+                    </div>
+                                    <div class="d-flex gap-3 py-3 ">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold text-white" style="width:40px;height:40px;background:var(--primary);">
+                            R
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="small">Responden 1</strong>
+                                <span class="text-warning small">
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star-fill"></i>
+                                                                            <i class="bi bi-star"></i>
+                                                                    </span>
+                            </div>
+                                                            <p class="small text-muted mb-0 mt-1">Lokasi strategis, cuma agak berisik di jam sibuk.</p>
+                                                    </div>
+                    </div>
+                            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-koskita p-4 sticky-top" style="top: 90px;">
+                <p class="text-muted small mb-1">Mulai dari</p>
+                <h3 class="fw-bold mb-3" style="color: var(--primary);">Rp 3.200.000<span class="fs-6 text-muted fw-normal">/bulan</span></h3>
+
+                                    <a href="http://127.0.0.1:8000/masuk?redirect=http%3A%2F%2F127.0.0.1%3A8000%2Fkos%2F1" class="btn btn-primary-koskita w-100">Masuk untuk Booking</a>
+                    <p class="small text-muted text-center mt-2 mb-0">Belum punya akun? <a href="http://127.0.0.1:8000/daftar">Daftar gratis</a></p>
+                
+                                    <hr>
+                    <p class="small text-muted mb-0"><i class="bi bi-person-badge me-1"></i>Dikelola oleh Pemilik Demo</p>
+                            </div>
+        </div>
+    </div>
+
+            <div class="mt-5">
+            <h5 class="fw-bold mb-3">Kos Lain di Karawaci</h5>
+            <div class="row g-4">
+                                    <div class="col-md-4">
+                        <div class="card-koskita h-100 overflow-hidden">
+    <a href="http://127.0.0.1:8000/kos/4" class="text-decoration-none text-dark">
+        <div class="position-relative">
+            <img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&amp;fit=crop&amp;w=500&amp;q=80" alt="Kost Edelweiss Karawaci" class="w-100 img-shimmer" style="height: 190px; object-fit: cover;">
+            <span class="position-absolute top-0 end-0 m-2 badge-soft" style="background: rgba(15,23,42,0.75); color: #fff;">
+                putri
+            </span>
+                    </div>
+        <div class="p-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <h6 class="fw-bold mb-1" style="min-height: 2.6em;">Kost Edelweiss Karawaci</h6>
+            </div>
+            <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-1"></i>Karawaci &middot; 1.5 km dari kampus</p>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="small fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i>4.5</span>
+                    <span class="small text-muted">(2 ulasan)</span>
+                            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="color: var(--primary);">Rp 1.500.000<span class="small text-muted fw-normal">/bulan</span></span>
+                <span class="small text-muted">3 kamar tersisa</span>
+            </div>
+        </div>
+    </a>
+</div>
+                    </div>
+                                    <div class="col-md-4">
+                        <div class="card-koskita h-100 overflow-hidden">
+    <a href="http://127.0.0.1:8000/kos/7" class="text-decoration-none text-dark">
+        <div class="position-relative">
+            <img src="https://images.unsplash.com/photo-1598928636135-d146006ff4be?auto=format&amp;fit=crop&amp;w=500&amp;q=80" alt="Kost Green View Karawaci" class="w-100 img-shimmer" style="height: 190px; object-fit: cover;">
+            <span class="position-absolute top-0 end-0 m-2 badge-soft" style="background: rgba(15,23,42,0.75); color: #fff;">
+                campur
+            </span>
+                    </div>
+        <div class="p-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <h6 class="fw-bold mb-1" style="min-height: 2.6em;">Kost Green View Karawaci</h6>
+            </div>
+            <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-1"></i>Karawaci &middot; 2 km dari kampus</p>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="small text-muted">Belum ada ulasan</span>
+                            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="color: var(--primary);">Rp 2.000.000<span class="small text-muted fw-normal">/bulan</span></span>
+                <span class="small text-muted">1 kamar tersisa</span>
+            </div>
+        </div>
+    </a>
+</div>
+                    </div>
+                                    <div class="col-md-4">
+                        <div class="card-koskita h-100 overflow-hidden">
+    <a href="http://127.0.0.1:8000/kos/10" class="text-decoration-none text-dark">
+        <div class="position-relative">
+            <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&amp;fit=crop&amp;w=500&amp;q=80" alt="Kost U-Residence Karawaci" class="w-100 img-shimmer" style="height: 190px; object-fit: cover;">
+            <span class="position-absolute top-0 end-0 m-2 badge-soft" style="background: rgba(15,23,42,0.75); color: #fff;">
+                campur
+            </span>
+                    </div>
+        <div class="p-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <h6 class="fw-bold mb-1" style="min-height: 2.6em;">Kost U-Residence Karawaci</h6>
+            </div>
+            <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-1"></i>Karawaci &middot; 0.5 km dari kampus</p>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="small text-muted">Belum ada ulasan</span>
+                            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold" style="color: var(--primary);">Rp 4.500.000<span class="small text-muted fw-normal">/bulan</span></span>
+                <span class="small text-muted">1 kamar tersisa</span>
+            </div>
+        </div>
+    </a>
+</div>
+                    </div>
+                            </div>
+        </div>
+    </div>
+    </main>
+
+    <footer class="footer-koskita">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-4">
+                    <div class="brand-koskita text-white mb-2">
+                        <img src="http://127.0.0.1:8000/images/logo_icon.png" alt="KosKita">
+                        KosKita
+                    </div>
+                    <p class="small mb-0">Platform rekomendasi kos untuk mahasiswa di Karawaci, BSD, dan Serpong -- mencocokkan kamu dengan kos yang paling sesuai budget, preferensi, dan gaya hidup lewat sistem rekomendasi hybrid.</p>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h6>Jelajahi</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="http://127.0.0.1:8000">Beranda</a></li>
+                        <li><a href="http://127.0.0.1:8000/kos">Cari Kos</a></li>
+                        <li><a href="http://127.0.0.1:8000/daftar">Daftar Akun</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-6">
+                    <h6>Legal</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2">
+                        <li><a href="http://127.0.0.1:8000/privacy">Kebijakan Privasi</a></li>
+                        <li><a href="http://127.0.0.1:8000/terms">Syarat &amp; Ketentuan</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h6>Punya Kos Sendiri?</h6>
+                    <p class="small mb-0">Daftarkan kos kamu lewat aplikasi KosKita untuk Pemilik dan jangkau lebih banyak calon penyewa -- kelola booking, kamar, dan lihat rekomendasi penyewa yang paling cocok.</p>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <p class="small mb-0 text-center">&copy; 2026 KosKita. Dibangun sebagai bagian dari penelitian skripsi sistem rekomendasi kos.</p>
+        </div>
+    </footer>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="http://127.0.0.1:8000/js/web-loader.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    // Titik tengah area umum -- fallback kalau kos belum diisi koordinat
+    // presisi, sama seperti KosLocationMap di app Flutter.
+    const AREA_CENTERS = {
+        karawaci: [-6.2088, 106.6003],
+        bsd: [-6.3021, 106.6527],
+        serpong: [-6.3208, 106.6714],
+    };
+    const lat = null;
+    const lng = null;
+    const locationKey = "karawaci";
+    const isPrecise = lat !== null && lng !== null;
+    const point = isPrecise ? [lat, lng] : (AREA_CENTERS[locationKey] || AREA_CENTERS.karawaci);
+
+    const map = L.map('petaKos').setView(point, isPrecise ? 16 : 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+    }).addTo(map);
+
+    const marker = L.marker(point).addTo(map);
+    marker.bindPopup(isPrecise ? "CIU Residence Karawaci" : 'Area ' + "Karawaci" + ' (lokasi perkiraan)');
+</script>
+</body>
+</html>

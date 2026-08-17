@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backend KosKita untuk sekarang masih diakses lewat HTTP biasa (bukan HTTPS)
+    di jaringan lokal (XAMPP/LAN), sedangkan Android 9+ memblokir cleartext
+    traffic dari dalam aplikasi secara default. Konfigurasi ini mengizinkannya
+    khusus untuk kebutuhan development/demo di jaringan lokal.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

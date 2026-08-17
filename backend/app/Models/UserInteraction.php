@@ -12,6 +12,8 @@ class UserInteraction extends Model
         'rating',
         'is_favorite',
         'click_count',
+        'favorited_price_snapshot',
+        'favorited_rooms_snapshot',
     ];
 
     public function user()

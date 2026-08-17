@@ -64,6 +64,25 @@
                     </div>
                 </div>
 
+                <div class="mb-3" style="max-width: 260px;">
+                    <label for="total_rooms" class="form-label fw-semibold">Jumlah Kamar</label>
+                    <input type="number" min="1" class="form-control @error('total_rooms') is-invalid @enderror" id="total_rooms" name="total_rooms" value="{{ old('total_rooms', 1) }}" required placeholder="Contoh: 5">
+                    @error('total_rooms')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="latitude" class="form-label fw-semibold">Latitude (opsional, buat pin peta)</label>
+                        <input type="number" step="0.0000001" class="form-control @error('latitude') is-invalid @enderror" id="latitude" name="latitude" value="{{ old('latitude') }}" placeholder="-6.2088">
+                        @error('latitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="longitude" class="form-label fw-semibold">Longitude (opsional)</label>
+                        <input type="number" step="0.0000001" class="form-control @error('longitude') is-invalid @enderror" id="longitude" name="longitude" value="{{ old('longitude') }}" placeholder="106.6003">
+                        @error('longitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="image_url" class="form-label fw-semibold">URL Gambar Kos (fallback)</label>
                     <input type="url" class="form-control @error('image_url') is-invalid @enderror" id="image_url" name="image_url" value="{{ old('image_url') }}" placeholder="https://images.unsplash.com/...">

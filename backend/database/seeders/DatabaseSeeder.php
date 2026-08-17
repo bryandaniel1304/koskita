@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
                 'location' => 'Karawaci',
                 'distance_to_campus' => 2.0,
                 'description' => 'Kost dengan pemandangan hijau dan asri, parkir motor & mobil tersedia.',
-                'image_url' => 'https://images.unsplash.com/photo-1598928680314-159027b8e4c3?auto=format&fit=crop&w=500&q=80',
+                'image_url' => 'https://images.unsplash.com/photo-1598928636135-d146006ff4be?auto=format&fit=crop&w=500&q=80',
                 'facilities' => ['AC', 'WiFi', 'KM Dalam', 'Parkir'],
                 'rules' => ['Jam Malam']
             ],
@@ -160,7 +160,7 @@ class DatabaseSeeder extends Seeder
                 'location' => 'BSD',
                 'distance_to_campus' => 1.2,
                 'description' => 'Kost putri dengan desain modern ala Jepang, bersih dan rapi.',
-                'image_url' => 'https://images.unsplash.com/photo-1502005229762-fc1b2d812ca5?auto=format&fit=crop&w=500&q=80',
+                'image_url' => 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=500&q=80',
                 'facilities' => ['AC', 'WiFi', 'KM Dalam', 'Dapur', 'Laundry'],
                 'rules' => ['Jam Malam']
             ],

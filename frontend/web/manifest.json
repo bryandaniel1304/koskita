@@ -1,11 +1,11 @@
 {
-    "name": "frontend",
-    "short_name": "frontend",
+    "name": "KOSKITA",
+    "short_name": "KOSKITA",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#355DDB",
+    "description": "KOSKITA — Cari Kost, Jadi Rumah. Sistem rekomendasi kos adaptif.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,0 +1,39 @@
+@startuml gambar-use-case
+title Use Case Diagram - Modul Rekomendasi KOSKITA (sesuai ruang lingkup skripsi, Bab I & Subbab 2.8.1)
+left to right direction
+skinparam backgroundColor White
+skinparam packageStyle rectangle
+
+actor "Pengguna\n(Calon Penyewa)" as Tenant
+actor "Admin" as Admin
+
+rectangle "Modul Rekomendasi KOSKITA" {
+  usecase "Mendaftar / Masuk" as UC_Login
+  usecase "Mengisi Profil Preferensi\n(mahasiswa/pekerja, gender,\nanggaran, lokasi, status tinggal)" as UC_Profile
+  usecase "Menerima Rekomendasi Kos\n(Content-Based / Collaborative / Hybrid)" as UC_Recommend
+  usecase "Melihat Detail Kos" as UC_Detail
+  usecase "Mengelola Data Kos\n(panel admin)" as UC_ManageKos
+}
+
+Tenant --> UC_Login
+Tenant --> UC_Profile
+Tenant --> UC_Recommend
+Tenant --> UC_Detail
+Admin --> UC_ManageKos
+
+UC_Profile ..> UC_Login : <<include>>
+UC_Recommend ..> UC_Profile : <<include>>\n(profil jadi dasar Content-Based\nsaat cold-start)
+UC_Detail ..> UC_Recommend : <<extend>>\n(dari daftar hasil rekomendasi)
+
+note right of UC_Recommend
+  Sesuai Pembatasan Masalah & Subbab 2.8.1:
+  diagram ini hanya memodelkan dua aktor --
+  pengguna (calon penyewa) dan admin -- yang
+  berinteraksi langsung dengan modul mesin
+  rekomendasi dan panel data kos. Fitur di luar
+  ruang lingkup penelitian (chat, pembayaran,
+  pembukuan, manajemen properti) tidak
+  dimodelkan di sini.
+end note
+
+@enduml

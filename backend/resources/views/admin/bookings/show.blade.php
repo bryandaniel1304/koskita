@@ -20,8 +20,25 @@
                 <tr><td class="text-muted">Tanggal Mulai</td><td>{{ $booking->start_date->format('d M Y') }}</td></tr>
                 <tr><td class="text-muted">Durasi</td><td>{{ $booking->duration_months }} bulan</td></tr>
                 <tr><td class="text-muted">Catatan Pengguna</td><td>{{ $booking->notes ?: '-' }}</td></tr>
+                <tr>
+                    <td class="text-muted">Pembayaran</td>
+                    <td>
+                        @if(in_array($booking->status, ['rejected', 'cancelled']))
+                            <span class="text-muted">&mdash;</span>
+                        @elseif($booking->payment_status === 'paid')
+                            <span class="badge bg-success-subtle text-success">Sudah Dibayar</span>
+                            <small class="text-muted d-block mt-1">Ditandai {{ $booking->paid_at?->format('d M Y H:i') }} oleh pemilik kos</small>
+                        @else
+                            <span class="badge bg-secondary-subtle text-secondary">Belum Dibayar</span>
+                        @endif
+                    </td>
+                </tr>
                 <tr><td class="text-muted">Diajukan</td><td>{{ $booking->created_at->format('d M Y H:i') }}</td></tr>
             </table>
+            <p class="small text-muted mt-3 mb-0">
+                <i class="bi bi-info-circle"></i> Status pembayaran ditandai manual oleh pemilik kos melalui aplikasi
+                (KosKita tidak memproses transaksi finansial apa pun).
+            </p>
         </div>
     </div>
 

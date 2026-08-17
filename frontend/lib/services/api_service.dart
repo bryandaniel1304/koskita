@@ -1,12 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
 import 'api_exception.dart';
 
 class ApiService {
-  static const _timeout = Duration(seconds: 12);
+  // Mesin dev backend ini punya jeda bootstrap PHP yang cukup tinggi
+  // (~10-15 detik per request), ditambah endpoint yang benar-benar kirim
+  // email (SMTP) butuh waktu tambahan -- 12 detik lama sering timeout
+  // padahal request-nya sebenarnya berhasil di server.
+  static const _timeout = Duration(seconds: 30);
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
 
@@ -57,10 +62,46 @@ class ApiService {
     });
   }
 
-  static Future<http.Response> delete(String endpoint) async {
+  /// [body] opsional -- kebanyakan endpoint DELETE tidak butuh apa-apa
+  /// selain path (mis. `/owner/qris`), tapi beberapa (mis. `/fcm-token`,
+  /// yang perlu tahu token perangkat MANA yang mau dilepas) butuh
+  /// menyertakan data lewat body, sama seperti Laravel menerima DELETE
+  /// dengan body JSON selama Content-Type-nya sesuai.
+  static Future<http.Response> delete(String endpoint, [Map<String, dynamic>? body]) async {
     return _handle(() async {
       final headers = await getHeaders();
-      return http.delete(Uri.parse('$baseUrl$endpoint'), headers: headers).timeout(_timeout);
+      return http
+          .delete(Uri.parse('$baseUrl$endpoint'), headers: headers, body: body != null ? jsonEncode(body) : null)
+          .timeout(_timeout);
+    });
+  }
+
+  /// Request multipart/form-data untuk endpoint yang menerima upload foto
+  /// (form kos milik pemilik). [method] "PUT" dikirim sebagai POST + field
+  /// `_method=PUT` (method spoofing Laravel) karena PHP tidak mem-parse body
+  /// multipart pada request PUT asli.
+  static Future<http.Response> multipart(
+    String method,
+    String endpoint,
+    Map<String, String> fields, {
+    List<XFile> photos = const [],
+    String fileFieldName = 'photos[]',
+  }) async {
+    return _handle(() async {
+      final headers = await getHeaders();
+      headers.remove('Content-Type');
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$endpoint'))
+        ..headers.addAll(headers);
+      if (method.toUpperCase() != 'POST') {
+        fields['_method'] = method.toUpperCase();
+      }
+      request.fields.addAll(fields);
+      for (final file in photos) {
+        final bytes = await file.readAsBytes();
+        request.files.add(http.MultipartFile.fromBytes(fileFieldName, bytes, filename: file.name));
+      }
+      final streamed = await request.send().timeout(_timeout);
+      return http.Response.fromStream(streamed);
     });
   }
 

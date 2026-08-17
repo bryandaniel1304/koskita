@@ -1,0 +1,80 @@
+@startuml 02-arsitektur-sistem
+title Arsitektur Sistem - KosKita
+skinparam backgroundColor White
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+actor "Penyewa" as tenant
+actor "Pemilik Kos" as owner
+actor "Admin" as admin
+
+package "Klien" {
+  [Aplikasi Mobile\n(Flutter - Android/iOS)] as mobile
+  [Situs Publik\n(Laravel Blade)] as web_public
+  [Panel Admin\n(Laravel Blade)] as web_admin
+}
+
+package "Backend Laravel (KosKita)" {
+  [REST API\n(Sanctum Token Auth)] as api
+  [Recommendation Engine\nContent-Based (α) + Collaborative Filtering (1-α)] as recengine
+  [Laravel Reverb\n(WebSocket, chat real-time)] as reverb
+  [Notification Layer\n(Email + Push/FCM)] as notif
+  [Broadcasting Auth\n(channel privat per user)] as broadcastauth
+}
+
+database "MySQL / MariaDB\n(database: koskita)" as db
+
+cloud "Layanan Pihak Ketiga" {
+  [Firebase Cloud Messaging] as fcm
+  [Google OAuth 2.0] as google
+  [Gmail SMTP] as smtp
+  [Sentry\n(crash/error monitoring)] as sentry
+}
+
+package "Dashboard Penelitian (aplikasi terpisah, port 8001)" {
+  [Analisis SUS &\nMetrik Evaluasi Sistem] as research
+}
+
+tenant --> mobile
+tenant --> web_public
+owner --> mobile
+owner --> web_public
+admin --> web_admin
+
+mobile --> api : HTTP/JSON\n(Bearer Token)
+mobile --> reverb : WebSocket\n(pesan real-time)
+mobile --> broadcastauth : otorisasi channel privat
+web_public --> api
+web_admin --> api
+web_public ..> reverb : Echo/pusher-js (browser)
+
+api --> db : Eloquent ORM
+api --> recengine : hitung skor hybrid
+api --> notif : trigger notifikasi
+recengine --> db : ambil data booking/rating/preferensi
+reverb --> db : validasi channel privat
+notif --> fcm : kirim push
+notif --> smtp : kirim email
+
+mobile --> google : Login dengan Google\n(verifikasi ID token)
+web_public --> google : Login dengan Google\n(OAuth redirect)
+
+api ..> sentry : laporkan error (opsional)
+mobile ..> sentry : laporkan crash (opsional)
+
+research --> db : baca data evaluasi\n(read-only, DB terpisah)
+
+note right of recengine
+  Hybrid: score = α × CB + (1-α) × CF
+  α = 0.6 (bobot Content-Based)
+  Cold-start: CB murni sampai
+  pengguna punya cukup data rating
+end note
+
+note right of notif
+  Sinkron (bukan queue) -- tidak ada
+  worker queue yang jalan terus di
+  lingkungan pengembangan ini
+end note
+
+@enduml

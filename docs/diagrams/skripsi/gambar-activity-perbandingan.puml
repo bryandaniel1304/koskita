@@ -1,0 +1,59 @@
+@startuml gambar-activity-perbandingan
+title Activity Diagram - Perbandingan Alur Proses pada KOSKITA (Bab III, sesuai Subbab 2.8.2)
+skinparam backgroundColor White
+skinparam ActivityBackgroundColor #F2F5FF
+skinparam ActivityBorderColor #355DDB
+skinparam PartitionBorderColor #355DDB
+skinparam PartitionBackgroundColor White
+
+partition "ALUR LAMA -- Manual, tanpa rekomendasi (ringkasan dari Gambar 3.2)" {
+  start
+  :Penyewa buka aplikasi pencarian kos;
+  repeat
+    :Penyewa atur filter manual\n(lokasi, harga, tipe, fasilitas);
+    :Sistem tampilkan hasil filter\n(daftar mentah, sama untuk semua pengguna);
+    :Penyewa telusuri & bandingkan\nhasil satu per satu;
+  repeat while (Hasil sesuai kebutuhan?) is (tidak) not (ya)
+  :Penyewa hubungi & survei lokasi\nke pemilik kos (berulang bila belum puas);
+  :Penyewa melakukan pemesanan kamar;
+  :Penyewa membayar biaya;
+  stop
+}
+
+partition "ALUR BARU -- Modul Rekomendasi KOSKITA (sistem usulan)" {
+  start
+  :Penyewa buka aplikasi KOSKITA;
+  if (Sudah pernah isi profil preferensi?) then (belum)
+    :Isi profil sekali di awal\n(mahasiswa/pekerja, gender,\nanggaran, lokasi, status tinggal);
+  else (sudah)
+  endif
+  if (Pengguna sudah punya riwayat interaksi?) then (belum -- cold-start)
+    :RecommendationService hitung skor\nContent-Based dari profil (alpha = 1);
+  else (sudah -- warm-start)
+    :RecommendationService hitung skor\nhybrid = alpha x CB + (1-alpha) x CF;
+  endif
+  :Sistem tampilkan Top-N kos\nyang dipersonalisasi per pengguna;
+  :Penyewa lihat detail kos hasil rekomendasi;
+  if (Cocok dengan kebutuhan?) then (ya)
+  else (tidak)
+    :Penyewa beri rating/klik kos lain\n(memperkaya data interaksi\nuntuk rekomendasi berikutnya);
+  endif
+  :Penyewa hubungi & survei lokasi\nke pemilik kos;
+  :Penyewa melakukan pemesanan kamar;
+  :Penyewa membayar biaya;
+  stop
+}
+
+legend right
+  <b>Perbandingan alur:</b> pada alur lama, beban penyaringan sepenuhnya berada
+  pada penyewa dan diulang manual (loop "atur filter -> telusuri -> bandingkan")
+  hingga ditemukan kandidat yang sesuai, dan pengguna baru memulai tanpa
+  panduan sama sekali (cold-start murni). Pada alur baru, langkah tersebut
+  digantikan modul rekomendasi: profil diisi sekali di awal, sistem otomatis
+  memilih strategi content-based (cold-start) atau hybrid (warm-start), dan
+  penyewa langsung menerima daftar Top-N yang personal -- memangkas siklus
+  atur-filter-berulang yang menjadi akar masalah pada identifikasi
+  permasalahan Subbab 3.4.1.
+end legend
+
+@enduml

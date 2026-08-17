@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
 import '../providers/kos_provider.dart';
+import '../config/app_theme.dart';
 
 class OnboardingScreen extends StatefulWidget {
   /// true kalau layar ini dibuka langsung setelah registrasi (alur cold-start
@@ -17,10 +19,12 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  String _gender = 'pria';
-  String _occupation = 'mahasiswa';
-  String _preferredLocation = 'Karawaci';
-  
+  // Sengaja null di awal -- tidak ada pilihan yang dianggap "sudah dipilih"
+  // sebelum pengguna sendiri menyentuh chip/dropdown-nya.
+  String? _gender;
+  String? _occupation;
+  String? _preferredLocation;
+
   RangeValues _budgetRange = const RangeValues(1000000, 3000000);
 
   final List<String> _allFacilities = ['AC', 'WiFi', 'KM Dalam', 'Dapur', 'Parkir', 'Laundry'];
@@ -29,7 +33,62 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<String> _allRules = ['Jam Malam', 'Tamu Boleh Menginap', 'Bawa Hewan', 'Merokok'];
   final List<String> _preferredRules = [];
 
+  final PageController _pageController = PageController();
+  int _currentPageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Kalau dibuka dari "Edit Profil Preferensi" di layar Profil (bukan
+    // registrasi baru), isi ulang semua pilihan dari profil yang sudah
+    // ada -- sebelumnya form ini SELALU kosong meski buka untuk edit,
+    // jadi user terpaksa isi ulang semuanya dari nol tiap kali mau ubah
+    // satu preferensi saja.
+    if (!widget.fromRegistration) {
+      final profile = Provider.of<AuthProvider>(context, listen: false).user?.profile;
+      if (profile != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          setState(() {
+            _gender = profile.gender;
+            _occupation = profile.occupation;
+            _preferredLocation = profile.preferredLocation;
+            // Clamp ke batas RangeSlider (500rb-6jt) -- jaga-jaga kalau
+            // data lama pernah tersimpan di luar rentang itu, supaya
+            // tidak memicu assertion error dari RangeSlider.
+            _budgetRange = RangeValues(
+              profile.budgetMin.toDouble().clamp(500000, 6000000),
+              profile.budgetMax.toDouble().clamp(500000, 6000000),
+            );
+            _preferredFacilities
+              ..clear()
+              ..addAll(profile.preferredFacilities.where(_allFacilities.contains));
+            _preferredRules
+              ..clear()
+              ..addAll(profile.preferredRules.where(_allRules.contains));
+          });
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _saveProfile() async {
+    if (_gender == null || _occupation == null || _preferredLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lengkapi dulu jenis kelamin, pekerjaan, dan area kampus.'),
+          backgroundColor: AppTheme.danger,
+        ),
+      );
+      return;
+    }
+
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final kosProvider = Provider.of<KosProvider>(context, listen: false);
 
@@ -58,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Gagal menyimpan preferensi. Coba lagi.'),
-          backgroundColor: Color(0xFFF43F5E),
+          backgroundColor: AppTheme.danger,
         ),
       );
     }
@@ -68,50 +127,101 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return 'Rp ${(value / 1000000).toStringAsFixed(1)} jt';
   }
 
+  Widget _sectionCard({required IconData icon, required String title, required Widget child, int index = 0}) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                child: Icon(icon, size: 18, color: AppTheme.primary),
+              ),
+              const SizedBox(width: 10),
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    ).animate(delay: (index * 70).ms).fadeIn(duration: 320.ms).slideY(begin: 0.08, end: 0);
+  }
+
+  Widget _choicePill({required String label, required bool selected, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: selected ? AppTheme.primaryGradient : null,
+          color: selected ? null : Theme.of(context).inputDecorationTheme.fillColor,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: selected ? Colors.white : AppTheme.muted, fontWeight: FontWeight.w700, fontSize: 13),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Preferensi Pencarian Kos',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-        elevation: 0.5,
+        title: Text(widget.fromRegistration ? 'Preferensi Pencarian Kos' : 'Edit Preferensi'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Welcome Card
-            Card(
-              elevation: 0,
-              color: const Color(0xFFEEF2F6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome / Header banner
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
+                ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Color(0xFF4F46E5), size: 30),
-                    const SizedBox(width: 16),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.auto_awesome_rounded, color: AppTheme.primary, size: 18),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Kenalan Dulu, Yuk!',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A)),
-                          ),
-                          const SizedBox(height: 4),
                           Text(
-                            'Isi preferensimu supaya kami bisa langsung kasih rekomendasi kos yang paling cocok.',
-                            style: TextStyle(fontSize: 13, color: const Color(0xFF0F172A).withValues(alpha: 0.6)),
+                            widget.fromRegistration ? 'Kenalan Dulu, Yuk!' : 'Ubah Preferensimu',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Langkah ${_currentPageIndex + 1} dari 4: ${_stepTitle(_currentPageIndex)}',
+                            style: const TextStyle(fontSize: 12, color: AppTheme.muted),
                           ),
                         ],
                       ),
@@ -119,271 +229,287 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-            // 1. Profil Demografis
-            const Text(
-              'Profil Demografis',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+              // Progress indicator
+              Row(
+                children: List.generate(4, (index) {
+                  final active = index <= _currentPageIndex;
+                  return Expanded(
+                    child: Container(
+                      height: 4,
+                      margin: EdgeInsets.only(right: index == 3 ? 0 : 6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        gradient: active ? AppTheme.primaryGradient : null,
+                        color: active ? null : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 20),
+
+              // PageView Content
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPageIndex = index;
+                    });
+                  },
                   children: [
-                    // Gender
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Jenis Kelamin', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Row(
-                          children: [
-                            ChoiceChip(
-                              label: const Text('Pria'),
-                              selected: _gender == 'pria',
-                              onSelected: (selected) {
-                                if (selected) setState(() => _gender = 'pria');
-                              },
-                              selectedColor: const Color(0xFF6366F1),
-                              labelStyle: TextStyle(
-                                color: _gender == 'pria' ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
+                    // Step 1: Demographics
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _sectionCard(
+                          icon: Icons.person_outline_rounded,
+                          title: 'Profil Demografis',
+                          index: 1,
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Jenis Kelamin', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                                  Row(
+                                    children: [
+                                      _choicePill(label: 'Pria', selected: _gender == 'pria', onTap: () => setState(() => _gender = 'pria')),
+                                      const SizedBox(width: 8),
+                                      _choicePill(label: 'Wanita', selected: _gender == 'wanita', onTap: () => setState(() => _gender = 'wanita')),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            ChoiceChip(
-                              label: const Text('Wanita'),
-                              selected: _gender == 'wanita',
-                              onSelected: (selected) {
-                                if (selected) setState(() => _gender = 'wanita');
-                              },
-                              selectedColor: const Color(0xFF6366F1),
-                              labelStyle: TextStyle(
-                                color: _gender == 'wanita' ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
+                              const Divider(height: 28),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Pekerjaan', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                                  Row(
+                                    children: [
+                                      _choicePill(label: 'Mahasiswa', selected: _occupation == 'mahasiswa', onTap: () => setState(() => _occupation = 'mahasiswa')),
+                                      const SizedBox(width: 8),
+                                      _choicePill(label: 'Pekerja', selected: _occupation == 'pekerja', onTap: () => setState(() => _occupation = 'pekerja')),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 24),
-                    // Pekerjaan
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Pekerjaan', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Row(
-                          children: [
-                            ChoiceChip(
-                              label: const Text('Mahasiswa'),
-                              selected: _occupation == 'mahasiswa',
-                              onSelected: (selected) {
-                                if (selected) setState(() => _occupation = 'mahasiswa');
-                              },
-                              selectedColor: const Color(0xFF6366F1),
-                              labelStyle: TextStyle(
-                                color: _occupation == 'mahasiswa' ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
+                              const Divider(height: 28),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Area Kampus', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                                  DropdownButton<String>(
+                                    value: _preferredLocation,
+                                    hint: const Text('Pilih area', style: TextStyle(color: AppTheme.muted)),
+                                    underline: Container(height: 2, decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: BorderRadius.circular(2))),
+                                    borderRadius: BorderRadius.circular(14),
+                                    onChanged: (String? newValue) {
+                                      if (newValue != null) setState(() => _preferredLocation = newValue);
+                                    },
+                                    items: <String>['Karawaci', 'BSD', 'Serpong'].map<DropdownMenuItem<String>>((String value) {
+                                      return DropdownMenuItem<String>(value: value, child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600)));
+                                    }).toList(),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            ChoiceChip(
-                              label: const Text('Pekerja'),
-                              selected: _occupation == 'pekerja',
-                              onSelected: (selected) {
-                                if (selected) setState(() => _occupation = 'pekerja');
-                              },
-                              selectedColor: const Color(0xFF6366F1),
-                              labelStyle: TextStyle(
-                                color: _occupation == 'pekerja' ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 24),
-                    // Lokasi Preferensi
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Area Kampus', style: TextStyle(fontWeight: FontWeight.w600)),
-                        DropdownButton<String>(
-                          value: _preferredLocation,
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() => _preferredLocation = newValue);
-                            }
-                          },
-                          underline: Container(
-                            height: 1,
-                            color: const Color(0xFF6366F1),
+                            ],
                           ),
-                          items: <String>['Karawaci', 'BSD', 'Serpong']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+                        ),
+                      ),
+                    ),
+
+                    // Step 2: Budget
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _sectionCard(
+                          icon: Icons.payments_outlined,
+                          title: 'Anggaran Bulanan',
+                          index: 2,
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Rentang Budget', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                                  Text(
+                                    '${_formatRupiah(_budgetRange.start)} - ${_formatRupiah(_budgetRange.end)}',
+                                    style: const TextStyle(fontWeight: FontWeight.w800, color: AppTheme.primary),
+                                  ),
+                                ],
+                              ),
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: AppTheme.primary,
+                                  inactiveTrackColor: const Color(0xFFE2E8F0),
+                                  thumbColor: AppTheme.primary,
+                                  overlayColor: AppTheme.primary.withValues(alpha: 0.12),
+                                ),
+                                child: RangeSlider(
+                                  values: _budgetRange,
+                                  min: 500000,
+                                  max: 6000000,
+                                  divisions: 11,
+                                  onChanged: (values) => setState(() => _budgetRange = values),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Step 3: Facilities
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _sectionCard(
+                          icon: Icons.checklist_rounded,
+                          title: 'Fasilitas Utama',
+                          index: 3,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _allFacilities.map((facility) {
+                              final isSelected = _preferredFacilities.contains(facility);
+                              return _choicePill(
+                                label: facility,
+                                selected: isSelected,
+                                onTap: () => setState(() {
+                                  if (isSelected) {
+                                    _preferredFacilities.remove(facility);
+                                  } else {
+                                    _preferredFacilities.add(facility);
+                                  }
+                                }),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Step 4: Rules
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _sectionCard(
+                          icon: Icons.rule_rounded,
+                          title: 'Aturan Kos Toleransi',
+                          index: 4,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _allRules.map((rule) {
+                              final isSelected = _preferredRules.contains(rule);
+                              return _choicePill(
+                                label: rule,
+                                selected: isSelected,
+                                onTap: () => setState(() {
+                                  if (isSelected) {
+                                    _preferredRules.remove(rule);
+                                  } else {
+                                    _preferredRules.add(rule);
+                                  }
+                                }),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Navigation Buttons
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
+                  children: [
+                    if (_currentPageIndex > 0)
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
                             );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 2. Anggaran Bulanan
-            const Text(
-              'Anggaran Bulanan',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Rentang Budget', style: TextStyle(fontWeight: FontWeight.w600)),
-                        Text(
-                          '${_formatRupiah(_budgetRange.start)} - ${_formatRupiah(_budgetRange.end)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF4F46E5),
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: const BorderSide(color: AppTheme.primary, width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
+                          child: const Text('Kembali', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    RangeSlider(
-                      values: _budgetRange,
-                      min: 500000,
-                      max: 6000000,
-                      divisions: 11,
-                      activeColor: const Color(0xFF6366F1),
-                      inactiveColor: const Color(0xFFE2E8F0),
-                      onChanged: (values) {
-                        setState(() {
-                          _budgetRange = values;
-                        });
-                      },
+                      ),
+                    if (_currentPageIndex > 0) const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: authProvider.isLoading ? null : () {
+                          if (_currentPageIndex < 3) {
+                            if (_currentPageIndex == 0 && (_gender == null || _occupation == null || _preferredLocation == null)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Lengkapi dulu jenis kelamin, pekerjaan, dan area kampus.'),
+                                  backgroundColor: AppTheme.danger,
+                                ),
+                              );
+                              return;
+                            }
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          } else {
+                            _saveProfile();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: authProvider.isLoading
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : Text(
+                                _currentPageIndex < 3
+                                    ? 'Lanjut'
+                                    : (widget.fromRegistration ? 'Simpan & Lihat Rekomendasi' : 'Simpan Perubahan'),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // 3. Fasilitas yang Diinginkan
-            const Text(
-              'Fasilitas Utama',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _allFacilities.map((facility) {
-                final isSelected = _preferredFacilities.contains(facility);
-                return FilterChip(
-                  label: Text(facility),
-                  selected: isSelected,
-                  selectedColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                  checkmarkColor: const Color(0xFF4F46E5),
-                  labelStyle: TextStyle(
-                    color: isSelected ? const Color(0xFF4F46E5) : Colors.black,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        _preferredFacilities.add(facility);
-                      } else {
-                        _preferredFacilities.remove(facility);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-
-            // 4. Aturan Kos
-            const Text(
-              'Aturan Kos Toleransi',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _allRules.map((rule) {
-                final isSelected = _preferredRules.contains(rule);
-                return FilterChip(
-                  label: Text(rule),
-                  selected: isSelected,
-                  selectedColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                  checkmarkColor: const Color(0xFF4F46E5),
-                  labelStyle: TextStyle(
-                    color: isSelected ? const Color(0xFF4F46E5) : Colors.black,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        _preferredRules.add(rule);
-                      } else {
-                        _preferredRules.remove(rule);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 36),
-
-            // Save Button
-            authProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                      ),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: _saveProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Simpan & Lihat Rekomendasi',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ),
-                  ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  String _stepTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Demografis';
+      case 1:
+        return 'Budget';
+      case 2:
+        return 'Fasilitas';
+      case 3:
+        return 'Aturan Kos';
+      default:
+        return '';
+    }
   }
 }

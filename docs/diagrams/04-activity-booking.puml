@@ -1,0 +1,75 @@
+@startuml 04-activity-booking
+title Activity Diagram - Proses Booking hingga Ulasan
+skinparam backgroundColor White
+
+|Penyewa|
+start
+:Cari & filter kos;
+:Lihat rekomendasi personal\n(Content-Based + Collaborative Filtering);
+:Pilih kos, lihat detail;
+
+|Sistem|
+:Catat interaksi (klik/lihat kos);
+
+|Penyewa|
+:Isi form booking\n(tanggal mulai, durasi, catatan);
+:Ajukan booking;
+
+|Sistem|
+if (Kamar tersedia?) then (tidak)
+  :Tolak otomatis\n"kos sedang penuh";
+  stop
+else (ya)
+  :Simpan booking\n(status = pending);
+  :Beri tahu pemilik\n(notifikasi in-app + email);
+endif
+
+|Pemilik Kos|
+:Tinjau pengajuan booking;
+if (Setujui?) then (tolak)
+  :Ubah status = rejected;
+  |Sistem|
+  :Beri tahu penyewa\n(email + push);
+  stop
+else (konfirmasi)
+  :Ubah status = confirmed;
+endif
+
+|Sistem|
+:Beri tahu penyewa\nbooking dikonfirmasi;
+:Tampilkan kode QRIS pemilik\ndi halaman kos (kalau ada);
+
+|Penyewa|
+:Bayar sewa langsung ke pemilik\n(transfer/tunai -- di luar sistem,\nKosKita tidak proses pembayaran);
+
+|Pemilik Kos|
+:Tandai "Sudah Dibayar" (manual);
+:-- masa sewa berjalan --;
+:Tandai status = completed\nsetelah masa sewa berakhir;
+
+|Sistem|
+:Hitung ulang kamar tersedia\n(available_rooms bertambah);
+if (Ada penyewa lain di daftar tunggu?) then (ya)
+  :Kirim notifikasi "kamar tersedia lagi"\n(push + email) ke daftar tunggu;
+else (tidak)
+endif
+:Munculkan prompt\n"Beri Ulasan" ke penyewa\n(in-app, berulang sampai ditulis);
+
+|Penyewa|
+if (Menulis ulasan?) then (ya)
+  :Isi rating, komentar, foto (opsional);
+  :Kirim ulasan;
+  |Sistem|
+  :Simpan ulasan;
+  :Perbarui rata-rata rating kos;
+  :Beri tahu pemilik ada ulasan baru;
+  |Pemilik Kos|
+  if (Ingin membalas?) then (ya)
+    :Tulis balasan ulasan;
+  else (tidak)
+  endif
+else (tidak, untuk sekarang)
+endif
+
+stop
+@enduml

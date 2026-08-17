@@ -1,5 +1,8 @@
 package com.koskita.frontend
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FlutterFragmentActivity (bukan FlutterActivity) -- WAJIB untuk plugin
+// local_auth (login sidik jari/wajah) di Android, dialog biometrik bawaan
+// sistem butuh FragmentActivity sebagai host-nya.
+class MainActivity : FlutterFragmentActivity()

@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/kos_provider.dart';
+import '../models/kos.dart';
 import '../widgets/error_state.dart';
+import '../widgets/skeleton_box.dart';
+import '../widgets/premium_button.dart';
+import '../config/app_theme.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -13,6 +18,9 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
+  bool _compareMode = false;
+  final Set<int> _selectedIds = {};
+
   @override
   void initState() {
     super.initState();
@@ -23,9 +31,21 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   String _formatPrice(int price) {
     if (price >= 1000000) {
-      return 'Rp ${(price / 1000000).toStringAsFixed(1)} jt / bln';
+      return 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bln';
     }
-    return 'Rp $price / bln';
+    return 'Rp $price/bln';
+  }
+
+  void _toggleCompareMode() {
+    setState(() {
+      _compareMode = !_compareMode;
+      if (!_compareMode) _selectedIds.clear();
+    });
+  }
+
+  void _openComparison(List<Kos> favorites) {
+    final selected = favorites.where((k) => _selectedIds.contains(k.id)).toList();
+    context.push('/compare', extra: selected);
   }
 
   @override
@@ -33,27 +53,31 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final kosProvider = Provider.of<KosProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Favorit Saya', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-        elevation: 0.5,
+        title: const Text('Favorit Saya'),
+        actions: [
+          if (kosProvider.favorites.length >= 2)
+            TextButton(
+              onPressed: _toggleCompareMode,
+              child: Text(_compareMode ? 'Batal' : 'Bandingkan'),
+            ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => kosProvider.fetchFavorites(),
         child: Builder(builder: (context) {
           if (kosProvider.isFavoritesLoading && kosProvider.favorites.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView(
+              padding: const EdgeInsets.all(20),
+              children: const [SkeletonKosCard(), SizedBox(height: 14), SkeletonKosCard(), SizedBox(height: 14), SkeletonKosCard()],
+            );
           }
           if (kosProvider.favoritesErrorMessage != null && kosProvider.favorites.isEmpty) {
             return ListView(
               children: [
                 const SizedBox(height: 80),
-                ErrorStateView(
-                  message: kosProvider.favoritesErrorMessage!,
-                  onRetry: () => kosProvider.fetchFavorites(),
-                ),
+                ErrorStateView(message: kosProvider.favoritesErrorMessage!, onRetry: () => kosProvider.fetchFavorites()),
               ],
             );
           }
@@ -68,67 +92,95 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
             itemCount: kosProvider.favorites.length,
             itemBuilder: (context, index) {
               final kos = kosProvider.favorites[index];
+              final selected = _selectedIds.contains(kos.id);
               return GestureDetector(
-                onTap: () => context.push('/kos/${kos.id}'),
+                onTap: _compareMode
+                    ? () {
+                        setState(() {
+                          // Tidak ada batas jumlah lagi -- CompareScreen sudah
+                          // bisa discroll ke samping berapa pun banyaknya
+                          // kos yang dipilih.
+                          if (selected) {
+                            _selectedIds.remove(kos.id);
+                          } else {
+                            _selectedIds.add(kos.id);
+                          }
+                        });
+                      }
+                    : () => context.push('/kos/${kos.id}'),
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 6, offset: const Offset(0, 2)),
-                    ],
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: selected ? Border.all(color: AppTheme.primary, width: 1.6) : null,
+                    boxShadow: AppTheme.softShadow(opacity: 0.05),
                   ),
                   child: Row(
                     children: [
+                      if (_compareMode) ...[
+                        Icon(
+                          selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                          color: selected ? AppTheme.primary : AppTheme.muted,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         child: CachedNetworkImage(
                           imageUrl: kos.coverImage,
                           width: 90,
                           height: 90,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(width: 90, height: 90, color: Colors.grey[200]),
-                          errorWidget: (context, url, error) => Container(
-                            width: 90,
-                            height: 90,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image, color: Colors.grey),
-                          ),
+                          placeholder: (context, url) => const SkeletonBox(width: 90, height: 90),
+                          errorWidget: (context, url, error) => Container(width: 90, height: 90, color: Colors.grey[300], child: const Icon(Icons.image, color: Colors.grey)),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(kos.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A))),
-                            const SizedBox(height: 4),
+                            Text(kos.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            const SizedBox(height: 5),
                             Row(
                               children: [
-                                const Icon(Icons.location_on, size: 12, color: Colors.grey),
+                                const Icon(Icons.location_on_rounded, size: 12, color: AppTheme.muted),
                                 const SizedBox(width: 2),
-                                Text(kos.location, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                Text(kos.location, style: Theme.of(context).textTheme.bodySmall),
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Text(_formatPrice(kos.price), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF4F46E5))),
+                            Text(_formatPrice(kos.price), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppTheme.primary)),
                           ],
                         ),
                       ),
+                      if (!_compareMode) Icon(Icons.favorite_rounded, color: AppTheme.danger.withValues(alpha: 0.85), size: 20),
                     ],
                   ),
                 ),
-              );
+              ).animate(delay: (index.clamp(0, 6) * 45).ms).fadeIn(duration: 260.ms);
             },
           );
         }),
       ),
+      bottomNavigationBar: _compareMode && _selectedIds.length >= 2
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: PremiumButton(
+                  label: 'Bandingkan ${_selectedIds.length} Kos',
+                  icon: Icons.compare_arrows_rounded,
+                  onPressed: () => _openComparison(kosProvider.favorites),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

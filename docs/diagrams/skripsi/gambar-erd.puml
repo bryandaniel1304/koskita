@@ -1,0 +1,124 @@
+@startuml gambar-erd
+title Entity Relationship Diagram - Modul Rekomendasi KOSKITA (skema data pendukung Bab IV)
+hide circle
+skinparam backgroundColor White
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor White
+  BorderColor #355DDB
+  ArrowColor #355DDB
+  FontSize 12
+}
+
+entity "users" as users {
+  * id : bigint
+  --
+  name : string
+  email : string <<unique>>
+  password : string
+  role : string <<user|owner|admin>>
+}
+
+entity "user_profiles" as user_profiles {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  gender : string
+  occupation : string <<mahasiswa|pekerja>>
+  budget_min : integer
+  budget_max : integer
+  preferred_location : string
+  preferred_facilities : longtext <<JSON encoded>>
+  preferred_rules : longtext <<JSON encoded>>
+}
+
+entity "koses" as koses {
+  * id : bigint
+  --
+  owner_id : bigint (FK, nullable)
+  name : string
+  price : integer
+  gender_type : string <<putra|putri|campur>>
+  location : string
+  distance_to_campus : double
+}
+
+entity "facilities" as facilities {
+  * id : bigint
+  --
+  name : string
+}
+
+entity "rules" as rules {
+  * id : bigint
+  --
+  name : string
+}
+
+entity "kos_facility" as kos_facility {
+  * id : bigint
+  --
+  kos_id : bigint (FK)
+  facility_id : bigint (FK)
+}
+
+entity "kos_rule" as kos_rule {
+  * id : bigint
+  --
+  kos_id : bigint (FK)
+  rule_id : bigint (FK)
+}
+
+entity "user_interactions" as user_interactions {
+  * id : bigint
+  --
+  user_id : bigint (FK)
+  kos_id : bigint (FK)
+  rating : integer
+  is_favorite : boolean
+  click_count : integer
+}
+
+' ===== Relasi =====
+users ||--o| user_profiles
+users ||--o{ koses : "owner (opsional)"
+users ||--o{ user_interactions
+
+koses ||--o{ user_interactions
+koses ||--o{ kos_facility
+facilities ||--o{ kos_facility
+koses ||--o{ kos_rule
+rules ||--o{ kos_rule
+
+note bottom of koses
+  Atribut harga, lokasi/jarak, tipe kos, fasilitas, dan
+  peraturan kos (Pembatasan Masalah poin 5) menjadi
+  masukan vektor Content-Based Filtering; user_profiles
+  dan user_interactions menjadi masukan Content-Based
+  dan Collaborative Filtering sebagaimana dijelaskan
+  pada Subbab 2.2.1-2.2.3.
+end note
+
+note bottom of users
+  Skema ini dipangkas hanya pada tabel yang menjadi
+  masukan langsung modul rekomendasi. Tabel operasional
+  KOSKITA lain (booking, chat, pembayaran, dll.) sudah
+  ada pada aplikasi sebelumnya dan berada di luar
+  Pembatasan Masalah poin 1 penelitian ini. Kolom "role"
+  pada basis data aktual bernilai user/owner/admin --
+  "owner" (pemilik kos) adalah peran produk KOSKITA yang
+  sudah ada sebelumnya dan tidak dimodelkan sebagai aktor
+  terpisah pada Use Case Diagram skripsi ini, karena tidak
+  berinteraksi langsung dengan modul rekomendasi.
+end note
+
+note bottom of user_profiles
+  <b>PERHATIAN:</b> kolom "status tinggal" yang disebut pada
+  Pembatasan Masalah poin 5 BELUM ada di skema basis data
+  maupun kode aplikasi saat ini (dicek langsung ke tabel
+  user_profiles pada database koskita). Perlu ditambahkan
+  kolomnya + form pengisiannya, atau kalimat pada Pembatasan
+  Masalah direvisi, sebelum diagram/skripsi ini difinalkan.
+end note
+
+@enduml

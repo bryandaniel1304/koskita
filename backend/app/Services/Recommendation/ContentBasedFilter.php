@@ -58,6 +58,37 @@ class ContentBasedFilter
     }
 
     /**
+     * Kebalikan dari calculateScores(): untuk satu kos tertentu, hitung skor
+     * kecocokan terhadap kumpulan profil penyewa. Dipakai oleh pemilik kos
+     * untuk melihat "penyewa mana yang paling cocok dengan kos saya" --
+     * memakai vektor & rumus cosine similarity yang persis sama, cuma arah
+     * perulangannya dibalik (per profil, bukan per kos).
+     *
+     * @return array<int, float> keyed by user_id
+     */
+    public function calculateScoresForKos(Kos $kos, Collection $profiles): array
+    {
+        $scores = [];
+        $kosGender = strtolower($kos->gender_type);
+
+        foreach ($profiles as $profile) {
+            $userGender = strtolower($profile->gender);
+
+            if (($kosGender === 'putri' && $userGender === 'pria') ||
+                ($kosGender === 'putra' && $userGender === 'wanita')) {
+                $scores[$profile->user_id] = 0.0;
+                continue;
+            }
+
+            $userVector = $this->createUserPreferenceVector($profile);
+            $kosVector = $this->createKosAttributeVector($kos, $profile);
+            $scores[$profile->user_id] = CosineSimilarity::calculate($userVector, $kosVector);
+        }
+
+        return $scores;
+    }
+
+    /**
      * Membuat vektor preferensi pengguna (15 dimensi: tipe kos, budget,
      * jarak, fasilitas, aturan).
      */

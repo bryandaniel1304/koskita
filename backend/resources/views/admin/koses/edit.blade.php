@@ -24,6 +24,15 @@
             <!-- Left Side: Basic Info -->
             <div class="col-md-8">
                 <div class="mb-3">
+                    <label class="form-label fw-semibold d-block">Pemilik Kos</label>
+                    @if($kos->owner)
+                        <span class="badge bg-primary-subtle text-primary">{{ $kos->owner->name }} ({{ $kos->owner->email }})</span>
+                    @else
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis">Dikelola Admin (belum ada pemilik)</span>
+                    @endif
+                </div>
+
+                <div class="mb-3">
                     <label for="name" class="form-label fw-semibold">Nama Kos</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $kos->name) }}" required placeholder="Contoh: Kost Exclusive Karawaci">
                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -62,6 +71,26 @@
                         <label for="distance_to_campus" class="form-label fw-semibold">Jarak ke Kampus UPH (km)</label>
                         <input type="number" step="0.1" class="form-control @error('distance_to_campus') is-invalid @enderror" id="distance_to_campus" name="distance_to_campus" value="{{ old('distance_to_campus', $kos->distance_to_campus) }}" required placeholder="Contoh: 1.2">
                         @error('distance_to_campus')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
+                <div class="mb-3" style="max-width: 260px;">
+                    <label for="total_rooms" class="form-label fw-semibold">Jumlah Kamar</label>
+                    <input type="number" min="{{ $kos->occupied_rooms }}" class="form-control @error('total_rooms') is-invalid @enderror" id="total_rooms" name="total_rooms" value="{{ old('total_rooms', $kos->total_rooms) }}" required>
+                    <small class="text-muted">{{ $kos->occupied_rooms }} kamar sedang terisi dari total saat ini.</small>
+                    @error('total_rooms')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="latitude" class="form-label fw-semibold">Latitude (opsional, buat pin peta)</label>
+                        <input type="number" step="0.0000001" class="form-control @error('latitude') is-invalid @enderror" id="latitude" name="latitude" value="{{ old('latitude', $kos->latitude) }}" placeholder="-6.2088">
+                        @error('latitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="longitude" class="form-label fw-semibold">Longitude (opsional)</label>
+                        <input type="number" step="0.0000001" class="form-control @error('longitude') is-invalid @enderror" id="longitude" name="longitude" value="{{ old('longitude', $kos->longitude) }}" placeholder="106.6003">
+                        @error('longitude')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
 

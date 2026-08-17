@@ -1,0 +1,214 @@
+@startuml 05-class-diagram
+title Class Diagram (Model Domain) - KosKita
+skinparam backgroundColor White
+hide empty members
+skinparam class {
+  BackgroundColor White
+  BorderColor #355DDB
+  ArrowColor #355DDB
+}
+
+class User {
+  +id : int
+  +name : string
+  +email : string
+  +role : string
+  +phone : string
+  +avatarUrl : string
+  +twoFactorEnabled : bool
+  +ownerVerificationStatus : string
+  +qrisImagePath : string
+  +notifyBookings : bool
+  +notifyMessages : bool
+  +notifyWaitlist : bool
+  --
+  +profile() : UserProfile
+  +bookings() : Booking[]
+  +interactions() : UserInteraction[]
+  +fcmTokens() : FcmToken[]
+  +generateAndSendTwoFactorCode()
+  +verifyTwoFactorCode(code) : bool
+  +isVerifiedOwner() : bool
+}
+
+class UserProfile {
+  +id : int
+  +gender : string
+  +occupation : string
+  +budgetMin : int
+  +budgetMax : int
+  +preferredFacilities : array
+  +preferredRules : array
+  +preferredLocation : string
+}
+
+class Kos {
+  +id : int
+  +name : string
+  +price : int
+  +genderType : string
+  +location : string
+  +distanceToCampus : double
+  +totalRooms : int
+  +verifiedAt : datetime
+  --
+  +owner() : User
+  +facilities() : Facility[]
+  +rules() : Rule[]
+  +images() : KosImage[]
+  +roomTypes() : KosRoomType[]
+  +bookings() : Booking[]
+  +reviews() : KosReview[]
+  +getOccupiedRoomsAttribute() : int
+  +getAvailableRoomsAttribute() : int
+  +hasAvailableRoom() : bool
+}
+
+class KosRoomType {
+  +id : int
+  +name : string
+  +price : int
+  +totalRooms : int
+}
+
+class KosImage {
+  +id : int
+  +path : string
+  +isCover : bool
+  +sortOrder : int
+}
+
+class Facility {
+  +id : int
+  +name : string
+}
+
+class Rule {
+  +id : int
+  +name : string
+}
+
+class Booking {
+  +id : int
+  +startDate : date
+  +durationMonths : int
+  +status : string
+  +paymentStatus : string
+  +paidAt : datetime
+  --
+  +user() : User
+  +kos() : Kos
+  +{static} userHasCompletedStayAt(userId, kosId) : bool
+}
+
+class KosReview {
+  +id : int
+  +rating : int
+  +comment : string
+  +photoUrl : string
+  +ownerReply : string
+  --
+  +user() : User
+  +kos() : Kos
+}
+
+class UserInteraction {
+  +id : int
+  +rating : int
+  +isFavorite : bool
+  +clickCount : int
+  +favoritedPriceSnapshot : int
+  --
+  +user() : User
+  +kos() : Kos
+}
+
+class Message {
+  +id : int
+  +body : string
+  +photoUrl : string
+  +readAt : datetime
+  --
+  +sender() : User
+  +receiver() : User
+  +kos() : Kos
+}
+
+class Waitlist {
+  +id : int
+  +notifiedAt : datetime
+  --
+  +user() : User
+  +kos() : Kos
+}
+
+class Report {
+  +id : int
+  +reportableType : string
+  +reportableId : int
+  +reason : string
+  +status : string
+  --
+  +reporter() : User
+  +reportable() : Kos_or_KosReview
+}
+
+class FcmToken {
+  +id : int
+  +token : string
+  +deviceType : string
+  --
+  +user() : User
+}
+
+class SearchLog {
+  +id : int
+  +keyword : string
+  +location : string
+  +budgetMin : int
+  +budgetMax : int
+}
+
+class AdminBroadcast {
+  +id : int
+  +title : string
+  +message : string
+  +targetRole : string
+}
+
+class Article {
+  +id : int
+  +title : string
+  +slug : string
+  +body : string
+  +publishedAt : datetime
+}
+
+' ===== Relasi =====
+User "1" -- "0..1" UserProfile
+User "1" -- "0..*" Kos : owner
+User "1" -- "0..*" Booking
+User "1" -- "0..*" KosReview
+User "1" -- "0..*" UserInteraction
+User "1" -- "0..*" Waitlist
+User "1" -- "0..*" FcmToken
+User "1" -- "0..*" SearchLog
+User "1" -- "0..*" Message : sender / receiver
+User "1" -- "0..*" Report : reporter
+User "1" -- "0..*" Article : author
+User "1" -- "0..*" AdminBroadcast : created_by
+
+Kos "1" -- "0..*" KosImage
+Kos "1" -- "0..*" KosRoomType
+Kos "1" -- "0..*" Booking
+Kos "1" -- "0..*" KosReview
+Kos "1" -- "0..*" UserInteraction
+Kos "1" -- "0..*" Waitlist
+Kos "1" -- "0..*" Message
+Kos "*" -- "*" Facility
+Kos "*" -- "*" Rule
+
+Booking --> Kos
+Booking --> User
+
+@enduml
