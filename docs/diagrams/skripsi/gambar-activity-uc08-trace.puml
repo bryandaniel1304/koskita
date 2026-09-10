@@ -1,0 +1,34 @@
+@startuml gambar-activity-uc08-trace
+title Gambar 4.11 - Activity Diagram UC-08 Melihat Detail Rekomendasi Pengguna
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Admin|
+start
+:Buka halaman\nKelola Pengguna pada panel admin;
+:Pilih salah satu pengguna\nuntuk dilihat detailnya;
+
+|Sistem|
+:Ambil data profil,\nriwayat interaksi, dan kos\nmilik pengguna tersebut;
+
+if (Peran pengguna\nadalah "user"?) then ([Ya])
+  :Panggil RecommendationService\n::getRecommendations() --\nsama persis dengan UC-03;
+  :Hitung Top-10 kos beserta\nSkor_CB, Skor_CF, Skor_hybrid,\ndan status cold-start/warm-start;
+  :Tampilkan halaman detail pengguna\nlengkap dengan trace rekomendasi;
+else ([Tidak -- Admin/owner])
+  :Tampilkan halaman detail pengguna\ntanpa trace rekomendasi\n(bukan calon penyewa);
+endif
+
+|Admin|
+:Periksa hasil trace\nuntuk pengujian/transparansi algoritma;
+stop
+
+@enduml

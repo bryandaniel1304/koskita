@@ -1,0 +1,49 @@
+@startuml gambar-activity-uc01-daftar-masuk
+title Gambar 4.2 - Activity Diagram UC-01 Mendaftar / Masuk
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Pengguna|
+start
+:Buka aplikasi KOSKITA;
+
+|Sistem|
+:Tampilkan pilihan\nDaftar Akun / Masuk;
+
+|Pengguna|
+if (Sudah punya akun?) then ([Belum -- Daftar Akun])
+  :Isi nama, email, kata sandi;
+  |Sistem|
+  :Validasi data\n& buat akun baru;
+  :Terbitkan token autentikasi\n(Laravel Sanctum);
+else ([Sudah -- Masuk])
+  |Pengguna|
+  :Isi email & kata sandi;
+  |Sistem|
+  if (Kredensial valid?) then ([Tidak])
+    :Tampilkan pesan kesalahan;
+    stop
+  else ([Ya])
+    :Terbitkan token autentikasi\n(Laravel Sanctum);
+  endif
+endif
+
+:Cek apakah profil\npreferensi sudah diisi;
+if (Profil sudah ada?) then ([Belum])
+  |Pengguna|
+  :Lanjut ke UC-02\n(Mengisi Profil Preferensi);
+else ([Sudah])
+  |Pengguna|
+  :Lanjut ke UC-03\n(Menerima Rekomendasi Kos);
+endif
+stop
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml gambar-activity-uc05-rating
+title Gambar 4.6 - Activity Diagram UC-05 Memberi Rating Kos
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Pengguna|
+start
+:Buka halaman detail kos\n(UC-04);
+if (Aksi?) then ([Beri rating])
+  :Tekan bintang rating (1-5);
+else ([Tandai favorit])
+  :Tekan ikon favorit;
+endif
+
+|Sistem|
+:Cari baris user_interactions\nuntuk pasangan pengguna-kos ini\n(firstOrCreate);
+if (Baris interaksi\nsudah ada?) then ([Ya])
+  :Perbarui nilai rating/favorit\npada baris yang ada;
+else ([Belum])
+  :Buat baris interaksi baru\ndengan nilai rating/favorit;
+endif
+:Simpan ke tabel\nuser_interactions;
+:Tampilkan konfirmasi\nrating tersimpan;
+
+|Pengguna|
+:Lihat konfirmasi;
+stop
+
+note right
+  Jika ini interaksi ber-rating pertama pengguna,
+  status berubah dari cold-start menjadi warm-start
+  pada perhitungan UC-03 berikutnya.
+end note
+
+@enduml

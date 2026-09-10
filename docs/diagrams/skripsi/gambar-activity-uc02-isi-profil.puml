@@ -1,0 +1,35 @@
+@startuml gambar-activity-uc02-isi-profil
+title Gambar 4.3 - Activity Diagram UC-02 Mengisi Profil Preferensi
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Pengguna|
+start
+|Sistem|
+:Tampilkan formulir\nprofil preferensi;
+
+repeat
+  |Pengguna|
+  :Pilih status\n(mahasiswa/pekerja) & gender;
+  :Atur rentang anggaran\n(budget minimum & maksimum);
+  :Pilih lokasi preferensi\n(Karawaci/BSD/Serpong);
+  :Pilih fasilitas & aturan\nyang diinginkan;
+  :Tekan tombol Simpan;
+
+  |Sistem|
+  :Validasi kelengkapan\nfield wajib;
+repeat while (Field wajib\nbelum lengkap?) is ([Ya]) not ([Tidak])
+
+:Simpan data ke tabel\nuser_profiles;
+:Arahkan ke UC-03\n(Menerima Rekomendasi Kos);
+stop
+
+@enduml

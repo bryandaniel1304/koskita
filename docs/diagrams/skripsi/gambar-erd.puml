@@ -1,14 +1,18 @@
 @startuml gambar-erd
-title Entity Relationship Diagram - Modul Rekomendasi KOSKITA (skema data pendukung Bab IV)
+title Gambar 4.13 - Entity Relationship Diagram Modul Rekomendasi KOSKITA
 hide circle
 skinparam backgroundColor White
 skinparam linetype ortho
+' Gaya kotak biru muda + garis hitam mengikuti format referensi skripsi
+' contoh (crow's-foot ERD, bukan skema biru tua yang dipakai sebelumnya).
 skinparam class {
-  BackgroundColor White
-  BorderColor #355DDB
-  ArrowColor #355DDB
+  BackgroundColor #DAE8FC
+  BorderColor Black
+  ArrowColor Black
   FontSize 12
 }
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
 
 entity "users" as users {
   * id : bigint

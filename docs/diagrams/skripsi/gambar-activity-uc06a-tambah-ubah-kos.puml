@@ -1,0 +1,46 @@
+@startuml gambar-activity-uc06a-tambah-ubah-kos
+title Gambar 4.7 - Activity Diagram UC-06 Mengelola Data Kos (Tambah / Ubah)
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Admin|
+start
+:Buka halaman\nKelola Kos pada panel admin;
+
+|Sistem|
+:Tampilkan daftar kos\nyang ada;
+
+|Admin|
+if (Tambah atau Ubah?) then ([Tambah])
+  :Isi nama, harga, tipe kos,\nlokasi, jarak, fasilitas, aturan;
+else ([Ubah])
+  :Pilih kos yang akan diubah;
+  |Sistem|
+  :Muat data lama\nke formulir;
+  |Admin|
+  :Perbarui atribut kos;
+endif
+:Tekan tombol Simpan;
+
+|Sistem|
+:Simpan data kos\nke tabel koses,\nkos_facility, kos_rule;
+:Tampilkan konfirmasi\nperubahan data kos;
+
+note right
+  Perubahan pada tabel koses langsung memengaruhi
+  perhitungan Skor_CB/Skor_CF (UC-03) untuk seluruh
+  pengguna pada permintaan rekomendasi berikutnya.
+  Alur Hapus Kos dijabarkan terpisah pada Gambar 4.8.
+end note
+
+stop
+
+@enduml

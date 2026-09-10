@@ -1,0 +1,63 @@
+@startuml gambar-activity-uc03-rekomendasi
+title Gambar 4.4 - Activity Diagram UC-03 Menerima Rekomendasi Kos
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Aplikasi (API)|
+start
+:Kirim permintaan rekomendasi\n(userId, limit = 10);
+
+|RecommendationService|
+:Ambil profil pengguna (UserProfile);
+:Hitung jumlah interaksi ber-rating\nmilik pengguna (user_interactions);
+if (Jumlah interaksi ber-rating = 0?) then ([Ya -- Cold-start])
+  :Set alpha = 1\n(switching: CB murni otomatis);
+else ([Tidak -- Warm-start])
+  :Set alpha = 0.6\n(bobot default produksi);
+endif
+:Ambil seluruh data kos\n(with fasilitas & aturan);
+
+repeat
+  :Ambil 1 kos berikutnya;
+
+  |ContentBasedFilter|
+  :Bangun vektor preferensi pengguna\n(gender, budget, jarak, fasilitas, aturan);
+  :Bangun vektor atribut kos\n(gender match, kesesuaian budget,\n1/(1+jarak), fasilitas, aturan);
+  :Hitung cosine similarity\n-> Skor_CB;
+
+  |RecommendationService|
+  if (alpha < 1?\n(warm-start, perlu hitung CF)) then ([Ya])
+    :Minta CollaborativeFilter hitung Skor_CF --\nkemiripan pengguna ini dengan pengguna lain\n(cosine/Pearson) dari matriks rating,\nlalu prediksi Skor_CF untuk kos ini;
+  else ([Tidak -- Cold-start])
+    :Skor_CF = 0\n(tidak dihitung sama sekali,\nsesuai mekanisme switching);
+  endif
+  :Minta SwitchingWeightedCombiner gabungkan --\nSkor_hybrid = alpha x Skor_CB\n+ (1 - alpha) x Skor_CF;
+  :Simpan skor & buat penjelasan\n(generateExplanation --\nmis. "harga sesuai budget",\n"fasilitas yang dicari ada");
+repeat while (Masih ada kos lain?) is ([Ya]) not ([Tidak])
+
+:Urutkan seluruh kos\nberdasarkan Skor_hybrid (descending);
+:Ambil Top-N kos teratas (limit);
+
+|Aplikasi (API)|
+:Tampilkan daftar rekomendasi\n+ status cold-start/warm-start\n+ alasan tiap kos ke pengguna;
+stop
+
+legend right
+  Diagram ini menjabarkan secara rinci bagaimana modul rekomendasi
+  (Gambar 3.3 -- langkah "hitung skor Content-Based/hybrid") bekerja,
+  mengikuti arsitektur 3 modul RecommendationService yang dijelaskan pada
+  Subbab 2.9.9: ContentBasedFilter, CollaborativeFilter, dan
+  SwitchingWeightedCombiner, di atas lapisan data profil pengguna, atribut
+  kos, dan interaksi pengguna. Formula Skor_hybrid mengikuti persamaan
+  pada Subbab 2.2.3.
+end legend
+
+@enduml

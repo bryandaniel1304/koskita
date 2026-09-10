@@ -1,12 +1,15 @@
 @startuml gambar-class-diagram
-title Class Diagram - Modul Rekomendasi KOSKITA (Bab IV, sesuai cakupan Subbab 2.8.3)
+title Gambar 4.12 - Class Diagram Modul Rekomendasi KOSKITA
 skinparam backgroundColor White
 hide empty members
+' Gaya hitam-putih polos mengikuti format referensi skripsi contoh.
 skinparam class {
   BackgroundColor White
-  BorderColor #355DDB
-  ArrowColor #355DDB
+  BorderColor Black
+  ArrowColor Black
 }
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
 
 class Akun {
   # id : bigint

@@ -1,11 +1,19 @@
 @startuml 04-activity-booking
 title Activity Diagram - Proses Booking hingga Ulasan
 skinparam backgroundColor White
+' Paksa titik keputusan pakai wajik/diamond standar UML (bukan hexagon --
+' lihat catatan yang sama di gambar-activity-perbandingan.puml).
+skinparam ConditionStyle diamond
 
 |Penyewa|
 start
 :Cari & filter kos;
 :Lihat rekomendasi personal\n(Content-Based + Collaborative Filtering);
+note right
+  Rincian cara RecommendationService menghitung
+  skor CB/CF/hybrid ada di diagram terpisah:
+  06-activity-recommendation-service.puml
+end note
 :Pilih kos, lihat detail;
 
 |Sistem|

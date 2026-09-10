@@ -1,0 +1,35 @@
+@startuml gambar-activity-uc04-detail-kos
+title Gambar 4.5 - Activity Diagram UC-04 Melihat Detail Kos
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Pengguna|
+start
+if (Sumber akses?) then ([Dari daftar rekomendasi])
+  :Pilih salah satu kos\ndari hasil UC-03;
+else ([Dari hasil pencarian umum])
+  :Pilih salah satu kos\ndari hasil pencarian;
+endif
+
+|Sistem|
+:Catat interaksi klik\npengguna terhadap kos ini\n(mendukung KF-09);
+:Ambil atribut lengkap kos\n(harga, lokasi, jarak, tipe,\nfasilitas, aturan, foto);
+if (Kos berasal dari\ndaftar rekomendasi?) then ([Ya])
+  :Sertakan alasan kecocokan\n(generateExplanation);
+else ([Tidak])
+endif
+:Tampilkan halaman\ndetail kos ke pengguna;
+
+|Pengguna|
+:Lihat detail kos;
+stop
+
+@enduml

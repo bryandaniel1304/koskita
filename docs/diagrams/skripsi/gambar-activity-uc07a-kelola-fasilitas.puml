@@ -1,0 +1,48 @@
+@startuml gambar-activity-uc07a-kelola-fasilitas
+title Gambar 4.9 - Activity Diagram UC-07 Mengelola Fasilitas
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Admin|
+start
+:Buka halaman Fasilitas\npada panel admin;
+
+|Sistem|
+:Tampilkan daftar\nfasilitas yang ada;
+
+|Admin|
+if (Aksi?) then ([Tambah])
+  :Isi nama fasilitas baru\npada form modal;
+  |Sistem|
+  :Simpan ke tabel facilities;
+elseif (Ubah) then
+  |Admin|
+  :Pilih fasilitas,\nubah namanya;
+  |Sistem|
+  :Simpan perubahan\nke tabel facilities;
+else ([Hapus])
+  |Admin|
+  :Pilih fasilitas yang dihapus;
+  |Sistem|
+  :Hapus baris facilities\n(cascade ke kos_facility);
+endif
+
+:Tampilkan daftar\nfasilitas terbaru;
+stop
+
+note right
+  Nama fasilitas di sini adalah kosakata dimensi
+  vektor ContentBasedFilter::facilityList() (Subbab
+  2.9.9) -- perubahan langsung berpengaruh ke
+  perhitungan Skor_CB pada UC-03 untuk semua pengguna.
+end note
+
+@enduml

@@ -1,0 +1,33 @@
+@startuml 03d-use-case-admin
+title Use Case Diagram - KosKita (Aktor: Admin)
+left to right direction
+skinparam backgroundColor White
+skinparam packageStyle rectangle
+
+actor "Admin" as Admin
+
+package "Administrasi" {
+  usecase "Kelola Pengguna" as UC_AdminUsers
+  usecase "Kelola Semua Kos" as UC_AdminKos
+  usecase "Kelola Fasilitas & Aturan" as UC_AdminFacRule
+  usecase "Kelola Semua Booking" as UC_AdminBookings
+  usecase "Tinjau Laporan" as UC_AdminReports
+  usecase "Verifikasi Pemilik" as UC_AdminVerifyOwner
+  usecase "Verifikasi Kos" as UC_AdminVerifyKos
+  usecase "Kirim Pengumuman" as UC_AdminBroadcast
+  usecase "Lihat Pencarian Nihil" as UC_AdminSearchLog
+  usecase "Kelola Artikel Tips" as UC_AdminArticles
+}
+
+Admin --> UC_AdminUsers
+Admin --> UC_AdminKos
+Admin --> UC_AdminFacRule
+Admin --> UC_AdminBookings
+Admin --> UC_AdminReports
+Admin --> UC_AdminVerifyOwner
+Admin --> UC_AdminVerifyKos
+Admin --> UC_AdminBroadcast
+Admin --> UC_AdminSearchLog
+Admin --> UC_AdminArticles
+
+@enduml

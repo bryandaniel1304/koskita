@@ -1,0 +1,61 @@
+@startuml gambar-arsitektur-recommendationservice
+title Arsitektur RecommendationService - 3 Lapisan (Bab II Subbab 2.9.9)
+skinparam backgroundColor White
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+package "Lapisan Antarmuka (Client)" {
+  [Prototipe Aplikasi Flutter] as flutter
+}
+
+package "Backend Laravel" {
+  [REST API] as api
+
+  package "Lapisan Logika" {
+    [ContentBasedFilter] as cb
+    [CollaborativeFilter\n(berbasis memori)] as cf
+    [SwitchingWeightedCombiner\n(switching hybrid + weighted)] as combiner
+  }
+
+  package "Lapisan Data" {
+    database "Profil Pengguna" as dataProfil
+    database "Atribut Kos" as dataKos
+    database "Data Interaksi" as dataInteraksi
+  }
+}
+
+flutter --> api
+
+api --> cb
+api --> cf
+cb --> combiner : Skor_CB
+cf --> combiner : Skor_CF
+combiner --> api : Skor_hybrid + Top-N
+
+dataProfil --> cb
+dataKos --> cb
+dataInteraksi --> cf
+
+note bottom of flutter
+  Lapisan antarmuka HANYA menampilkan hasil
+  rekomendasi dari REST API -- tidak melakukan
+  perhitungan apa pun (thin client), sesuai
+  Subbab 2.9.1 & 2.9.9.
+end note
+
+note right of combiner
+  Menerapkan strategi switching hybrid
+  berkomponen weighted (Subbab 2.2.3):
+  Skor_hybrid = alpha x Skor_CB + (1-alpha) x Skor_CF
+  Cold-start: alpha = 1 otomatis (Skor_CF tidak dihitung).
+end note
+
+note bottom of dataInteraksi
+  Data interaksi antarpengguna TIDAK PERNAH
+  dikirim ke perangkat klien -- seluruh
+  perhitungan CollaborativeFilter tetap di
+  server, menjaga konsistensi antara model yang
+  dievaluasi dan model produksi (Subbab 2.9.2).
+end note
+
+@enduml

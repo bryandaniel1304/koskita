@@ -1,0 +1,33 @@
+@startuml gambar-activity-uc06b-hapus-kos
+title Gambar 4.8 - Activity Diagram UC-06 Mengelola Data Kos (Hapus)
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Admin|
+start
+:Buka halaman\nKelola Kos pada panel admin;
+:Pilih kos yang akan dihapus;
+
+|Sistem|
+:Minta konfirmasi penghapusan;
+
+|Admin|
+if (Konfirmasi hapus?) then ([Ya])
+  |Sistem|
+  :Hapus data kos secara permanen\n(cascade ke kos_facility, kos_rule,\nkos_images, user_interactions terkait);
+  :Tampilkan konfirmasi\nkos berhasil dihapus;
+else ([Tidak])
+  |Sistem|
+  :Batalkan aksi,\ndata kos tetap ada;
+endif
+stop
+
+@enduml

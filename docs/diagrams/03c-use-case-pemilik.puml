@@ -1,0 +1,67 @@
+@startuml 03c-use-case-pemilik
+title Use Case Diagram - KosKita (Aktor: Pemilik Kos)
+left to right direction
+skinparam backgroundColor White
+skinparam packageStyle rectangle
+
+actor "Pemilik Kos" as Owner
+
+package "Autentikasi & Akun" {
+  usecase "Verifikasi 2 Langkah (2FA)" as UC_2FA
+  usecase "Atur Preferensi Notifikasi" as UC_NotifPref
+  usecase "Kelola Foto Profil" as UC_Avatar
+}
+
+package "Interaksi Kos" {
+  usecase "Laporkan Kos/Ulasan" as UC_Report
+}
+
+package "Booking" {
+  usecase "Tandai Sudah Dibayar (manual)" as UC_MarkPaid
+  usecase "Konfirmasi/Tolak Booking" as UC_ReviewBooking
+  usecase "Tandai Selesai Sewa" as UC_CompleteBooking
+}
+
+package "Ulasan" {
+  usecase "Balas Ulasan" as UC_ReplyReview
+}
+
+package "Komunikasi" {
+  usecase "Chat Real-time" as UC_Chat
+  usecase "Lihat Notifikasi" as UC_Notif
+}
+
+package "Kelola Kos (Pemilik)" {
+  usecase "Tambah/Ubah/Hapus Kos" as UC_ManageKos
+  usecase "Kelola Foto Kos" as UC_ManageImages
+  usecase "Kelola Tipe Kamar" as UC_ManageRoomTypes
+  usecase "Unggah Kode QRIS" as UC_QRIS
+  usecase "Ajukan Verifikasi Pemilik" as UC_OwnerVerify
+  usecase "Lihat Analitik Kos" as UC_Analytics
+}
+
+Owner --> UC_2FA
+Owner --> UC_NotifPref
+Owner --> UC_Avatar
+Owner --> UC_Report
+Owner --> UC_MarkPaid
+Owner --> UC_ReviewBooking
+Owner --> UC_CompleteBooking
+Owner --> UC_ReplyReview
+Owner --> UC_Chat
+Owner --> UC_Notif
+Owner --> UC_ManageKos
+Owner --> UC_ManageImages
+Owner --> UC_ManageRoomTypes
+Owner --> UC_QRIS
+Owner --> UC_OwnerVerify
+Owner --> UC_Analytics
+
+note bottom of UC_CompleteBooking
+  Menandai selesai sewa ini yang memicu <<extend>> "Tulis
+  Ulasan" milik aktor Penyewa (lihat
+  03b-use-case-penyewa.puml) -- relasi lintas-aktor,
+  ditampilkan di kedua diagram untuk kejelasan.
+end note
+
+@enduml

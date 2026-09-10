@@ -1,39 +1,87 @@
 @startuml gambar-use-case
-title Use Case Diagram - Modul Rekomendasi KOSKITA (sesuai ruang lingkup skripsi, Bab I & Subbab 2.8.1)
-left to right direction
+title Gambar 4.1 - Use Case Diagram Modul Rekomendasi KOSKITA
 skinparam backgroundColor White
 skinparam packageStyle rectangle
+' Gaya hitam-putih polos (tanpa fill warna) mengikuti format referensi
+' skripsi contoh -- bukan skema biru yang dipakai diagram lain sebelumnya.
+skinparam ActorBackgroundColor White
+skinparam ActorBorderColor Black
+skinparam UsecaseBackgroundColor White
+skinparam UsecaseBorderColor Black
+skinparam RectangleBackgroundColor White
+skinparam RectangleBorderColor Black
+skinparam ArrowColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
 
 actor "Pengguna\n(Calon Penyewa)" as Tenant
+actor "Pengguna\n(Calon Penyewa)" as Tenant2
 actor "Admin" as Admin
 
 rectangle "Modul Rekomendasi KOSKITA" {
-  usecase "Mendaftar / Masuk" as UC_Login
-  usecase "Mengisi Profil Preferensi\n(mahasiswa/pekerja, gender,\nanggaran, lokasi, status tinggal)" as UC_Profile
-  usecase "Menerima Rekomendasi Kos\n(Content-Based / Collaborative / Hybrid)" as UC_Recommend
-  usecase "Melihat Detail Kos" as UC_Detail
-  usecase "Mengelola Data Kos\n(panel admin)" as UC_ManageKos
+  usecase "UC-01\nMendaftar / Masuk" as UC_Login
+  usecase "UC-02\nMengisi Profil Preferensi" as UC_Profile
+  usecase "UC-03\nMenerima Rekomendasi Kos" as UC_Recommend
+  usecase "UC-04\nMelihat Detail Kos" as UC_Detail
+  usecase "UC-05\nMemberi Rating Kos" as UC_Rate
+  usecase "UC-06\nMengelola Data Kos" as UC_ManageKos
+  usecase "UC-07\nMengelola Fasilitas & Aturan" as UC_ManageFacRule
+  usecase "UC-08\nMelihat Detail Rekomendasi\nPengguna (Trace)" as UC_Trace
+
+  ' Hint tata letak kronologis (garis tak terlihat, tidak menambah makna UML)
+  UC_Login -[hidden]right-> UC_Profile
+  UC_Profile -[hidden]right-> UC_Recommend
+  UC_Recommend -[hidden]right-> UC_Detail
+  UC_Detail -[hidden]right-> UC_Rate
 }
 
 Tenant --> UC_Login
 Tenant --> UC_Profile
-Tenant --> UC_Recommend
-Tenant --> UC_Detail
+Tenant2 --> UC_Recommend
+Tenant2 --> UC_Detail
+Tenant2 --> UC_Rate
 Admin --> UC_ManageKos
+Admin --> UC_ManageFacRule
+Admin --> UC_Trace
 
 UC_Profile ..> UC_Login : <<include>>
-UC_Recommend ..> UC_Profile : <<include>>\n(profil jadi dasar Content-Based\nsaat cold-start)
-UC_Detail ..> UC_Recommend : <<extend>>\n(dari daftar hasil rekomendasi)
 
-note right of UC_Recommend
-  Sesuai Pembatasan Masalah & Subbab 2.8.1:
-  diagram ini hanya memodelkan dua aktor --
-  pengguna (calon penyewa) dan admin -- yang
-  berinteraksi langsung dengan modul mesin
-  rekomendasi dan panel data kos. Fitur di luar
-  ruang lingkup penelitian (chat, pembayaran,
-  pembukuan, manajemen properti) tidak
+UC_Recommend ..> UC_Profile : <<include>>
+note on link
+  profil jadi dasar Content-Based
+  saat cold-start
+end note
+
+UC_Detail ..> UC_Recommend : <<extend>>
+note on link
+  dari daftar hasil rekomendasi
+end note
+
+UC_Rate ..> UC_Detail : <<extend>>
+note on link
+  dari halaman detail kos
+end note
+
+note bottom of UC_Trace
+  UC-08 memanggil modul RecommendationService
+  yang SAMA dengan UC-03, hanya dari sudut pandang
+  Admin untuk memeriksa skor CB/CF/hybrid milik
+  pengguna tertentu (transparansi algoritma).
+end note
+
+note bottom of UC_ManageFacRule
+  Sesuai Pembatasan Masalah & Subbab 2.8.1: diagram
+  ini hanya memodelkan dua aktor -- pengguna (calon
+  penyewa) dan admin -- yang berinteraksi langsung
+  dengan modul mesin rekomendasi dan panel data kos.
+  Fitur di luar ruang lingkup penelitian (chat,
+  pembayaran, pembukuan, manajemen properti) tidak
   dimodelkan di sini.
+
+  Ikon "Pengguna" digambar dua kali (kiri atas &
+  kanan bawah) supaya garis relasi tidak saling
+  tumpang tindih -- keduanya aktor yang SAMA (teknik
+  notasi UML standar untuk diagram yang padat).
 end note
 
 @enduml

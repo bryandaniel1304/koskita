@@ -1,0 +1,86 @@
+@startuml 03b-use-case-penyewa
+title Use Case Diagram - KosKita (Aktor: Penyewa)
+left to right direction
+skinparam backgroundColor White
+skinparam packageStyle rectangle
+
+actor "Penyewa" as Tenant
+
+package "Autentikasi & Akun" {
+  usecase "Verifikasi 2 Langkah (2FA)" as UC_2FA
+  usecase "Atur Preferensi Notifikasi" as UC_NotifPref
+  usecase "Kelola Foto Profil" as UC_Avatar
+}
+
+package "Pencarian & Rekomendasi" {
+  usecase "Cari & Filter Kos" as UC_Search
+  usecase "Lihat Detail Kos" as UC_Detail
+  usecase "Lihat Rekomendasi Personal" as UC_Recommend
+  usecase "Bandingkan Kos" as UC_Compare
+  usecase "Lihat Peta Sebaran Kos" as UC_Map
+}
+
+package "Interaksi Kos" {
+  usecase "Simpan ke Favorit" as UC_Favorite
+  usecase "Beri Rating Privat" as UC_Rate
+  usecase "Daftar Tunggu (kos penuh)" as UC_Waitlist
+  usecase "Laporkan Kos/Ulasan" as UC_Report
+}
+
+package "Booking" {
+  usecase "Ajukan Booking" as UC_Book
+  usecase "Batalkan Booking" as UC_CancelBook
+  usecase "Lihat/Cetak Bukti Booking" as UC_Receipt
+}
+
+package "Ulasan" {
+  usecase "Tulis Ulasan\n(setelah sewa selesai)" as UC_Review
+}
+
+package "Komunikasi" {
+  usecase "Chat Real-time" as UC_Chat
+  usecase "Lihat Notifikasi" as UC_Notif
+}
+
+usecase "Tandai Selesai Sewa\n(dilakukan Pemilik Kos)" as UC_CompleteBooking #F2F2F2
+
+Tenant --> UC_2FA
+Tenant --> UC_NotifPref
+Tenant --> UC_Avatar
+Tenant --> UC_Search
+Tenant --> UC_Detail
+Tenant --> UC_Recommend
+Tenant --> UC_Compare
+Tenant --> UC_Map
+Tenant --> UC_Favorite
+Tenant --> UC_Rate
+Tenant --> UC_Waitlist
+Tenant --> UC_Report
+Tenant --> UC_Book
+Tenant --> UC_CancelBook
+Tenant --> UC_Receipt
+Tenant --> UC_Review
+Tenant --> UC_Chat
+Tenant --> UC_Notif
+
+UC_Book ..> UC_2FA : <<include>>
+note on link
+  jika 2FA aktif
+end note
+
+UC_Waitlist ..> UC_Notif : <<extend>>
+note on link
+  saat kamar tersedia
+end note
+
+UC_Review ..> UC_CompleteBooking : <<extend>>
+
+note bottom of UC_CompleteBooking
+  Use case abu-abu ini milik aktor Pemilik Kos (lihat
+  03c-use-case-pemilik.puml) -- ditampilkan di sini hanya
+  sebagai referensi karena relasi <<extend>>-nya melintasi
+  dua aktor: ulasan baru bisa ditulis Penyewa setelah
+  Pemilik Kos menandai masa sewa selesai.
+end note
+
+@enduml

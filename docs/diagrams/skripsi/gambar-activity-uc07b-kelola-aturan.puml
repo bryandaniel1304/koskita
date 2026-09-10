@@ -1,0 +1,49 @@
+@startuml gambar-activity-uc07b-kelola-aturan
+title Gambar 4.10 - Activity Diagram UC-07 Mengelola Aturan
+skinparam backgroundColor White
+skinparam ConditionStyle diamond
+skinparam ArrowColor Black
+skinparam PartitionBorderColor Black
+skinparam PartitionBackgroundColor White
+skinparam SwimlaneBorderColor Black
+skinparam NoteBackgroundColor #FFFFCC
+skinparam NoteBorderColor Black
+skinparam ActivityBackgroundColor White
+skinparam ActivityBorderColor Black
+
+|Admin|
+start
+:Buka halaman Aturan\npada panel admin;
+
+|Sistem|
+:Tampilkan daftar\naturan yang ada;
+
+|Admin|
+if (Aksi?) then ([Tambah])
+  :Isi nama aturan baru\npada form modal;
+  |Sistem|
+  :Simpan ke tabel rules;
+elseif (Ubah) then
+  |Admin|
+  :Pilih aturan,\nubah namanya;
+  |Sistem|
+  :Simpan perubahan\nke tabel rules;
+else ([Hapus])
+  |Admin|
+  :Pilih aturan yang dihapus;
+  |Sistem|
+  :Hapus baris rules\n(cascade ke kos_rule);
+endif
+
+:Tampilkan daftar\naturan terbaru;
+stop
+
+note right
+  Nama aturan di sini adalah kosakata dimensi vektor
+  ContentBasedFilter::ruleList() (Subbab 2.9.9) --
+  saat ini seluruh kos hasil riset belum punya data
+  aturan (lihat Bab V Saran), sehingga dimensi ini
+  bernilai nol seragam hingga data tersedia.
+end note
+
+@enduml

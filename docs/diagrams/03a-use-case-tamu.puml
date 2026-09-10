@@ -1,0 +1,37 @@
+@startuml 03a-use-case-tamu
+title Use Case Diagram - KosKita (Aktor: Tamu / Belum Login)
+left to right direction
+skinparam backgroundColor White
+skinparam packageStyle rectangle
+
+actor "Tamu\n(belum login)" as Guest
+
+package "Autentikasi & Akun" {
+  usecase "Daftar Akun" as UC_Register
+  usecase "Masuk" as UC_Login
+  usecase "Masuk dengan Google" as UC_GoogleLogin
+}
+
+package "Pencarian" {
+  usecase "Cari & Filter Kos" as UC_Search
+  usecase "Lihat Detail Kos" as UC_Detail
+  usecase "Lihat Peta Sebaran Kos" as UC_Map
+}
+
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_GoogleLogin
+Guest --> UC_Search
+Guest --> UC_Detail
+Guest --> UC_Map
+
+note bottom of UC_Register
+  Diagram terpisah per aktor (dipecah dari 03-use-case.puml
+  yang aslinya 4 aktor x 40 use case dalam satu gambar --
+  auto-layout PlantUML tidak sanggup menata itu serapi
+  penyusunan manual). Rekomendasi Personal & fitur lain
+  yang butuh login ada di 03b-use-case-penyewa.puml, karena
+  Tamu otomatis jadi Penyewa setelah Daftar Akun.
+end note
+
+@enduml
