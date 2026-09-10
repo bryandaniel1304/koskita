@@ -27,9 +27,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   RangeValues _budgetRange = const RangeValues(1000000, 3000000);
 
-  final List<String> _allFacilities = ['AC', 'WiFi', 'KM Dalam', 'Dapur', 'Parkir', 'Laundry'];
+  // String di sini HARUS persis sama dengan nama di tabel `facilities`
+  // (dicek langsung ke database), karena ContentBasedFilter mencocokkan
+  // preferensi ini ke fasilitas kos lewat in_array() string-exact, bukan
+  // fuzzy match -- pilihan yang tidak match persis jadi tidak pernah
+  // berkontribusi ke skor rekomendasi. Dipilih dari 8 fasilitas nyata yang
+  // paling sering muncul & paling relevan bagi calon penyewa dari 48 kos
+  // hasil riset (Google Places + Mamikos), bukan daftar generik.
+  final List<String> _allFacilities = ['AC', 'WiFi', 'K. Mandi Dalam', 'Dapur', 'Parkir Motor', 'Shower', 'Kloset Duduk', 'Lemari / Storage'];
   final List<String> _preferredFacilities = [];
 
+  // CATATAN: tabel `rules` masih ada 4 pilihan lama, TAPI saat ini tidak
+  // satu pun dari 48 kos hasil riset punya data peraturan (Mamikos tidak
+  // mengekspos ini) -- jadi preferensi ini disimpan tapi belum berpengaruh
+  // ke skor rekomendasi mana pun sampai data peraturan kos benar-benar ada.
   final List<String> _allRules = ['Jam Malam', 'Tamu Boleh Menginap', 'Bawa Hewan', 'Merokok'];
   final List<String> _preferredRules = [];
 
