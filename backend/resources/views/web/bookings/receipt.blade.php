@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Bukti Booking #{{ $booking->id }} -- KosKita</title>
+    <title>Bukti Booking {{ $booking->code }} -- KosKita</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #355DDB; --ink: #0F172A; --muted: #64748B; --line: #E2E8F0; }
@@ -29,7 +29,7 @@
             <img src="{{ asset('images/logo_icon.png') }}" alt="">
             KosKita
         </div>
-        <p class="subtitle">Bukti Pengajuan Booking &mdash; #{{ str_pad($booking->id, 6, '0', STR_PAD_LEFT) }}</p>
+        <p class="subtitle">Bukti Pengajuan Booking &mdash; {{ $booking->code }}</p>
 
         <span class="badge">{{ $booking->status === 'completed' ? 'Selesai' : 'Dikonfirmasi' }}</span>
 

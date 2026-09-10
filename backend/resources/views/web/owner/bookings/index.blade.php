@@ -53,6 +53,7 @@ $statusColor = ['pending' => 'warning', 'confirmed' => 'success', 'rejected' => 
                             </div>
                             <div class="col-md-4">
                                 <a href="{{ route('web.owner.koses.show', $b->kos_id) }}" class="fw-bold text-dark d-block mb-1">{{ $b->kos->name ?? '(kos dihapus)' }}</a>
+                                <p class="small text-muted mb-0 font-monospace">{{ $b->code }}</p>
                                 <p class="small text-muted mb-0">
                                     {{ $b->user->name ?? '-' }} &middot; {{ $b->user->email ?? '-' }}
                                     @if($b->user)

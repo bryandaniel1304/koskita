@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.web' => \App\Http\Middleware\AuthenticateWeb::class,
             'verified.web' => \App\Http\Middleware\EnsureEmailIsVerifiedWeb::class,
             'owner.web' => \App\Http\Middleware\EnsureIsOwnerWeb::class,
+            'master.admin' => \App\Http\Middleware\IsMasterAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

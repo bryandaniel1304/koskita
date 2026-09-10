@@ -29,6 +29,9 @@ $statusColor = ['pending' => 'warning', 'confirmed' => 'success', 'rejected' => 
                             </div>
                             <div class="col-md-6">
                                 <a href="{{ route('web.kos.show', $booking->kos_id) }}" class="fw-bold text-dark d-block mb-1">{{ $booking->kos->name }}</a>
+                                {{-- Nomor pengajuan ditampilkan ke penyewa juga -- ini yang
+                                     disebutkan saat menghubungi pemilik/admin soal booking ini. --}}
+                                <p class="small text-muted mb-0 font-monospace">{{ $booking->code }}</p>
                                 <p class="small text-muted mb-0">
                                     Mulai {{ $booking->start_date->translatedFormat('d M Y') }} &middot; {{ $booking->duration_months }} bulan
                                 </p>

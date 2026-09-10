@@ -185,7 +185,9 @@
                 </div>
                 <div>
                     <h5 class="text-white mb-0 fw-bold">KOSKITA</h5>
-                    <small style="color: #94A3B8;">Admin Panel</small>
+                    <small style="color: #94A3B8;">
+                        {{ (Auth::user()?->isMasterAdmin()) ? 'Master Admin' : 'Admin Panel' }}
+                    </small>
                 </div>
             </div>
             <p class="sidebar-section-label mb-1">Ringkasan</p>
@@ -203,11 +205,13 @@
                         <i class="bi bi-building-add"></i> Kelola Kos
                     </a>
                 </li>
+                @if(Auth::user()?->isMasterAdmin())
                 <li class="nav-item">
                     <a class="nav-link {{ Route::is('admin.users') || Route::is('admin.users.show') ? 'active' : '' }}" href="{{ route('admin.users') }}">
                         <i class="bi bi-people"></i> Data Responden
                     </a>
                 </li>
+                @endif
                 <li class="nav-item">
                     <a class="nav-link {{ Route::is('admin.bookings.*') ? 'active' : '' }}" href="{{ route('admin.bookings.index') }}">
                         <i class="bi bi-calendar-check"></i> Booking
@@ -218,6 +222,7 @@
                         <i class="bi bi-activity"></i> Log Interaksi
                     </a>
                 </li>
+                @if(Auth::user()?->isMasterAdmin())
                 <li class="nav-item">
                     <a class="nav-link {{ Route::is('admin.reports.*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
                         <i class="bi bi-flag"></i> Laporan
@@ -226,6 +231,7 @@
                         @endif
                     </a>
                 </li>
+                @endif
                 <li class="nav-item">
                     <a class="nav-link {{ Route::is('admin.search-logs.*') ? 'active' : '' }}" href="{{ route('admin.search-logs.index') }}">
                         <i class="bi bi-search"></i> Pencarian Nihil
@@ -244,11 +250,13 @@
                         <i class="bi bi-journal-text"></i> Tips Ngekos
                     </a>
                 </li>
+                @if(Auth::user()?->isMasterAdmin())
                 <li class="nav-item">
                     <a class="nav-link {{ Route::is('admin.broadcasts.*') ? 'active' : '' }}" href="{{ route('admin.broadcasts.index') }}">
                         <i class="bi bi-megaphone"></i> Pengumuman
                     </a>
                 </li>
+                @endif
             </ul>
         </div>
         <div class="p-3 border-top border-secondary">
