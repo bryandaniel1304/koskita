@@ -17,16 +17,18 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Ganti seluruh isi tabel `koses` (yang sebelumnya data karangan/seed) dengan
- * data nyata hasil riset `places:search-lodging` + `mamikos:scrape`.
+ * data nyata hasil riset multi-platform: `mamikos:scrape` + `rukita:scrape`
+ * (bisa nambah platform lain nanti tinggal tambah entri PLATFORM_FILES),
+ * dilengkapi `places:search-lodging` (Google Places) untuk foto/rating.
  *
- * PRINSIP UTAMA: hanya kos yang punya HARGA ASLI dari Mamikos yang diimpor
- * -- kandidat dari Google Places yang tidak berhasil dicocokkan dengan
- * listing Mamikos (jadi tidak ada harga/fasilitas riil) TIDAK diimpor,
- * daripada diisi harga 0/karangan. Google Places dipakai sebagai pelengkap
- * (foto asli + rating) lewat pencocokan nama, bukan sumber utama.
+ * PRINSIP UTAMA: hanya kos yang punya HARGA ASLI dari salah satu platform
+ * yang diimpor -- kandidat dari Google Places yang tidak berhasil
+ * dicocokkan (jadi tidak ada harga/fasilitas riil) TIDAK diimpor, daripada
+ * diisi harga 0/karangan. Google Places dipakai sebagai pelengkap (foto
+ * asli + rating) lewat pencocokan nama, bukan sumber utama.
  *
- * Data yang TIDAK tersedia dari kedua sumber (peraturan kos / rules) sengaja
- * dibiarkan kosong -- lihat catatan di akhir output command.
+ * Data yang TIDAK tersedia dari platform manapun (peraturan kos / rules)
+ * sengaja dibiarkan kosong -- lihat catatan di akhir output command.
  *
  * Koordinat kampus UPH Karawaci dipakai sebagai titik acuan distance_to_campus
  * (garis lurus/haversine, BUKAN jarak rute riil -- Distance Matrix API belum
@@ -42,6 +44,14 @@ class ImportRealKoses extends Command
         'karawaci' => 'Karawaci',
         'bsd' => 'BSD City',
         'serpong' => 'Serpong',
+    ];
+
+    // Prefix nama berkas storage/app/research/{prefix}-{area}.json per
+    // platform -- tambah baris di sini kalau nanti ada platform baru
+    // (mis. 'papikost' => 'Papikost') yang sudah punya scraper sendiri.
+    protected const PLATFORM_FILES = [
+        'mamikos' => 'Mamikos',
+        'rukita' => 'Rukita',
     ];
 
     // Kampus Universitas Pelita Harapan Karawaci -- dipakai sebagai titik
@@ -71,50 +81,61 @@ class ImportRealKoses extends Command
 
         $dir = storage_path('app/research');
         $combined = [];
-        $unmatchedCount = 0;
 
         foreach ($areas as $area) {
-            $mamikosFile = $dir . DIRECTORY_SEPARATOR . "mamikos-{$area}.json";
             $placesFile = $dir . DIRECTORY_SEPARATOR . "lodging-{$area}-filtered.json";
-
-            if (!File::exists($mamikosFile)) {
-                $this->warn("Lewati area '$area': $mamikosFile tidak ada.");
-                continue;
-            }
-
-            $mamikosListings = json_decode(File::get($mamikosFile), true) ?? [];
             $placesListings = File::exists($placesFile) ? (json_decode(File::get($placesFile), true) ?? []) : [];
 
-            $this->info(self::AREA_LABEL[$area] . ": {$this->pluralCount($mamikosListings)} listing Mamikos, "
-                . "{$this->pluralCount($placesListings)} kandidat Google Places.");
-
-            foreach ($mamikosListings as $m) {
-                $match = $this->findBestMatch($m['name'], $m['lat'], $m['lng'], $placesListings);
-                if ($match) {
-                    $this->line('  [cocok ' . round($match['score']) . "%] \"{$m['name']}\" <-> \"{$match['place']['name']}\"");
-                } else {
-                    $unmatchedCount++;
+            foreach (self::PLATFORM_FILES as $prefix => $platformLabel) {
+                $platformFile = $dir . DIRECTORY_SEPARATOR . "{$prefix}-{$area}.json";
+                if (!File::exists($platformFile)) {
+                    $this->warn("Lewati $platformLabel area '$area': $platformFile tidak ada.");
+                    continue;
                 }
 
-                $combined[] = [
-                    'area' => $area,
-                    'name' => $this->cleanName($m['name']),
-                    'price' => $m['price_monthly'],
-                    'gender_type' => $m['gender'] ?? 'campur',
-                    'lat' => $match['place']['lat'] ?? $m['lat'],
-                    'lng' => $match['place']['lng'] ?? $m['lng'],
-                    'facilities' => $m['facilities'],
-                    'place_id' => $match['place']['place_id'] ?? null,
-                    'rating' => $match['place']['rating'] ?? null,
-                    'fallback_image_url' => $m['image_url'] ?? null,
-                    'source_url' => $m['source_url'],
-                ];
+                $listings = json_decode(File::get($platformFile), true) ?? [];
+                $this->info(self::AREA_LABEL[$area] . " ($platformLabel): {$this->pluralCount($listings)} listing, "
+                    . "{$this->pluralCount($placesListings)} kandidat Google Places.");
+
+                foreach ($listings as $m) {
+                    if (empty($m['price_monthly'])) {
+                        continue; // tanpa harga asli, tidak diimpor (lihat prinsip utama di docblock)
+                    }
+
+                    $match = $this->findBestMatch($m['name'], $m['lat'], $m['lng'], $placesListings);
+                    if ($match) {
+                        $this->line('  [cocok ' . round($match['score']) . "%] \"{$m['name']}\" <-> \"{$match['place']['name']}\"");
+                    }
+
+                    $combined[] = [
+                        'area' => $area,
+                        'platform' => $platformLabel,
+                        'name' => $this->cleanName($m['name']),
+                        'price' => $m['price_monthly'],
+                        'gender_type' => $m['gender'] ?? 'campur',
+                        'lat' => $match['place']['lat'] ?? $m['lat'],
+                        'lng' => $match['place']['lng'] ?? $m['lng'],
+                        'facilities' => $m['facilities'],
+                        'place_id' => $match['place']['place_id'] ?? null,
+                        'rating' => $match['place']['rating'] ?? null,
+                        'fallback_image_url' => $m['image_url'] ?? null,
+                        'source_url' => $m['source_url'],
+                    ];
+                }
             }
         }
 
+        $combined = $this->dedupeByNameAndProximity($combined);
+
+        // Dihitung ulang dari $combined SETELAH dedupe (bukan dari $unmatchedCount yang
+        // ditally selagi loop per-listing mentah) -- kalau dari counter lama, entri yang
+        // hilang lewat dedupeByNameAndProximity() bikin totalnya tidak nyambung lagi.
+        $withGooglePhoto = collect($combined)->whereNotNull('place_id')->count();
+
         $this->newLine();
-        $this->comment(count($combined) . ' kos siap diimpor (' . (count($combined) - $unmatchedCount)
-            . ' dapat foto asli dari Google Places, ' . $unmatchedCount . ' pakai foto dari Mamikos).');
+        $this->comment(count($combined) . ' kos siap diimpor (setelah dedupe lintas platform), '
+            . "$withGooglePhoto dapat foto asli dari Google Places, "
+            . (count($combined) - $withGooglePhoto) . ' pakai foto dari platform asalnya masing-masing).');
 
         if ($dryRun) {
             $this->comment('--dry-run aktif, database TIDAK diubah.');
@@ -190,6 +211,38 @@ class ImportRealKoses extends Command
         return trim(preg_replace('/\s*-\s*MamiKos\s*$/i', '', $name));
     }
 
+    /**
+     * Beberapa kos yang sama fisiknya kadang terdaftar dobel -- baik lintas
+     * platform (mis. Rukita ikut me-listing properti yang juga ada di
+     * Mamikos) MAUPUN lintas area (kategori BSD dan Serpong di Rukita
+     * ternyata tumpang tindih secara geografis, satu properti fisik bisa
+     * masuk kedua kategori). Karena itu perbandingan di sini SENGAJA tidak
+     * dibatasi per-area lagi -- deteksi murni dari kombinasi nama sangat
+     * mirip DAN koordinat berdekatan (pola sama seperti findBestMatch()),
+     * simpan cuma yang pertama ditemukan.
+     */
+    protected function dedupeByNameAndProximity(array $combined): array
+    {
+        $kept = [];
+
+        foreach ($combined as $item) {
+            $isDuplicate = false;
+            foreach ($kept as $existing) {
+                similar_text($this->normalizeName($existing['name']), $this->normalizeName($item['name']), $percent);
+                $distance = $this->haversineKm($existing['lat'] ?? 0, $existing['lng'] ?? 0, $item['lat'] ?? null, $item['lng'] ?? null);
+                if ($percent >= self::NAME_MATCH_HIGH || ($percent >= self::NAME_MATCH_LOW && $distance <= self::MAX_MATCH_DISTANCE_KM)) {
+                    $isDuplicate = true;
+                    break;
+                }
+            }
+            if (!$isDuplicate) {
+                $kept[] = $item;
+            }
+        }
+
+        return $kept;
+    }
+
     protected function replaceDatabase(array $combined, GoogleMapsService $maps): void
     {
         $owners = User::where('role', 'owner')->pluck('id')->values();
@@ -220,7 +273,8 @@ class ImportRealKoses extends Command
                     'longitude' => $item['lng'],
                     'distance_to_campus' => round($distance, 2),
                     'total_rooms' => 4, // Mamikos tidak expose kapasitas total, estimasi wajar skala kos rumahan
-                    'description' => "Data diimpor dari riset Google Places + Mamikos (" . now()->format('Y-m-d') . ")."
+                    'description' => "Data diimpor dari riset {$item['platform']}"
+                        . ($item['place_id'] ? ' + Google Places' : '') . ' (' . now()->format('Y-m-d') . ').'
                         . ($item['rating'] ? " Rating Google: {$item['rating']}." : ''),
                     'verified_at' => null, // belum diverifikasi admin secara manual
                 ]);
