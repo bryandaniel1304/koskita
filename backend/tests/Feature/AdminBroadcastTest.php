@@ -18,7 +18,8 @@ class AdminBroadcastTest extends TestCase
 
     public function test_admin_can_send_broadcast(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        // Kirim pengumuman khusus Master Admin -- lihat IsMasterAdmin.
+        $admin = User::factory()->create(['role' => 'admin', 'is_master_admin' => true]);
 
         $response = $this->actingAs($admin)->post('/admin/broadcasts', [
             'title' => 'Pemeliharaan Server',

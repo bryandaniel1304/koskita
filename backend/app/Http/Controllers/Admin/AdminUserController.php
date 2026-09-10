@@ -104,6 +104,7 @@ class AdminUserController extends Controller
     {
         $request->validate([
             'role' => 'required|in:user,owner,admin',
+            'is_master_admin' => 'nullable|boolean',
         ]);
 
         $user = User::findOrFail($id);
@@ -112,7 +113,20 @@ class AdminUserController extends Controller
             return back()->withErrors(['role' => 'Tidak bisa mengubah role akun sendiri.']);
         }
 
-        $user->update(['role' => $request->role]);
+        // Tidak boleh melepas status master admin dari diri sendiri --
+        // cegah admin terkunci dari menu Kelola Pengguna/Pengumuman/Laporan
+        // tanpa ada master admin lain yang bisa mengembalikannya.
+        if ((int) $id === Auth::id() && Auth::user()->isMasterAdmin() && !$request->boolean('is_master_admin')) {
+            return back()->withErrors(['is_master_admin' => 'Tidak bisa melepas status Master Admin dari akun sendiri.']);
+        }
+
+        $user->update([
+            'role' => $request->role,
+            // Flag ini cuma relevan buat role=admin -- otomatis dimatikan
+            // kalau role diturunkan dari admin, supaya tidak ada user/owner
+            // biasa yang "diam-diam" tercatat sebagai master admin.
+            'is_master_admin' => $request->role === 'admin' ? $request->boolean('is_master_admin') : false,
+        ]);
 
         return back()->with('success', 'Role pengguna berhasil diperbarui.');
     }
