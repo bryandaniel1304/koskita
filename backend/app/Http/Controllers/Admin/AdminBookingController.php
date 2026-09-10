@@ -33,10 +33,10 @@ class AdminBookingController extends Controller
 
         return response()->streamDownload(function () use ($bookings) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['ID', 'Penyewa', 'Email Penyewa', 'Kos', 'Mulai Sewa', 'Durasi (bulan)', 'Status', 'Pembayaran', 'Catatan Admin', 'Diajukan']);
+            fputcsv($out, ['Nomor Pengajuan', 'Penyewa', 'Email Penyewa', 'Kos', 'Mulai Sewa', 'Durasi (bulan)', 'Status', 'Pembayaran', 'Catatan Admin', 'Diajukan']);
             foreach ($bookings as $booking) {
                 fputcsv($out, [
-                    $booking->id,
+                    $booking->code,
                     $booking->user?->name ?? '-',
                     $booking->user?->email ?? '-',
                     $booking->kos?->name ?? '-',
@@ -54,7 +54,7 @@ class AdminBookingController extends Controller
 
     public function show($id)
     {
-        $booking = Booking::with('user.profile', 'kos')->findOrFail($id);
+        $booking = Booking::with('user.profile', 'kos', 'activityLogs.changedBy')->findOrFail($id);
 
         return view('admin.bookings.show', compact('booking'));
     }
