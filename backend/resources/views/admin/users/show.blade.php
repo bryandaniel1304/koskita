@@ -11,6 +11,11 @@
     <form action="{{ route('admin.users.update', $targetUser->id) }}" method="POST" class="d-flex align-items-center gap-2">
         @csrf
         @method('PUT')
+        {{-- Sertakan status master admin saat ini supaya ganti role SAJA
+             tidak diam-diam melepas status master target (lihat
+             AdminUserController::update -- flag ini otomatis dipaksa
+             false kalau role diturunkan dari admin). --}}
+        <input type="hidden" name="is_master_admin" value="{{ $targetUser->is_master_admin ? 1 : 0 }}">
         <label class="mb-0 small text-muted">Role:</label>
         <select name="role" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
             <option value="user" {{ $targetUser->role === 'user' ? 'selected' : '' }}>User</option>
@@ -18,6 +23,18 @@
             <option value="admin" {{ $targetUser->role === 'admin' ? 'selected' : '' }}>Admin</option>
         </select>
     </form>
+    @if($targetUser->role === 'admin')
+        <form action="{{ route('admin.users.update', $targetUser->id) }}" method="POST" class="d-flex align-items-center gap-2 ms-2">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="role" value="admin">
+            <input type="hidden" name="is_master_admin" value="{{ $targetUser->is_master_admin ? 0 : 1 }}">
+            <button type="submit" class="btn btn-sm {{ $targetUser->is_master_admin ? 'btn-warning' : 'btn-outline-secondary' }}">
+                <i class="bi bi-shield-lock"></i>
+                {{ $targetUser->is_master_admin ? 'Master Admin (cabut)' : 'Jadikan Master Admin' }}
+            </button>
+        </form>
+    @endif
 </div>
 
 @if ($errors->any())

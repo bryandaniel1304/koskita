@@ -156,7 +156,8 @@ class TrustFeaturesTest extends TestCase
 
     public function test_admin_can_approve_owner_verification(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        // Verifikasi pemilik ada di dalam Kelola Pengguna -- khusus Master Admin.
+        $admin = User::factory()->create(['role' => 'admin', 'is_master_admin' => true]);
         $owner = User::factory()->create(['role' => 'owner', 'owner_verification_status' => 'pending']);
 
         $response = $this->actingAs($admin)->put("/admin/users/{$owner->id}/verifikasi", ['decision' => 'approved']);

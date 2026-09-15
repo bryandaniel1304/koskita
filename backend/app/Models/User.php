@@ -14,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Notifications\ResetPasswordNotification;
 use App\Notifications\TwoFactorCodeNotification;
 
-#[Fillable(['name', 'email', 'phone', 'password', 'role', 'owner_verification_status', 'owner_verification_document', 'owner_verified_at', 'qris_image_path', 'google_id', 'email_verified_at', 'notify_bookings', 'notify_messages', 'notify_waitlist', 'avatar_path'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'role', 'is_master_admin', 'owner_verification_status', 'owner_verification_document', 'owner_verified_at', 'qris_image_path', 'google_id', 'email_verified_at', 'notify_bookings', 'notify_messages', 'notify_waitlist', 'avatar_path'])]
 #[Hidden(['password', 'remember_token', 'two_factor_code', 'two_factor_expires_at'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -53,7 +53,16 @@ class User extends Authenticatable implements MustVerifyEmail
             'notify_bookings' => 'boolean',
             'notify_messages' => 'boolean',
             'notify_waitlist' => 'boolean',
+            'is_master_admin' => 'boolean',
         ];
+    }
+
+    /** Master admin = role admin + flag is_master_admin -- pegang menu
+     *  sensitif (Kelola Pengguna, Pengumuman, Laporan) di atas admin
+     *  operasional biasa. Lihat [[IsMasterAdmin]] middleware. */
+    public function isMasterAdmin(): bool
+    {
+        return $this->role === 'admin' && (bool) $this->is_master_admin;
     }
 
     public function profile()

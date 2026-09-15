@@ -38,6 +38,7 @@
         <table class="table align-middle table-hover mb-0">
             <thead class="table-light">
                 <tr>
+                    <th>Nomor</th>
                     <th>Pengguna</th>
                     <th>Kos</th>
                     <th>Mulai</th>
@@ -51,6 +52,7 @@
             <tbody>
                 @forelse($bookings as $b)
                     <tr>
+                        <td><small class="font-monospace text-muted">{{ $b->code }}</small></td>
                         <td>{{ $b->user->name }}</td>
                         <td>{{ $b->kos->name ?? '(kos dihapus)' }}</td>
                         <td>{{ $b->start_date->format('d M Y') }}</td>
@@ -71,7 +73,7 @@
                         </td>
                     </tr>
                 @empty
-                    @include('admin.partials.empty-row', ['colspan' => 8, 'icon' => 'bi-calendar-x', 'text' => 'Belum ada booking.'])
+                    @include('admin.partials.empty-row', ['colspan' => 9, 'icon' => 'bi-calendar-x', 'text' => 'Belum ada booking.'])
                 @endforelse
             </tbody>
         </table>

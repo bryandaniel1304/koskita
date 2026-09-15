@@ -22,6 +22,12 @@ class AdminExportTest extends TestCase
         return User::factory()->create(['role' => 'admin']);
     }
 
+    /** admin/users/export sekarang khusus Master Admin -- lihat IsMasterAdmin. */
+    protected function masterAdmin(): User
+    {
+        return User::factory()->create(['role' => 'admin', 'is_master_admin' => true]);
+    }
+
     public function test_guest_cannot_access_kos_export(): void
     {
         $response = $this->get('/admin/koses/export');
@@ -46,7 +52,7 @@ class AdminExportTest extends TestCase
     {
         $user = User::factory()->create();
         $kos = Kos::factory()->create();
-        Booking::create([
+        $booking = Booking::create([
             'user_id' => $user->id,
             'kos_id' => $kos->id,
             'start_date' => now()->addDays(3),
@@ -58,7 +64,8 @@ class AdminExportTest extends TestCase
 
         $response->assertOk();
         $csv = $response->streamedContent();
-        $this->assertStringContainsString('ID,Penyewa', $csv);
+        $this->assertStringContainsString('"Nomor Pengajuan",Penyewa', $csv);
+        $this->assertStringContainsString($booking->code, $csv);
         $this->assertStringContainsString($user->name, $csv);
     }
 
@@ -66,7 +73,7 @@ class AdminExportTest extends TestCase
     {
         User::factory()->create(['role' => 'user', 'name' => 'Responden Uji']);
 
-        $response = $this->actingAs($this->admin())->get('/admin/users/export');
+        $response = $this->actingAs($this->masterAdmin())->get('/admin/users/export');
 
         $response->assertOk();
         $csv = $response->streamedContent();

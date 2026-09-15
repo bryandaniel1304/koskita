@@ -213,16 +213,20 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/interactions', [AdminDashboardController::class, 'interactions'])->name('admin.interactions');
 
-    // Data Responden & Trace Rekomendasi
+    // Data Responden & Trace Rekomendasi -- khusus Master Admin: bisa
+    // menaikkan/menurunkan role (termasuk ke admin) & menghapus akun,
+    // wewenang yang terlalu sensitif untuk admin operasional biasa.
     // (rute "export" WAJIB didaftar sebelum "{id}" -- kalau tidak,
     // "/users/export" akan ketangkap oleh wildcard {id} dan dianggap
     // id="export", bukan rute export-nya sendiri)
-    Route::get('/users/export', [AdminUserController::class, 'exportCsv'])->name('admin.users.export');
-    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
-    Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('admin.users.show');
-    Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('admin.users.update');
-    Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
-    Route::put('/users/{id}/verifikasi', [AdminUserController::class, 'verifyOwner'])->name('admin.users.verify-owner');
+    Route::middleware('master.admin')->group(function () {
+        Route::get('/users/export', [AdminUserController::class, 'exportCsv'])->name('admin.users.export');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
+        Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('admin.users.show');
+        Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('admin.users.update');
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+        Route::put('/users/{id}/verifikasi', [AdminUserController::class, 'verifyOwner'])->name('admin.users.verify-owner');
+    });
 
     // CRUD Kos
     Route::get('/koses/export', [AdminKosController::class, 'exportCsv'])->name('admin.koses.export');
@@ -260,14 +264,16 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
     Route::get('/bookings/{id}', [AdminBookingController::class, 'show'])->name('admin.bookings.show');
     Route::put('/bookings/{id}', [AdminBookingController::class, 'update'])->name('admin.bookings.update');
 
-    // Pengumuman (broadcast notifikasi ke penyewa/pemilik)
-    Route::get('/broadcasts', [AdminBroadcastController::class, 'index'])->name('admin.broadcasts.index');
-    Route::post('/broadcasts', [AdminBroadcastController::class, 'store'])->name('admin.broadcasts.store');
-    Route::delete('/broadcasts/{id}', [AdminBroadcastController::class, 'destroy'])->name('admin.broadcasts.destroy');
+    // Pengumuman & Laporan -- khusus Master Admin (komunikasi resmi ke
+    // seluruh pengguna & keputusan akhir atas laporan/flag).
+    Route::middleware('master.admin')->group(function () {
+        Route::get('/broadcasts', [AdminBroadcastController::class, 'index'])->name('admin.broadcasts.index');
+        Route::post('/broadcasts', [AdminBroadcastController::class, 'store'])->name('admin.broadcasts.store');
+        Route::delete('/broadcasts/{id}', [AdminBroadcastController::class, 'destroy'])->name('admin.broadcasts.destroy');
 
-    // Laporan/flag dari pengguna atas kos atau ulasan mencurigakan
-    Route::get('/reports', [AdminReportController::class, 'index'])->name('admin.reports.index');
-    Route::put('/reports/{id}', [AdminReportController::class, 'update'])->name('admin.reports.update');
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('admin.reports.index');
+        Route::put('/reports/{id}', [AdminReportController::class, 'update'])->name('admin.reports.update');
+    });
 
     // Pencarian kos yang hasilnya nihil -- lihat SearchLogService.
     Route::get('/pencarian-nihil', [AdminSearchLogController::class, 'index'])->name('admin.search-logs.index');
