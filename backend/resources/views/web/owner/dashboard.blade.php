@@ -87,7 +87,7 @@
                     <a href="{{ route('web.owner.koses.index') }}" class="small fw-semibold">Lihat Semua <i class="bi bi-arrow-right"></i></a>
                 </div>
                 @forelse($koses as $kos)
-                    <a href="{{ route('web.owner.koses.show', $kos->id) }}" class="d-flex align-items-center gap-3 text-decoration-none text-dark py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <a href="{{ route('web.owner.koses.show', $kos->id) }}" class="d-flex align-items-center gap-3 text-decoration-none text-body py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
                         <img src="{{ $kos->cover_image }}" class="rounded-3" style="width: 52px; height: 52px; object-fit: cover;" alt="{{ $kos->name }}">
                         <div class="flex-grow-1">
                             <p class="fw-semibold mb-0 small">{{ $kos->name }}</p>

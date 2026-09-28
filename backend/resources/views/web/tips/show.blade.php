@@ -41,7 +41,7 @@
                 <div class="card-koskita p-4 sticky-top" style="top: 90px;">
                     <h6 class="fw-bold mb-3">Baca Juga</h6>
                     @foreach($related as $r)
-                        <a href="{{ route('web.tips.show', $r->slug) }}" class="d-block text-decoration-none text-dark py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
+                        <a href="{{ route('web.tips.show', $r->slug) }}" class="d-block text-decoration-none text-body py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
                             <p class="fw-semibold mb-1 small">{{ $r->title }}</p>
                             <p class="text-muted mb-0" style="font-size: 0.78rem;">{{ $r->published_at->translatedFormat('d M Y') }}</p>
                         </a>

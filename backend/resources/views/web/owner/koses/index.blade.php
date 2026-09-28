@@ -59,7 +59,7 @@
             @foreach($koses as $kos)
                 @php $s = $kosStats[$kos->id] ?? ['views' => 0, 'favorites' => 0, 'avg_rating' => null]; @endphp
                 <div class="col-md-6 col-lg-4">
-                    <a href="{{ route('web.owner.koses.show', $kos->id) }}" class="text-decoration-none text-dark">
+                    <a href="{{ route('web.owner.koses.show', $kos->id) }}" class="text-decoration-none text-body">
                         <div class="card-koskita h-100 overflow-hidden">
                             <div class="position-relative">
                                 <img src="{{ $kos->cover_image }}" class="w-100" style="height: 150px; object-fit: cover;" alt="{{ $kos->name }}">

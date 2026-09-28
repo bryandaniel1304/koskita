@@ -20,7 +20,7 @@
         <div class="row g-4">
             @foreach($articles as $article)
                 <div class="col-md-6 col-lg-4">
-                    <a href="{{ route('web.tips.show', $article->slug) }}" class="text-decoration-none text-dark">
+                    <a href="{{ route('web.tips.show', $article->slug) }}" class="text-decoration-none text-body">
                         <div class="card-koskita h-100 overflow-hidden">
                             @if($article->cover_image_url)
                                 <img src="{{ $article->cover_image_url }}" class="w-100" style="height: 160px; object-fit: cover;" alt="{{ $article->title }}">

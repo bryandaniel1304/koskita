@@ -1,6 +1,6 @@
 {{-- Kartu kos yang dipakai berulang di beranda (unggulan) & katalog pencarian. --}}
 <div class="card-koskita h-100 overflow-hidden">
-    <a href="{{ route('web.kos.show', $kos->id) }}" class="text-decoration-none text-dark">
+    <a href="{{ route('web.kos.show', $kos->id) }}" class="text-decoration-none text-body">
         <div class="position-relative">
             <img src="{{ $kos->cover_image }}" alt="{{ $kos->name }}" class="w-100 img-shimmer" style="height: 190px; object-fit: cover;">
             <span class="position-absolute top-0 end-0 m-2 badge-soft" style="background: rgba(15,23,42,0.75); color: #fff;">
@@ -22,7 +22,7 @@
             <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-1"></i>{{ $kos->location }} &middot; {{ $kos->distance_to_campus }} km dari kampus</p>
             <div class="d-flex align-items-center gap-2 mb-2">
                 @if($kos->average_review_rating)
-                    <span class="small fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i>{{ number_format($kos->average_review_rating, 1) }}</span>
+                    <span class="small fw-bold text-body"><i class="bi bi-star-fill text-warning me-1"></i>{{ number_format($kos->average_review_rating, 1) }}</span>
                     <span class="small text-muted">({{ $kos->reviews_count }} ulasan)</span>
                 @else
                     <span class="small text-muted">Belum ada ulasan</span>

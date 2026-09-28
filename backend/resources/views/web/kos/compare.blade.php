@@ -20,7 +20,7 @@
                         <th style="width: 220px;">
                             <a href="{{ route('web.kos.show', $kos->id) }}" class="text-decoration-none">
                                 <img src="{{ $kos->cover_image }}" alt="{{ $kos->name }}" class="w-100 rounded-3 mb-2" style="height: 120px; object-fit: cover;">
-                                <div class="fw-bold text-dark" style="font-size: 13px; line-height: 1.3;">{{ Str::limit($kos->name, 40) }}</div>
+                                <div class="fw-bold text-body" style="font-size: 13px; line-height: 1.3;">{{ Str::limit($kos->name, 40) }}</div>
                             </a>
                         </th>
                     @endforeach

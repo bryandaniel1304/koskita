@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
 import '../providers/kos_provider.dart';
 import '../config/app_theme.dart';
+import '../services/api_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   /// true kalau layar ini dibuka langsung setelah registrasi (alur cold-start
@@ -27,22 +30,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   RangeValues _budgetRange = const RangeValues(1000000, 3000000);
 
-  // String di sini HARUS persis sama dengan nama di tabel `facilities`
-  // (dicek langsung ke database), karena ContentBasedFilter mencocokkan
-  // preferensi ini ke fasilitas kos lewat in_array() string-exact, bukan
-  // fuzzy match -- pilihan yang tidak match persis jadi tidak pernah
-  // berkontribusi ke skor rekomendasi. Dipilih dari 8 fasilitas nyata yang
-  // paling sering muncul & paling relevan bagi calon penyewa dari 48 kos
-  // hasil riset (Google Places + Mamikos), bukan daftar generik.
-  final List<String> _allFacilities = ['AC', 'WiFi', 'K. Mandi Dalam', 'Dapur', 'Parkir Motor', 'Shower', 'Kloset Duduk', 'Lemari / Storage'];
+  // Diambil dari GET /api/meta?limit=10, TIDAK ditulis tetap di sini.
+  //
+  // ContentBasedFilter mencocokkan preferensi ini ke fasilitas kos lewat
+  // in_array() string-exact, bukan fuzzy match. Selama daftarnya hardcode,
+  // tiap kali data kos disegarkan (impor riset baru) namanya bergeser --
+  // mis. pernah tertulis 'K. Mandi Dalam' padahal di tabel `facilities`
+  // namanya 'Kamar Mandi Dalam' -- dan preferensi itu diam-diam berhenti
+  // menyumbang skor tanpa error apa pun. Mengambilnya dari sumber yang
+  // sama dengan data kos membuat pergeseran itu tidak mungkin terjadi lagi.
+  //
+  // API mengurutkannya dari yang paling banyak dipakai kos, jadi 10 teratas
+  // adalah yang paling mungkin memengaruhi hasil rekomendasi.
+  List<String> _allFacilities = [];
   final List<String> _preferredFacilities = [];
 
-  // CATATAN: tabel `rules` masih ada 4 pilihan lama, TAPI saat ini tidak
-  // satu pun dari 48 kos hasil riset punya data peraturan (Mamikos tidak
-  // mengekspos ini) -- jadi preferensi ini disimpan tapi belum berpengaruh
-  // ke skor rekomendasi mana pun sampai data peraturan kos benar-benar ada.
-  final List<String> _allRules = ['Jam Malam', 'Tamu Boleh Menginap', 'Bawa Hewan', 'Merokok'];
+  List<String> _allRules = [];
   final List<String> _preferredRules = [];
+
+  bool _loadingMeta = true;
 
   final PageController _pageController = PageController();
   int _currentPageIndex = 0;
@@ -50,6 +56,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
+    _loadMeta();
+  }
+
+  /// Ambil daftar fasilitas & aturan dari server lebih dulu, BARU isi ulang
+  /// pilihan dari profil lama -- urutannya penting, karena pengisian ulang
+  /// menyaring dengan `_allFacilities.contains` dan akan membuang semua
+  /// pilihan kalau daftarnya masih kosong saat itu.
+  Future<void> _loadMeta() async {
+    try {
+      final response = await ApiService.get('/meta?limit=10');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final facilities = (data['facilities'] as List? ?? [])
+            .map((f) => f['name'].toString())
+            .toList();
+        final rules =
+            (data['rules'] as List? ?? []).map((r) => r['name'].toString()).toList();
+        if (mounted) {
+          setState(() {
+            _allFacilities = facilities;
+            _allRules = rules;
+          });
+        }
+      }
+    } catch (_) {
+      // Onboarding tetap bisa diselesaikan tanpa bagian preferensi
+      // fasilitas/aturan -- gender, pekerjaan, lokasi & budget sudah cukup
+      // untuk menghasilkan rekomendasi awal, jadi kegagalan jaringan di
+      // sini tidak boleh memblokir pendaftaran.
+    } finally {
+      if (mounted) {
+        setState(() => _loadingMeta = false);
+      }
+      _prefillFromExistingProfile();
+    }
+  }
+
+  void _prefillFromExistingProfile() {
     // Kalau dibuka dari "Edit Profil Preferensi" di layar Profil (bukan
     // registrasi baru), isi ulang semua pilihan dari profil yang sudah
     // ada -- sebelumnya form ini SELALU kosong meski buka untuk edit,
@@ -87,6 +131,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  /// Bungkus pilihan yang datanya berasal dari server: tampilkan indikator
+  /// selagi dimuat, dan pesan yang jujur kalau gagal -- bukan daftar kosong
+  /// tanpa penjelasan yang membuat pengguna mengira memang tidak ada pilihan.
+  Widget _metaChoices({
+    required List<String> options,
+    required String emptyLabel,
+    required Widget child,
+  }) {
+    if (_loadingMeta) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+    if (options.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(
+          emptyLabel,
+          style: const TextStyle(fontSize: 13, color: AppTheme.muted),
+        ),
+      );
+    }
+    return child;
   }
 
   Future<void> _saveProfile() async {
@@ -383,7 +453,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           icon: Icons.checklist_rounded,
                           title: 'Fasilitas Utama',
                           index: 3,
-                          child: Wrap(
+                          child: _metaChoices(
+                            options: _allFacilities,
+                            emptyLabel: 'Daftar fasilitas tidak bisa dimuat. '
+                                'Preferensi ini bisa diisi nanti lewat Edit Profil.',
+                            child: Wrap(
                             spacing: 8,
                             runSpacing: 8,
                             children: _allFacilities.map((facility) {
@@ -401,6 +475,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               );
                             }).toList(),
                           ),
+                          ),
                         ),
                       ),
                     ),
@@ -413,7 +488,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           icon: Icons.rule_rounded,
                           title: 'Aturan Kos Toleransi',
                           index: 4,
-                          child: Wrap(
+                          child: _metaChoices(
+                            options: _allRules,
+                            emptyLabel: 'Daftar aturan tidak bisa dimuat. '
+                                'Preferensi ini bisa diisi nanti lewat Edit Profil.',
+                            child: Wrap(
                             spacing: 8,
                             runSpacing: 8,
                             children: _allRules.map((rule) {
@@ -430,6 +509,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 }),
                               );
                             }).toList(),
+                          ),
                           ),
                         ),
                       ),

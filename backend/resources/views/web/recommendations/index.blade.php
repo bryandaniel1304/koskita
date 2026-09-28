@@ -28,7 +28,7 @@
                 @php $kos = $item['kos']; @endphp
                 <div class="col-md-6">
                     <div class="card-koskita h-100 overflow-hidden">
-                        <a href="{{ route('web.kos.show', $kos->id) }}" class="text-decoration-none text-dark d-flex">
+                        <a href="{{ route('web.kos.show', $kos->id) }}" class="text-decoration-none text-body d-flex">
                             <img src="{{ $kos->cover_image }}" alt="{{ $kos->name }}" style="width: 130px; min-width: 130px; height: 100%; object-fit: cover;">
                             <div class="p-3 flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-start gap-2">

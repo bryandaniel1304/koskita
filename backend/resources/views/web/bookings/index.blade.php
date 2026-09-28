@@ -28,7 +28,7 @@ $statusColor = ['pending' => 'warning', 'confirmed' => 'success', 'rejected' => 
                                 <img src="{{ $booking->kos->cover_image }}" class="w-100 rounded-3" style="height: 80px; object-fit: cover;" alt="{{ $booking->kos->name }}">
                             </div>
                             <div class="col-md-6">
-                                <a href="{{ route('web.kos.show', $booking->kos_id) }}" class="fw-bold text-dark d-block mb-1">{{ $booking->kos->name }}</a>
+                                <a href="{{ route('web.kos.show', $booking->kos_id) }}" class="fw-bold text-body d-block mb-1">{{ $booking->kos->name }}</a>
                                 {{-- Nomor pengajuan ditampilkan ke penyewa juga -- ini yang
                                      disebutkan saat menghubungi pemilik/admin soal booking ini. --}}
                                 <p class="small text-muted mb-0 font-monospace">{{ $booking->code }}</p>

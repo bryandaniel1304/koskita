@@ -74,7 +74,12 @@ class WebKosController extends Controller
         });
 
         $locations = Kos::select('location')->distinct()->orderBy('location')->pluck('location');
-        $facilities = Facility::orderBy('name')->get();
+        // Hanya fasilitas yang benar-benar dimiliki minimal satu kos.
+        // Tabel facilities menyimpan juga nama-nama lama dari impor riset
+        // sebelumnya (mis. "K. Mandi Dalam" sebelum diseragamkan jadi
+        // "Kamar Mandi Dalam"); tanpa saringan ini sidebar filter penuh
+        // kembaran yang kalau diklik SELALU menghasilkan nol kos.
+        $facilities = Facility::has('koses')->orderBy('name')->get();
 
         return view('web.kos.index', [
             'koses' => $koses,

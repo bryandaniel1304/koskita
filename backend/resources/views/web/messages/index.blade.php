@@ -15,7 +15,7 @@
     @else
         <div class="card-koskita">
             @foreach($conversations as $c)
-                <a href="{{ route('web.messages.thread', $c->partner->id) }}" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-dark {{ !$loop->last ? 'border-bottom' : '' }} {{ $c->unread_count > 0 ? 'bg-primary bg-opacity-10' : '' }}">
+                <a href="{{ route('web.messages.thread', $c->partner->id) }}" class="d-flex align-items-center gap-3 p-3 text-decoration-none text-body {{ !$loop->last ? 'border-bottom' : '' }} {{ $c->unread_count > 0 ? 'bg-primary bg-opacity-10' : '' }}">
                     <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 fw-bold text-white" style="width:44px;height:44px;background:var(--primary);">
                         {{ strtoupper(substr($c->partner->name, 0, 1)) }}
                     </div>
@@ -26,7 +26,7 @@
                                 <small class="text-muted flex-shrink-0 ms-2">{{ $c->last_message->created_at->diffForHumans(null, null, true) }}</small>
                             @endif
                         </div>
-                        <p class="small mb-0 text-truncate {{ $c->unread_count > 0 ? 'fw-semibold text-dark' : 'text-muted' }}">{{ $c->last_message->body ?? '' }}</p>
+                        <p class="small mb-0 text-truncate {{ $c->unread_count > 0 ? 'fw-semibold text-body' : 'text-muted' }}">{{ $c->last_message->body ?? '' }}</p>
                     </div>
                     @if($c->unread_count > 0)
                         <span class="badge rounded-pill" style="background: var(--primary);">{{ $c->unread_count }}</span>
