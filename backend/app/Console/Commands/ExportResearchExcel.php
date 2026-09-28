@@ -46,10 +46,24 @@ class ExportResearchExcel extends Command
         'serpong' => 'Gading Serpong',
     ];
 
+    /**
+     * Urutannya mengikuti cara orang membaca baris kos: identitas dulu
+     * (nama/tipe/harga/gender), lalu lokasi, lalu atribut, baru rujukan
+     * teknis (tautan & arsip) di paling kanan -- supaya kolom yang jarang
+     * dibaca tidak menghalangi kolom yang sering dibandingkan.
+     */
     protected const HEADINGS = [
-        'No', 'Nama Kos', 'Tipe Kamar', 'Harga/Bulan (Rp)', 'Gender', 'Alamat',
-        'Jarak ke Kampus', 'Latitude', 'Longitude', 'Jumlah Fasilitas',
-        'Daftar Fasilitas', 'URL Foto', 'Arsip Foto Lokal', 'URL Sumber',
+        'No', 'Nama Kos', 'Tipe Kamar', 'Harga/Bulan (Rp)', 'Gender',
+        'Kecamatan', 'Alamat Jalan', 'Jarak ke Kampus', 'Latitude', 'Longitude',
+        'Jumlah Fasilitas', 'Daftar Fasilitas',
+        'Jumlah Peraturan', 'Daftar Peraturan',
+        'URL Foto', 'Arsip Foto Lokal', 'URL Sumber',
+    ];
+
+    /** Kolom teks panjang: lebar dikunci supaya autosize tidak bikin satu kolom selebar layar. */
+    protected const FIXED_WIDTHS = [
+        'F' => 26, 'G' => 38, 'H' => 28, 'L' => 40, 'N' => 34,
+        'O' => 38, 'P' => 32, 'Q' => 44,
     ];
 
     public function handle(): int
@@ -113,13 +127,13 @@ class ExportResearchExcel extends Command
         $sheet->setTitle('Ringkasan');
 
         $sheet->setCellValue('A1', 'Hasil Web Scraping -- ' . self::PLATFORMS[$platformKey]);
-        $sheet->mergeCells('A1:F1');
+        $sheet->mergeCells('A1:H1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
         $sheet->setCellValue('A2', 'Diekspor: ' . now()->format('d M Y H:i'));
         $sheet->getStyle('A2')->getFont()->setItalic(true);
 
-        $headings = ['Area', 'Jumlah Listing', 'Ada Harga', 'Ada Foto', 'Ada Koordinat', 'Ada Jarak Kampus'];
+        $headings = ['Area', 'Jumlah Listing', 'Ada Harga', 'Ada Foto', 'Ada Koordinat', 'Ada Jarak Kampus', 'Ada Fasilitas', 'Ada Peraturan'];
         $sheet->fromArray($headings, null, 'A4');
         $this->styleHeaderRow($sheet, 4, count($headings));
 
@@ -132,18 +146,31 @@ class ExportResearchExcel extends Command
                 $this->countFilled($listings, 'image_url'),
                 $this->countFilled($listings, 'lat'),
                 $this->countFilled($listings, 'distance_minutes'),
+                $this->countFilled($listings, 'facilities'),
+                $this->countFilled($listings, 'rules'),
             ], null, 'A' . $row);
             $row++;
         }
 
-        $sheet->setCellValue('A' . $row, 'TOTAL');
-        $sheet->setCellValue('B' . $row, array_sum(array_map('count', $perArea)));
-        $sheet->getStyle("A{$row}:F{$row}")->getFont()->setBold(true);
+        $totals = ['TOTAL', array_sum(array_map('count', $perArea))];
+        foreach (['price_monthly', 'image_url', 'lat', 'distance_minutes', 'facilities', 'rules'] as $field) {
+            $totals[] = array_sum(array_map(fn ($l) => $this->countFilled($l, $field), $perArea));
+        }
+        $sheet->fromArray($totals, null, 'A' . $row);
+        $sheet->getStyle("A{$row}:H{$row}")->getFont()->setBold(true);
+        $sheet->getStyle("A{$row}:H{$row}")->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFEEF2FB');
 
-        $sheet->setCellValue('A' . ($row + 2), 'Catatan: sel kosong berarti platform ini memang tidak menyediakan atribut tersebut, bukan gagal diambil.');
+        $sheet->getStyle('B5:H' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->setCellValue('A' . ($row + 2), 'Catatan: sel kosong berarti platform ini memang tidak menyediakan atribut tersebut, bukan gagal diambil. '
+            . 'Mamikos & Rukita tidak memuat jarak ke kampus; Infokost tidak memuat koordinat di halaman daftar (diambil dari halaman detail).');
         $sheet->getStyle('A' . ($row + 2))->getFont()->setItalic(true)->setSize(9);
+        $sheet->getStyle('A' . ($row + 2))->getAlignment()->setWrapText(true);
+        $sheet->mergeCells('A' . ($row + 2) . ':H' . ($row + 3));
 
-        foreach (range('A', 'F') as $col) {
+        foreach (range('A', 'H') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
     }
@@ -160,18 +187,23 @@ class ExportResearchExcel extends Command
         foreach ($listings as $i => $item) {
             $facilities = $item['facilities'] ?? [];
 
+            $rules = $item['rules'] ?? [];
+
             $sheet->fromArray([
                 $i + 1,
                 $item['name'] ?? '',
                 $item['room_type'] ?? '',
                 $item['price_monthly'] ?? null,
-                $item['gender'] ?? '',
+                $this->genderLabel($item['gender'] ?? ''),
                 $item['address'] ?? '',
+                $item['street_address'] ?? '',
                 $item['distance_text'] ?? '',
                 $item['lat'] ?? null,
                 $item['lng'] ?? null,
                 count($facilities),
                 implode('; ', $facilities),
+                count($rules),
+                implode('; ', $rules),
                 $item['image_url'] ?? '',
                 $item['image_local'] ?? '',
                 $item['source_url'] ?? '',
@@ -180,26 +212,53 @@ class ExportResearchExcel extends Command
             // Tautan foto & sumber dibikin bisa diklik -- gunanya berkas ini
             // untuk verifikasi: pembimbing bisa langsung membuka listing
             // aslinya buat mengecek datanya benar.
-            $this->linkify($sheet, 'L' . $row, $item['image_url'] ?? null);
-            $this->linkify($sheet, 'N' . $row, $item['source_url'] ?? null);
+            $this->linkify($sheet, 'O' . $row, $item['image_url'] ?? null);
+            $this->linkify($sheet, 'Q' . $row, $item['source_url'] ?? null);
 
             $row++;
         }
 
         $lastRow = $row - 1;
-        $sheet->getStyle('D2:D' . $lastRow)->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->setAutoFilter('A1:N' . $lastRow);
-        $sheet->freezePane('A2');
 
-        foreach (range('A', 'N') as $col) {
+        $sheet->getStyle('D2:D' . $lastRow)->getNumberFormat()->setFormatCode('#,##0');
+        // Koordinat dibatasi 6 desimal (~0,1 m) -- Excel kalau dibiarkan
+        // menampilkannya sebagai notasi ilmiah atau deret 15 angka yang
+        // tidak terbaca, padahal presisi segitu tidak ada artinya untuk kos.
+        $sheet->getStyle('I2:J' . $lastRow)->getNumberFormat()->setFormatCode('0.000000');
+        $sheet->getStyle('A2:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('K2:K' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('M2:M' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Baris berseling supaya mata tidak lompat baris saat menyusuri
+        // tabel selebar 17 kolom.
+        for ($r = 2; $r <= $lastRow; $r += 2) {
+            $sheet->getStyle("A{$r}:Q{$r}")->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFF6F8FC');
+        }
+
+        $sheet->getStyle('A1:Q' . $lastRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+        $sheet->setAutoFilter('A1:Q' . $lastRow);
+        $sheet->freezePane('C2');
+
+        foreach (range('A', 'Q') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
-        // Kolom teks panjang: lebar dikunci supaya autosize tidak bikin
-        // satu kolom selebar layar.
-        foreach (['F' => 32, 'G' => 28, 'K' => 30, 'L' => 40, 'M' => 34, 'N' => 44] as $col => $width) {
+        foreach (self::FIXED_WIDTHS as $col => $width) {
             $sheet->getColumnDimension($col)->setAutoSize(false);
             $sheet->getColumnDimension($col)->setWidth($width);
         }
+    }
+
+    /** 'campur'/'putra'/'putri' -> label berkapital, supaya kolomnya terbaca rapi. */
+    protected function genderLabel(string $gender): string
+    {
+        return match ($gender) {
+            'putra' => 'Putra',
+            'putri' => 'Putri',
+            'campur' => 'Campur',
+            default => $gender,
+        };
     }
 
     protected function styleHeaderRow(Worksheet $sheet, int $row, int $columnCount): void

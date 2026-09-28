@@ -121,6 +121,98 @@ class InfokostService
         return $results;
     }
 
+
+    /**
+     * Lengkapi satu listing dari halaman detailnya: koordinat, alamat jalan,
+     * fasilitas, dan PERATURAN kos.
+     *
+     * Kartu di halaman area sengaja tidak memuat ini (lihat catatan kelas),
+     * padahal koordinat wajib untuk menghitung distance_to_campus dan
+     * fasilitas wajib untuk pembobotan Content-Based. Tanpa langkah ini,
+     * seluruh listing Infokost akan masuk database dengan jarak 0 km dan
+     * tanpa fasilitas -- yaitu persis "nilai karangan" yang dilarang prinsip
+     * places:import-koses.
+     *
+     * Datanya diambil dari JSON Next.js yang tertanam di halaman (bukan dari
+     * markup visual), sehingga tidak ikut berubah saat mereka mengganti
+     * tata letak. Tanda kutipnya ter-escape di dalam HTML, jadi dibuka dulu
+     * sebelum dicocokkan.
+     *
+     * Peraturan kos adalah bonus yang tidak disediakan Mamikos maupun
+     * Rukita -- lihat catatan "rules dibiarkan kosong" di ImportRealKoses.
+     */
+    public function enrichFromDetailPage(array $item): array
+    {
+        // Satu gangguan jaringan di tengah ratusan request TIDAK boleh
+        // menghentikan seluruh proses -- sebelumnya exception koneksi
+        // mematikan command di listing ke-128 dan sisanya tidak tersentuh.
+        try {
+            $response = Http::withHeaders(['User-Agent' => self::USER_AGENT])
+                ->timeout(30)
+                ->retry(2, 2000, throw: false)
+                ->get($item['source_url']);
+        } catch (\Throwable $e) {
+            Log::warning('InfokostService::enrichFromDetailPage error jaringan', [
+                'url' => $item['source_url'],
+                'error' => $e->getMessage(),
+            ]);
+            return $item;
+        }
+
+        if (!$response->successful()) {
+            Log::warning('InfokostService::enrichFromDetailPage gagal', [
+                'url' => $item['source_url'],
+                'status' => $response->status(),
+            ]);
+            return $item;
+        }
+
+        $plain = str_replace('\\"', '"', $response->body());
+
+        // Alamat & koordinat dicocokkan BERSAMAAN dalam satu pola supaya
+        // dijamin berasal dari objek properti yang sama -- halaman detail
+        // juga memuat properti lain (rekomendasi "kos serupa"), jadi
+        // mencocokkan keduanya terpisah berisiko mengambil alamat properti
+        // A dengan koordinat properti B.
+        if (preg_match('/"address":"([^"]+)","coordinate":\{"latitude":"(-?[\d.]+)","longitude":"([\d.]+)"\}/', $plain, $m)) {
+            $item['street_address'] = $this->clean($m[1]);
+            $item['lat'] = (float) $m[2];
+            $item['lng'] = (float) $m[3];
+        }
+
+        preg_match_all(
+            '/"attrGroupName":"([^"]+)","attrId":"[A-Z_0-9]+","attrName":"([^"]+)"/',
+            $plain,
+            $attrs,
+            PREG_SET_ORDER
+        );
+
+        $facilities = [];
+        $rules = [];
+        foreach ($attrs as $attr) {
+            $group = $this->clean($attr[1]);
+            $name = $this->clean($attr[2]);
+
+            // Grup "House Rules" berisi peraturan (boleh bawa hewan, aturan
+            // menginap, dsb), bukan fasilitas fisik -- dipisah supaya tidak
+            // tercampur jadi "fasilitas" yang menyesatkan di detail kos.
+            if (stripos($group, 'House Rules') !== false) {
+                $rules[$name] = true;
+            } else {
+                $facilities[$name] = true;
+            }
+        }
+
+        if ($facilities) {
+            $item['facilities'] = array_keys($facilities);
+        }
+        if ($rules) {
+            $item['rules'] = array_keys($rules);
+        }
+
+        return $item;
+    }
+
     /** Badge gender ("Campur"/"Putra"/"Putri") dinormalkan ke kosakata KosKita. */
     protected function parseGender(string $card): string
     {

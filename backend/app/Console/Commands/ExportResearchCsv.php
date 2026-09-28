@@ -27,6 +27,13 @@ class ExportResearchCsv extends Command
 
     protected const AREAS = ['karawaci', 'bsd', 'serpong'];
 
+    /** Label area yang dipakai di berkas keluaran -- sama dengan research:export-excel. */
+    protected const AREA_LABELS = [
+        'karawaci' => 'Karawaci',
+        'bsd' => 'BSD',
+        'serpong' => 'Gading Serpong',
+    ];
+
     public function handle(): int
     {
         $dir = storage_path('app/research');
@@ -44,22 +51,26 @@ class ExportResearchCsv extends Command
 
                 $listings = json_decode(File::get($file), true) ?? [];
                 foreach ($listings as $item) {
+                    // Kolom & urutannya sengaja dibuat sama persis dengan
+                    // research:export-excel supaya kedua berkas bisa
+                    // dibandingkan/di-diff baris per baris. Kolom yang cuma
+                    // diisi sebagian sumber (jarak kampus dari Infokost,
+                    // koordinat dari Mamikos) dikosongkan, bukan dikarang.
                     $rows[] = [
-                        'Area' => ucfirst($area),
+                        'Area' => self::AREA_LABELS[$area] ?? ucfirst($area),
                         'Nama Kos' => $item['name'] ?? '',
-                        // Kolom berikut cuma diisi sebagian sumber (mis. tipe
-                        // kamar & jarak kampus dari Infokost, koordinat dari
-                        // Mamikos) -- dikosongkan, bukan diisi nilai karangan.
                         'Tipe Kamar' => $item['room_type'] ?? '',
                         'Harga/Bulan (Rp)' => $item['price_monthly'] ?? '',
-                        'Tipe Gender' => $item['gender'] ?? '',
-                        'Alamat' => $item['address'] ?? '',
+                        'Gender' => $this->genderLabel($item['gender'] ?? ''),
+                        'Kecamatan' => $item['address'] ?? '',
+                        'Alamat Jalan' => $item['street_address'] ?? '',
                         'Jarak ke Kampus' => $item['distance_text'] ?? '',
                         'Latitude' => $item['lat'] ?? '',
                         'Longitude' => $item['lng'] ?? '',
                         'Jumlah Fasilitas' => count($item['facilities'] ?? []),
                         'Daftar Fasilitas' => implode('; ', $item['facilities'] ?? []),
-                        'Ada Foto' => !empty($item['image_url']) ? 'Ya' : 'Tidak',
+                        'Jumlah Peraturan' => count($item['rules'] ?? []),
+                        'Daftar Peraturan' => implode('; ', $item['rules'] ?? []),
                         'URL Foto' => $item['image_url'] ?? '',
                         'Arsip Foto Lokal' => $item['image_local'] ?? '',
                         'URL Sumber' => $item['source_url'] ?? '',
@@ -78,6 +89,17 @@ class ExportResearchCsv extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /** Samakan penulisan gender dengan research:export-excel. */
+    protected function genderLabel(string $gender): string
+    {
+        return match ($gender) {
+            'putra' => 'Putra',
+            'putri' => 'Putri',
+            'campur' => 'Campur',
+            default => $gender,
+        };
     }
 
     protected function writeCsv(string $path, array $rows): void
