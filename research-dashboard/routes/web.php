@@ -11,6 +11,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::prefix('evaluation')->name('evaluation.')->group(function () {
     Route::get('/', [EvaluationController::class, 'index'])->name('index');
     Route::post('/run-baselines', [EvaluationController::class, 'runBaselines'])->name('run-baselines');
+    Route::post('/run-cold-start', [EvaluationController::class, 'runColdStart'])->name('run-cold-start');
     Route::post('/compare-alphas', [EvaluationController::class, 'compareAlphas'])->name('compare-alphas');
 });
 

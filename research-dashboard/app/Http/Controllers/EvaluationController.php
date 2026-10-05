@@ -16,24 +16,30 @@ class EvaluationController extends Controller
         // Batch TERBARU dari tiap jenis eksperimen -- dipakai buat grafik
         // ringkasan di atas tabel (lebih gampang dibaca saat sidang
         // daripada cuma angka di tabel). Deteksi jenis dari prefix label
-        // ('baseline-...' / 'alpha-sweep-...'), bukan field terpisah,
-        // supaya tidak perlu migration baru di tabel evaluation_runs.
+        // ('baseline-...' / 'coldstart-...' / 'alpha-sweep-...'), bukan field
+        // terpisah, supaya tidak perlu migration baru di tabel evaluation_runs.
         $latestBaselineLabel = $batches->keys()->filter(fn ($l) => str_starts_with($l, 'baseline-'))->sortDesc()->first();
+        $latestColdStartLabel = $batches->keys()->filter(fn ($l) => str_starts_with($l, 'coldstart-'))->sortDesc()->first();
         $latestAlphaSweepLabel = $batches->keys()->filter(fn ($l) => str_starts_with($l, 'alpha-sweep-'))->sortDesc()->first();
 
         $latestBaselineRuns = $latestBaselineLabel ? $batches[$latestBaselineLabel] : collect();
+        $latestColdStartRuns = $latestColdStartLabel ? $batches[$latestColdStartLabel] : collect();
         $latestAlphaSweepRuns = $latestAlphaSweepLabel ? $batches[$latestAlphaSweepLabel] : collect();
 
         $baselineAnalysis = $this->analyzeBaselines($latestBaselineRuns);
+        $coldStartAnalysis = $this->analyzeBaselines($latestColdStartRuns);
         $alphaSweepAnalysis = $this->analyzeAlphaSweep($latestAlphaSweepRuns);
 
         return view('evaluation.index', compact(
             'batches',
             'latestBaselineLabel',
+            'latestColdStartLabel',
             'latestAlphaSweepLabel',
             'latestBaselineRuns',
+            'latestColdStartRuns',
             'latestAlphaSweepRuns',
             'baselineAnalysis',
+            'coldStartAnalysis',
             'alphaSweepAnalysis'
         ));
     }
@@ -129,6 +135,24 @@ class EvaluationController extends Controller
         $this->persist($results, $kValues, $batchLabel);
 
         return redirect()->route('evaluation.index')->with('success', 'Evaluasi hybrid vs baseline selesai dijalankan.');
+    }
+
+    /**
+     * Hybrid vs baseline pada skenario cold-start: seluruh rating tiap
+     * pengguna disembunyikan sehingga ia dinilai sebagai pengguna baru.
+     * Alpha tidak bisa dipilih di sini -- mekanisme switching selalu
+     * menetapkan alpha = 1 bagi pengguna tanpa rating, persis seperti di
+     * production. Nilai 0.6 hanya dicatat sebagai alpha dasar sistem.
+     */
+    public function runColdStart(EvaluationService $service)
+    {
+        $kValues = [5, 10];
+        $batchLabel = 'coldstart-' . now()->format('Y-m-d_H-i-s');
+
+        $results = $service->compareBaselines(0.6, $kValues, EvaluationService::SCENARIO_COLD);
+        $this->persist($results, $kValues, $batchLabel);
+
+        return redirect()->route('evaluation.index')->with('success', 'Evaluasi skenario cold-start selesai dijalankan.');
     }
 
     /**

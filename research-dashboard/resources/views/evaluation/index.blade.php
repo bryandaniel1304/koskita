@@ -6,15 +6,15 @@
 <div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-1">Evaluasi Rekomendasi</h4>
-        <p class="text-muted mb-0">Precision@K, Recall@K, NDCG@K, dan MAP@K dihitung dari data interaksi responden asli via protokol holdout (lihat komentar di <code>EvaluationService</code>). Butuh minimal beberapa responden dengan ≥2 rating bintang 4-5 supaya hasilnya bermakna.</p>
+        <p class="text-muted mb-0">Precision@K, Recall@K, NDCG@K, dan MAP@K dihitung dari data interaksi responden asli via protokol holdout (lihat komentar di <code>EvaluationService</code>), pada skenario warm-start dan cold-start. Skenario warm-start butuh responden dengan ≥2 rating bintang 4-5, cold-start cukup ≥1, supaya hasilnya bermakna.</p>
     </div>
     <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print">🖨️ Cetak / Simpan sebagai PDF</button>
 </div>
 
 <div class="row g-3 mb-4 no-print">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card-custom p-4">
-            <h6 class="fw-bold mb-2">1. Hybrid vs Baseline</h6>
+            <h6 class="fw-bold mb-2">1. Hybrid vs Baseline (Warm-Start)</h6>
             <p class="small text-muted">Bandingkan model hybrid (alpha production = 0.6) melawan CB murni, CF murni, dan popularitas non-personal -- pembuktian kontribusi ilmiah model hybrid (skripsi Bab III).</p>
             <form method="POST" action="{{ route('evaluation.run-baselines') }}">
                 @csrf
@@ -32,9 +32,19 @@
             </form>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card-custom p-4">
-            <h6 class="fw-bold mb-2">2. Eksperimen Cari Alpha Optimal</h6>
+            <h6 class="fw-bold mb-2">2. Hybrid vs Baseline (Cold-Start)</h6>
+            <p class="small text-muted">Sembunyikan SELURUH rating tiap responden, lalu nilai seberapa baik sistem menebak kos yang nantinya ia sukai hanya dari profilnya -- menguji strategi switching (α otomatis = 1) bagi pengguna baru. Butuh responden dengan ≥1 rating bintang 4-5.</p>
+            <form method="POST" action="{{ route('evaluation.run-cold-start') }}">
+                @csrf
+                <button type="submit" class="btn btn-primary-custom">Jalankan Evaluasi Cold-Start</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-custom p-4">
+            <h6 class="fw-bold mb-2">3. Eksperimen Cari Alpha Optimal</h6>
             <p class="small text-muted">Jalankan strategi hybrid untuk alpha = 0.2 s/d 0.8, supaya bisa dibandingkan mana yang metriknya paling tinggi -- menjawab "alpha ditentukan lewat eksperimen" di skripsi.</p>
             <form method="POST" action="{{ route('evaluation.compare-alphas') }}">
                 @csrf
@@ -55,33 +65,31 @@
     </div>
 
     @if($baselineAnalysis)
-        <div class="card-custom p-4 mb-4" style="border-left: 4px solid var(--primary);">
-            <h6 class="fw-bold mb-2">📝 Kesimpulan: Hybrid vs Baseline</h6>
-            <p class="mb-2">
-                Model <strong>Hybrid (α = {{ number_format($baselineAnalysis['hybrid']->alpha, 2) }})</strong> unggul pada
-                <strong class="{{ $baselineAnalysis['winning_metrics_count'] === $baselineAnalysis['total_metrics'] ? 'text-success' : 'text-warning' }}">
-                    {{ $baselineAnalysis['winning_metrics_count'] }} dari {{ $baselineAnalysis['total_metrics'] }} metrik
-                </strong> dibandingkan rata-rata baseline pada K=10.
-            </p>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                    <thead><tr><th>Dibandingkan dengan</th><th>Precision</th><th>Recall</th><th>NDCG</th><th>MAP</th></tr></thead>
-                    <tbody>
-                    @foreach($baselineAnalysis['comparisons'] as $c)
-                        <tr>
-                            <td>{{ $c['label'] }}</td>
-                            @foreach(['precision', 'recall', 'ndcg', 'map'] as $metric)
-                                <td class="fw-bold {{ $c['diffs'][$metric] > 0 ? 'text-success' : ($c['diffs'][$metric] < 0 ? 'text-danger' : 'text-muted') }}">
-                                    {{ $c['diffs'][$metric] > 0 ? '+' : '' }}{{ number_format($c['diffs'][$metric], 1) }}%
-                                </td>
-                            @endforeach
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <p class="small text-muted mt-2 mb-0">Persentase = seberapa besar metrik Hybrid lebih tinggi/rendah dibanding strategi tersebut. Positif (hijau) berarti Hybrid lebih unggul.</p>
+        @include('evaluation._baseline-conclusion', [
+            'analysis' => $baselineAnalysis,
+            'title' => 'Kesimpulan: Hybrid vs Baseline (Warm-Start)',
+            'hybridLabel' => 'Hybrid (α = ' . number_format($baselineAnalysis['hybrid']->alpha, 2) . ')',
+        ])
+    @endif
+@endif
+
+@if($latestColdStartRuns->isNotEmpty())
+    <div class="card-custom p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0">📊 Grafik: Hybrid vs Baseline -- Cold-Start (batch terbaru -- K=10)</h6>
+            <button class="btn btn-sm btn-outline-secondary no-print" onclick="downloadChartPng('chartColdStart', 'hybrid-vs-baseline-cold-start.png')">⬇️ Unduh PNG</button>
         </div>
+        <p class="small text-muted">Batch: {{ $latestColdStartLabel }}</p>
+        <canvas id="chartColdStart" height="90"></canvas>
+    </div>
+
+    @if($coldStartAnalysis)
+        @include('evaluation._baseline-conclusion', [
+            'analysis' => $coldStartAnalysis,
+            'title' => 'Kesimpulan: Hybrid vs Baseline (Cold-Start)',
+            'hybridLabel' => 'Hybrid (α efektif = 1,00 lewat switching)',
+            'note' => 'Pada cold-start, Hybrid identik dengan CB murni karena switching menetapkan α = 1, sehingga selisihnya 0%. CF murni tidak punya prediksi bagi pengguna tanpa rating, sehingga tidak merekomendasikan kos apa pun dan seluruh metriknya nol. Pembanding yang bermakna di skenario ini adalah popularitas.',
+        ])
     @endif
 @endif
 
@@ -159,19 +167,23 @@
     // tombol "Jalankan Evaluasi" ditekan), jadi render sekali saat load
     // halaman sudah cukup.
     const baselineRunsK10 = @json($latestBaselineRuns->where('k', 10)->sortBy('strategy')->values());
+    const coldStartRunsK10 = @json($latestColdStartRuns->where('k', 10)->sortBy('strategy')->values());
     const alphaSweepRunsK10 = @json($latestAlphaSweepRuns->where('k', 10)->sortBy('alpha')->values());
 
     const strategyLabels = { hybrid: 'Hybrid', cb_only: 'CB Murni', cf_only: 'CF Murni', popularity: 'Popularitas' };
     const metricColors = { precision: '#355DDB', recall: '#10B981', ndcg: '#F59E0B', map: '#F43F5E' };
 
-    if (baselineRunsK10.length > 0) {
-        new Chart(document.getElementById('chartBaseline'), {
+    function renderBaselineChart(canvasId, runs) {
+        if (runs.length === 0) {
+            return;
+        }
+        new Chart(document.getElementById(canvasId), {
             type: 'bar',
             data: {
-                labels: baselineRunsK10.map(r => strategyLabels[r.strategy] ?? r.strategy),
+                labels: runs.map(r => strategyLabels[r.strategy] ?? r.strategy),
                 datasets: ['precision', 'recall', 'ndcg', 'map'].map(metric => ({
                     label: metric.toUpperCase(),
-                    data: baselineRunsK10.map(r => parseFloat(r[metric])),
+                    data: runs.map(r => parseFloat(r[metric])),
                     backgroundColor: metricColors[metric],
                 })),
             },
@@ -182,6 +194,9 @@
             },
         });
     }
+
+    renderBaselineChart('chartBaseline', baselineRunsK10);
+    renderBaselineChart('chartColdStart', coldStartRunsK10);
 
     if (alphaSweepRunsK10.length > 0) {
         new Chart(document.getElementById('chartAlphaSweep'), {
