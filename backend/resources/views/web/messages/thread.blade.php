@@ -71,14 +71,14 @@
 </div>
 
 @push('scripts')
-{{-- Chat real-time lewat Laravel Reverb (self-hosted, tanpa akun pihak
-     ketiga) -- pusher-js dipakai sebagai client karena Reverb bicara
-     protokol yang sama persis dengan Pusher, cuma nunjuk ke server kita
-     sendiri (bukan cloud Pusher). CATATAN: ini cuma benar-benar hidup
-     kalau `php artisan reverb:start` sedang jalan di server -- kalau
-     tidak, koneksi WebSocket gagal diam-diam (di-catch di bawah) dan
-     chat tetap berfungsi normal lewat kirim pesan + refresh biasa,
-     cuma pesan masuk tidak muncul otomatis tanpa reload. --}}
+{{-- Chat real-time lewat Laravel Reverb (self-hosted) atau Pusher Channels
+     (shared hosting/cPanel, yang tidak bisa menjalankan server WebSocket
+     sendiri) -- lihat App\Support\RealtimeConfig. pusher-js dipakai
+     sebagai client untuk keduanya karena Reverb bicara protokol yang sama
+     persis dengan Pusher. Kalau server WebSocket tidak terjangkau, koneksi
+     gagal diam-diam (di-catch di bawah) dan chat tetap berfungsi normal
+     lewat kirim pesan + refresh biasa, cuma pesan masuk tidak muncul
+     otomatis tanpa reload. --}}
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>
@@ -108,15 +108,23 @@
 
         try {
             window.Pusher = Pusher;
-            var echo = new Echo({
-                broadcaster: 'reverb',
-                key: @json(config('broadcasting.connections.reverb.key')),
-                wsHost: @json(config('broadcasting.connections.reverb.options.host')),
-                wsPort: @json((int) config('broadcasting.connections.reverb.options.port')),
-                wssPort: @json((int) config('broadcasting.connections.reverb.options.port')),
-                forceTLS: @json(config('broadcasting.connections.reverb.options.useTLS')),
-                enabledTransports: ['ws', 'wss'],
-            });
+            var realtime = @json(\App\Support\RealtimeConfig::forClient());
+            var echo = new Echo(realtime.driver === 'pusher'
+                ? {
+                    broadcaster: 'pusher',
+                    key: realtime.key,
+                    cluster: realtime.cluster,
+                    forceTLS: true,
+                }
+                : {
+                    broadcaster: 'reverb',
+                    key: realtime.key,
+                    wsHost: realtime.host,
+                    wsPort: realtime.port,
+                    wssPort: realtime.port,
+                    forceTLS: realtime.scheme === 'wss',
+                    enabledTransports: ['ws', 'wss'],
+                });
 
             echo.private('App.Models.User.{{ Auth::id() }}')
                 .listen('.message.sent', function (e) {

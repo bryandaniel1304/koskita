@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Support\RealtimeConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -20,18 +21,28 @@ class BroadcastingController extends Controller
     /**
      * Parameter koneksi publik (bukan rahasia -- sama seperti app key
      * publik Pusher/Firebase, aman dibaca siapa pun yang sudah login)
-     * supaya Flutter tidak perlu hardcode port/key sendiri. Host SENGAJA
-     * tidak disertakan -- app menghitungnya sendiri dari alamat API yang
-     * sedang aktif (lihat AppConfig di Flutter), supaya otomatis ikut
-     * kalau pengguna ganti alamat server lewat "Pengaturan Server".
+     * supaya Flutter tidak perlu hardcode port/key sendiri.
+     *
+     * Untuk Reverb, host SENGAJA tidak disertakan -- app menghitungnya
+     * sendiri dari alamat API yang sedang aktif (lihat AppConfig di
+     * Flutter), supaya otomatis ikut kalau pengguna ganti alamat server
+     * lewat "Pengaturan Server". Untuk Pusher, host WAJIB disertakan karena
+     * server WebSocket-nya milik Pusher, bukan server API kita.
      */
     public function config()
     {
-        return response()->json([
-            'key' => config('broadcasting.connections.reverb.key'),
-            'port' => (int) config('broadcasting.connections.reverb.options.port'),
-            'scheme' => config('broadcasting.connections.reverb.options.useTLS') ? 'wss' : 'ws',
-        ]);
+        $realtime = RealtimeConfig::forClient();
+
+        $payload = [
+            'key' => $realtime['key'],
+            'port' => $realtime['port'],
+            'scheme' => $realtime['scheme'],
+        ];
+        if ($realtime['driver'] === 'pusher') {
+            $payload['host'] = $realtime['host'];
+        }
+
+        return response()->json($payload);
     }
 
     public function auth(Request $request)

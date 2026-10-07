@@ -51,17 +51,13 @@ class ReverbService {
     if (_manuallyDisconnected || _currentUserId == null) return;
     try {
       final configResponse = await ApiService.get('/broadcasting/config');
-      final config = jsonDecode(configResponse.body);
-      final host = Uri.parse(AppConfig.webBaseUrl).host;
-      final port = config['port'];
-      final key = config['key'];
-      final scheme = config['scheme'] == 'wss' ? 'wss' : 'ws';
-      if (key == null || host.isEmpty) {
+      final config = jsonDecode(configResponse.body) as Map<String, dynamic>;
+      final uri = socketUri(config, Uri.parse(AppConfig.webBaseUrl).host);
+      if (uri == null) {
         _scheduleReconnect();
         return;
       }
 
-      final uri = Uri.parse('$scheme://$host:$port/app/$key?protocol=7&client=flutter&version=1.0&flash=false');
       final channel = WebSocketChannel.connect(uri);
       _channel = channel;
       _channelSub = channel.stream.listen(
@@ -73,6 +69,24 @@ class ReverbService {
     } catch (_) {
       _scheduleReconnect();
     }
+  }
+
+  /// Alamat WebSocket dari jawaban `GET /broadcasting/config`.
+  ///
+  /// Reverb (lokal/VPS) tidak mengirim `host` -- server WebSocket-nya sama
+  /// dengan server API, jadi host diambil dari alamat API yang sedang aktif
+  /// ([apiHost]). Pusher (shared hosting/cPanel) mengirim `host` sendiri
+  /// (`ws-<cluster>.pusher.com`) karena server WebSocket-nya milik Pusher.
+  /// Mengembalikan null kalau konfigurasi belum lengkap.
+  static Uri? socketUri(Map<String, dynamic> config, String apiHost) {
+    final key = config['key'];
+    final serverHost = config['host'];
+    final host = serverHost is String && serverHost.isNotEmpty ? serverHost : apiHost;
+    if (key == null || host.isEmpty) return null;
+
+    final scheme = config['scheme'] == 'wss' ? 'wss' : 'ws';
+    final port = config['port'];
+    return Uri.parse('$scheme://$host:$port/app/$key?protocol=7&client=flutter&version=1.0&flash=false');
   }
 
   static void _handleRawMessage(dynamic raw) {
