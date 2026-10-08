@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../providers/kos_provider.dart';
 import '../models/kos.dart';
 import '../config/app_theme.dart';
+import '../utils/price_format.dart';
 
 /// Peta sebaran semua kos -- SENGAJA tidak pakai lokasi GPS pengguna
 /// ("cari di sekitar saya") supaya tidak perlu izin lokasi native
@@ -118,7 +119,7 @@ class _MapBrowseScreenState extends State<MapBrowseScreen> {
     }).toList();
   }
 
-  String _formatPrice(int price) => price >= 1000000 ? 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bln' : 'Rp $price/bln';
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bln';
 
   void _shareKos(Kos kos) {
     Share.share(
@@ -543,7 +544,7 @@ class _KosListSheet extends StatelessWidget {
 
   const _KosListSheet({required this.koses, required this.onSelect});
 
-  String _formatPrice(int price) => price >= 1000000 ? 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bln' : 'Rp $price/bln';
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bln';
 
   @override
   Widget build(BuildContext context) {

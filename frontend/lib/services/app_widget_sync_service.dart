@@ -1,5 +1,6 @@
 import 'package:home_widget/home_widget.dart';
 import '../models/kos.dart';
+import '../utils/price_format.dart';
 
 /// Jembatan Flutter -> widget layar utama Android "Kos Terakhir Dilihat"
 /// (lihat KosWidgetProvider.kt). iOS sengaja tidak diikutkan -- widget
@@ -15,7 +16,7 @@ class AppWidgetSyncService {
     try {
       await HomeWidget.saveWidgetData<int>('kos_id', kos.id);
       await HomeWidget.saveWidgetData<String>('kos_name', kos.name);
-      await HomeWidget.saveWidgetData<String>('kos_price', 'Rp ${(kos.price / 1000000).toStringAsFixed(1)} jt/bln');
+      await HomeWidget.saveWidgetData<String>('kos_price', '${formatKosPrice(kos.price)}/bln');
       await HomeWidget.updateWidget(androidName: _androidProviderName);
     } catch (_) {
       // Widget cuma pemanis -- gagal update tidak boleh ganggu alur utama.

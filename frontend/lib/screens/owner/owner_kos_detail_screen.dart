@@ -14,6 +14,7 @@ import '../../config/app_theme.dart';
 import '../../widgets/kos_location_map.dart';
 import '../../widgets/weekly_activity_chart.dart';
 import '../../widgets/skeleton_box.dart';
+import '../../utils/price_format.dart';
 
 /// Detail satu kos milik pemilik: pratinjau lengkap persis yang dilihat
 /// calon penyewa ("Info Kos" -- termasuk peta lokasi, karena pemiliklah
@@ -129,7 +130,7 @@ class _InfoTab extends StatelessWidget {
 
   const _InfoTab({required this.detailFuture, required this.fallbackKos, required this.analyticsFuture, required this.onRefresh});
 
-  String _formatPrice(int price) => 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bulan';
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bulan';
 
   Future<void> _showReplyDialog(BuildContext context, Review review) async {
     final controller = TextEditingController(text: review.ownerReply ?? '');

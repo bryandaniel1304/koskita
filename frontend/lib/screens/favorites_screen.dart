@@ -9,6 +9,7 @@ import '../widgets/error_state.dart';
 import '../widgets/skeleton_box.dart';
 import '../widgets/premium_button.dart';
 import '../config/app_theme.dart';
+import '../utils/price_format.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -29,12 +30,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     });
   }
 
-  String _formatPrice(int price) {
-    if (price >= 1000000) {
-      return 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bln';
-    }
-    return 'Rp $price/bln';
-  }
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bln';
 
   void _toggleCompareMode() {
     setState(() {

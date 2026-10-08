@@ -18,6 +18,7 @@ import '../utils/image_source_picker.dart';
 import '../utils/haptics.dart';
 import '../utils/undo_snackbar.dart';
 import 'photo_gallery_screen.dart';
+import '../utils/price_format.dart';
 
 class KosDetailScreen extends StatefulWidget {
   final int kosId;
@@ -341,12 +342,7 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
     );
   }
 
-  String _formatPrice(int price) {
-    if (price >= 1000000) {
-      return 'Rp ${(price / 1000000).toStringAsFixed(1)} jt';
-    }
-    return 'Rp $price';
-  }
+  String _formatPrice(int price) => formatKosPrice(price);
 
   Widget _circleIconButton({
     required IconData icon,
@@ -1423,9 +1419,7 @@ class _SimilarKosSection extends StatelessWidget {
 
   const _SimilarKosSection({required this.kosId, required this.futureBuilder});
 
-  String _formatPrice(int price) => price >= 1000000
-      ? 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bln'
-      : 'Rp $price/bln';
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bln';
 
   @override
   Widget build(BuildContext context) {

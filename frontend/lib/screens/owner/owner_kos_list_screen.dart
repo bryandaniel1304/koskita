@@ -12,6 +12,7 @@ import '../../widgets/skeleton_box.dart';
 import '../../widgets/onboarding_tips_sheet.dart';
 import '../../widgets/changelog_sheet.dart';
 import '../../config/app_theme.dart';
+import '../../utils/price_format.dart';
 
 class OwnerKosListScreen extends StatefulWidget {
   const OwnerKosListScreen({super.key});
@@ -83,7 +84,7 @@ class _OwnerKosListScreenState extends State<OwnerKosListScreen> {
     );
   }
 
-  String _formatPrice(int price) => 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bulan';
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bulan';
 
   @override
   Widget build(BuildContext context) {

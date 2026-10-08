@@ -18,6 +18,7 @@ import '../widgets/user_avatar.dart';
 import '../config/app_theme.dart';
 import '../utils/haptics.dart';
 import '../utils/undo_snackbar.dart';
+import '../utils/price_format.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -328,12 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  String _formatPrice(int price) {
-    if (price >= 1000000) {
-      return 'Rp ${(price / 1000000).toStringAsFixed(1)} jt/bln';
-    }
-    return 'Rp $price/bln';
-  }
+  String _formatPrice(int price) => '${formatKosPrice(price)}/bln';
 
   Widget _ratingBadge(BuildContext context, Kos kos, {double size = 11}) {
     if (kos.averageReviewRating == null) return const SizedBox.shrink();

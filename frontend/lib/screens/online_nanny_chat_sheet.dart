@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/chatbot_provider.dart';
 import '../models/chat_message.dart';
 import '../models/kos.dart';
+import '../utils/price_format.dart';
 
 /// Lembar chat "Online Nanny" -- dibuka sebagai modal bottom sheet dari
 /// bubble melayang, bisa dipanggil dari halaman manapun.
@@ -293,7 +294,7 @@ class _OnlineNannyChatSheetState extends State<OnlineNannyChatSheet> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    kos.price >= 1000000 ? 'Rp ${(kos.price / 1000000).toStringAsFixed(1)} jt' : 'Rp ${kos.price}',
+                    formatKosPrice(kos.price),
                     style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF355DDB), height: 1.2),
                   ),
                 ],
