@@ -1,0 +1,60 @@
+#!/bin/bash
+# Deploy KosKita ke hosting cPanel tanpa akses SSH.
+#
+# Dijalankan oleh .cpanel.yml saat "Deploy HEAD Commit" diklik di cPanel
+# Git Version Control (log: ~/koskita-deploy.log). Aman dijalankan berulang:
+# setiap langkah memeriksa keadaan dulu, jadi deploy pertama maupun update
+# berikutnya memakai script yang sama.
+#
+# Tata letak di server:
+#   ~/koskita                                   repo lengkap (di luar public_html)
+#   ~/public_html/koskita/backend/public        document root subdomain -- hanya
+#                                               file publik + index.php yang memuat
+#                                               aplikasi dari ~/koskita/backend
+set -euo pipefail
+
+PHP="${PHP:-/usr/local/bin/php}"   # PHP 8.4 CLI di server ini
+REPO="$HOME/koskita"
+APP="$REPO/backend"
+DOCROOT="$HOME/public_html/koskita/backend/public"
+COMPOSER="$HOME/composer.phar"
+
+echo "== $(date '+%Y-%m-%d %H:%M:%S') deploy commit $(git -C "$REPO" rev-parse --short HEAD)"
+
+# 1. Dependensi PHP. Server tidak menyediakan composer, jadi unduh composer.phar sekali.
+if [ ! -f "$COMPOSER" ]; then
+    echo "-- mengunduh composer.phar"
+    "$PHP" -r "copy('https://getcomposer.org/download/latest-stable/composer.phar', '$COMPOSER');"
+fi
+echo "-- composer install"
+cd "$APP"
+COMPOSER_HOME="$HOME/.composer" "$PHP" -d memory_limit=-1 "$COMPOSER" install \
+    --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# 2. Document root: file publik Laravel, lalu index.php & .user.ini versi cPanel.
+echo "-- menyalin file publik ke $DOCROOT"
+mkdir -p "$DOCROOT"
+cp -R "$APP/public/." "$DOCROOT/"
+sed "s#__APP_PATH__#$APP#" "$REPO/deploy/cpanel/index.php" > "$DOCROOT/index.php"
+cp "$REPO/deploy/cpanel/user.ini" "$DOCROOT/.user.ini"
+if [ ! -L "$DOCROOT/storage" ]; then
+    ln -s "$APP/storage/app/public" "$DOCROOT/storage"
+fi
+
+# 3. Laravel -- hanya setelah .env dibuat (lewat File Manager, dari .env.example).
+if [ ! -f "$APP/.env" ]; then
+    echo "!! $APP/.env belum ada: migrate & cache dilewati. Buat .env lalu deploy ulang."
+    exit 0
+fi
+if ! grep -q '^APP_KEY=base64:' "$APP/.env"; then
+    echo "-- membuat APP_KEY"
+    "$PHP" artisan key:generate --force
+fi
+echo "-- migrate"
+"$PHP" artisan migrate --force
+echo "-- cache konfigurasi, rute, view"
+"$PHP" artisan config:cache
+"$PHP" artisan route:cache
+"$PHP" artisan view:cache
+
+echo "== selesai"

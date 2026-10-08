@@ -1,0 +1,7 @@
+---
+# Dijalankan cPanel Git Version Control saat "Deploy HEAD Commit" diklik.
+# Seluruh langkah ada di deploy/cpanel/deploy.sh; hasilnya ditulis ke
+# ~/koskita-deploy.log (bisa dibuka lewat File Manager).
+deployment:
+  tasks:
+    - /bin/bash $HOME/koskita/deploy/cpanel/deploy.sh > $HOME/koskita-deploy.log 2>&1
