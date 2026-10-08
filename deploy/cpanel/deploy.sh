@@ -34,7 +34,7 @@ cd "$APP"
 # yang sama dijalankan langsung di bawah, tanpa proses terpisah.
 COMPOSER_HOME="$HOME/.composer" "$PHP" -d memory_limit=-1 "$COMPOSER" install \
     --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
-"$PHP" artisan package:discover --ansi
+"$PHP" artisan package:discover --no-ansi
 
 # 2. Document root: file publik Laravel, lalu index.php & .user.ini versi cPanel.
 echo "-- menyalin file publik ke $DOCROOT"
