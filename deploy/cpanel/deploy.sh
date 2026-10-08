@@ -28,8 +28,13 @@ if [ ! -f "$COMPOSER" ]; then
 fi
 echo "-- composer install"
 cd "$APP"
+# --no-scripts: server ini menonaktifkan proc_open, sedangkan script
+# post-autoload-dump composer menjalankan `artisan package:discover` sebagai
+# proses terpisah (gagal: "The Process class relies on proc_open"). Perintah
+# yang sama dijalankan langsung di bawah, tanpa proses terpisah.
 COMPOSER_HOME="$HOME/.composer" "$PHP" -d memory_limit=-1 "$COMPOSER" install \
-    --no-dev --optimize-autoloader --no-interaction --no-progress
+    --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
+"$PHP" artisan package:discover --ansi
 
 # 2. Document root: file publik Laravel, lalu index.php & .user.ini versi cPanel.
 echo "-- menyalin file publik ke $DOCROOT"
@@ -37,7 +42,11 @@ mkdir -p "$DOCROOT"
 cp -R "$APP/public/." "$DOCROOT/"
 sed "s#__APP_PATH__#$APP#" "$REPO/deploy/cpanel/index.php" > "$DOCROOT/index.php"
 cp "$REPO/deploy/cpanel/user.ini" "$DOCROOT/.user.ini"
-if [ ! -L "$DOCROOT/storage" ]; then
+if [ -L "$DOCROOT/storage" ]; then
+    :   # link sudah ada dari deploy sebelumnya
+elif [ -e "$DOCROOT/storage" ]; then
+    echo "!! $DOCROOT/storage sudah ada tapi bukan symlink -- dibiarkan; foto unggahan mungkin tidak tampil"
+else
     ln -s "$APP/storage/app/public" "$DOCROOT/storage"
 fi
 
