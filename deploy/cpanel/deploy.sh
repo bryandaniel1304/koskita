@@ -49,12 +49,18 @@ elif [ -e "$DOCROOT/storage" ]; then
 else
     ln -s "$APP/storage/app/public" "$DOCROOT/storage"
 fi
+# Foto (storage) disajikan Apache langsung lewat link di atas, dan Apache
+# berjalan sebagai user lain -- cPanel membuat folder repo dengan izin 0700
+# sehingga Apache tidak bisa menembusnya (foto 404). 711 = boleh dilewati,
+# tetapi isinya tetap tidak bisa didaftar.
+chmod 711 "$REPO"
 
 # 3. Laravel -- hanya setelah .env dibuat (lewat File Manager, dari .env.example).
 if [ ! -f "$APP/.env" ]; then
     echo "!! $APP/.env belum ada: migrate & cache dilewati. Buat .env lalu deploy ulang."
     exit 0
 fi
+chmod 600 "$APP/.env"   # PHP berjalan sebagai pemilik akun; user lain tidak perlu membacanya
 if ! grep -q '^APP_KEY=base64:' "$APP/.env"; then
     echo "-- membuat APP_KEY"
     "$PHP" artisan key:generate --force
