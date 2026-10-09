@@ -372,6 +372,9 @@ class AuthController extends Controller
                 'preferred_facilities' => $request->preferred_facilities ?? [],
                 'preferred_rules' => $request->preferred_rules ?? [],
                 'preferred_location' => $request->preferred_location,
+                // Ditandai lengkap begitu pengguna sendiri menyimpan
+                // preferensinya -- lihat migrasi add_completed_at.
+                'completed_at' => now(),
             ]
         );
 

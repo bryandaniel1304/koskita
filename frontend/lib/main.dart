@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -147,6 +148,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeProvider.themeMode,
+      // Versi web (coba.koskita) sering dibuka di laptop: bawaan Flutter
+      // hanya mengizinkan geser dengan sentuhan, jadi galeri foto & daftar
+      // horizontal tidak bisa digeser pakai mouse/trackpad.
+      scrollBehavior: const MaterialScrollBehavior().copyWith(dragDevices: {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      }),
       routerConfig: widget.router,
     );
   }

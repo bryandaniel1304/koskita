@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../models/kos.dart';
 import '../config/app_theme.dart';
 import '../widgets/skeleton_box.dart';
 import '../utils/price_format.dart';
+import '../widgets/app_network_image.dart';
 
 /// Perbandingan sisi-berdampingan untuk kos-kos pilihan -- dipanggil dari
 /// Favorit dan hasil pencarian Beranda (pilih beberapa kos, lalu bandingkan).
@@ -157,7 +157,7 @@ class _CompareScreenState extends State<CompareScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(14),
-            child: CachedNetworkImage(
+            child: AppNetworkImage(
               imageUrl: kos.coverImage,
               height: 100,
               width: double.infinity,

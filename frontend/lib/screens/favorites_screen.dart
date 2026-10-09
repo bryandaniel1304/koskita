@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/kos_provider.dart';
 import '../models/kos.dart';
@@ -10,6 +9,7 @@ import '../widgets/skeleton_box.dart';
 import '../widgets/premium_button.dart';
 import '../config/app_theme.dart';
 import '../utils/price_format.dart';
+import '../widgets/app_network_image.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -128,7 +128,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       ],
                       ClipRRect(
                         borderRadius: BorderRadius.circular(14),
-                        child: CachedNetworkImage(
+                        child: AppNetworkImage(
                           imageUrl: kos.coverImage,
                           width: 90,
                           height: 90,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/message_provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/message.dart';
@@ -13,6 +12,7 @@ import '../widgets/skeleton_box.dart';
 import '../utils/haptics.dart';
 import '../utils/image_source_picker.dart';
 import 'photo_gallery_screen.dart';
+import '../widgets/app_network_image.dart';
 
 /// Satu thread percakapan dengan satu lawan bicara (identitas lawan bicara
 /// cuma nama, dikirim lewat `extra` -- sengaja bukan objek User utuh,
@@ -215,7 +215,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                       child: GestureDetector(
                                         onTap: () => _openPhoto(context, m.photoUrl!),
-                                        child: CachedNetworkImage(
+                                        child: AppNetworkImage(
                                           imageUrl: m.photoUrl!,
                                           width: 180,
                                           height: 180,

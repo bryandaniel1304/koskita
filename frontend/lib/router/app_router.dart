@@ -71,6 +71,14 @@ GoRouter buildRouter(AuthProvider authProvider) {
       if (loggedIn && isOwner && !path.startsWith('/owner')) return ownerHome;
       if (loggedIn && !isOwner && path.startsWith('/owner')) return '/home';
 
+      // Penyewa wajib memilih preferensinya sendiri sebelum memakai app --
+      // profil dari registrasi cuma berisi nilai default (lihat
+      // UserProfile.completedAt). Berlaku juga kalau app ditutup/dimuat
+      // ulang di tengah Onboarding, jadi tidak bisa dilewati.
+      if (loggedIn && !isOwner && authProvider.user?.profile?.isCompleted != true && path != '/onboarding') {
+        return '/onboarding?from=register';
+      }
+
       return null;
     },
     routes: [

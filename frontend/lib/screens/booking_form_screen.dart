@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/booking_provider.dart';
 import '../models/kos.dart';
 import '../config/app_theme.dart';
 import '../widgets/premium_button.dart';
 import '../utils/haptics.dart';
+import '../widgets/app_network_image.dart';
 
 class BookingFormScreen extends StatefulWidget {
   final Kos kos;
@@ -96,7 +96,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: CachedNetworkImage(imageUrl: widget.kos.coverImage, width: 56, height: 56, fit: BoxFit.cover),
+                    child: AppNetworkImage(imageUrl: widget.kos.coverImage, width: 56, height: 56, fit: BoxFit.cover),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

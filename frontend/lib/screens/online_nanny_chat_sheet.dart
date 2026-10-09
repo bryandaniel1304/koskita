@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/chatbot_provider.dart';
 import '../models/chat_message.dart';
 import '../models/kos.dart';
 import '../utils/price_format.dart';
+import '../widgets/app_network_image.dart';
 
 /// Lembar chat "Online Nanny" -- dibuka sebagai modal bottom sheet dari
 /// bubble melayang, bisa dipanggil dari halaman manapun.
@@ -271,7 +271,7 @@ class _OnlineNannyChatSheetState extends State<OnlineNannyChatSheet> {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              child: CachedNetworkImage(
+              child: AppNetworkImage(
                 imageUrl: kos.coverImage,
                 height: 72,
                 width: double.infinity,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
 import '../providers/kos_provider.dart';
@@ -19,6 +18,7 @@ import '../config/app_theme.dart';
 import '../utils/haptics.dart';
 import '../utils/undo_snackbar.dart';
 import '../utils/price_format.dart';
+import '../widgets/app_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -562,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           children: [
                                             ClipRRect(
                                               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                                              child: CachedNetworkImage(
+                                              child: AppNetworkImage(
                                                 imageUrl: kos.coverImage,
                                                 height: 122,
                                                 width: double.infinity,
@@ -659,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       children: [
                                         ClipRRect(
                                           borderRadius: BorderRadius.circular(10),
-                                          child: CachedNetworkImage(
+                                          child: AppNetworkImage(
                                             imageUrl: kos.coverImage,
                                             width: 60,
                                             height: 60,
@@ -942,7 +942,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(14),
-                                        child: CachedNetworkImage(
+                                        child: AppNetworkImage(
                                           imageUrl: kos.coverImage,
                                           width: 92,
                                           height: 92,

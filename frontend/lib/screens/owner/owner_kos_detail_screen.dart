@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/owner_kos_provider.dart';
 import '../../models/kos.dart';
 import '../../models/booking.dart';
@@ -15,6 +14,7 @@ import '../../widgets/kos_location_map.dart';
 import '../../widgets/weekly_activity_chart.dart';
 import '../../widgets/skeleton_box.dart';
 import '../../utils/price_format.dart';
+import '../../widgets/app_network_image.dart';
 
 /// Detail satu kos milik pemilik: pratinjau lengkap persis yang dilihat
 /// calon penyewa ("Info Kos" -- termasuk peta lokasi, karena pemiliklah
@@ -204,14 +204,14 @@ class _InfoTab extends StatelessWidget {
                   child: SizedBox(
                     height: 180,
                     child: images.length == 1
-                        ? CachedNetworkImage(imageUrl: images.first, fit: BoxFit.cover, width: double.infinity)
+                        ? AppNetworkImage(imageUrl: images.first, fit: BoxFit.cover, width: double.infinity)
                         : ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: images.length,
                             separatorBuilder: (_, __) => const SizedBox(width: 8),
                             itemBuilder: (context, i) => ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: CachedNetworkImage(imageUrl: images[i], fit: BoxFit.cover, width: 260),
+                              child: AppNetworkImage(imageUrl: images[i], fit: BoxFit.cover, width: 260),
                             ),
                           ),
                   ),

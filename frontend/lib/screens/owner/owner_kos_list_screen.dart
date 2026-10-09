@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../providers/owner_kos_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -13,6 +12,7 @@ import '../../widgets/onboarding_tips_sheet.dart';
 import '../../widgets/changelog_sheet.dart';
 import '../../config/app_theme.dart';
 import '../../utils/price_format.dart';
+import '../../widgets/app_network_image.dart';
 
 class OwnerKosListScreen extends StatefulWidget {
   const OwnerKosListScreen({super.key});
@@ -216,7 +216,7 @@ class _OwnerKosListScreenState extends State<OwnerKosListScreen> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(14),
-                          child: CachedNetworkImage(
+                          child: AppNetworkImage(
                             imageUrl: kos.coverImage,
                             width: 84,
                             height: 84,

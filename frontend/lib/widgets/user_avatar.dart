@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../config/app_theme.dart';
+import 'app_network_image.dart';
 
 /// Lingkaran foto profil -- tampilkan foto asli kalau [avatarUrl] terisi,
 /// fallback ke lingkaran inisial nama (gradient primary, pola yang sudah
@@ -16,7 +16,7 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (avatarUrl != null && avatarUrl!.isNotEmpty) {
       return ClipOval(
-        child: CachedNetworkImage(
+        child: AppNetworkImage(
           imageUrl: avatarUrl!,
           width: size,
           height: size,

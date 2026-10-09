@@ -15,11 +15,13 @@ class UserProfile extends Model
         'preferred_facilities',
         'preferred_rules',
         'preferred_location',
+        'completed_at',
     ];
 
     protected $casts = [
         'preferred_facilities' => 'array',
         'preferred_rules' => 'array',
+        'completed_at' => 'datetime',
     ];
 
     public function user()

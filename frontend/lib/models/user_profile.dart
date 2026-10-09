@@ -8,6 +8,9 @@ class UserProfile {
   final List<String> preferredFacilities;
   final List<String> preferredRules;
   final String preferredLocation;
+  /// Null = preferensi masih nilai default dari registrasi, belum dipilih
+  /// pengguna sendiri -- router mewajibkan Onboarding selama masih null.
+  final String? completedAt;
 
   UserProfile({
     required this.id,
@@ -19,7 +22,10 @@ class UserProfile {
     required this.preferredFacilities,
     required this.preferredRules,
     required this.preferredLocation,
+    this.completedAt,
   });
+
+  bool get isCompleted => completedAt != null;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     var pFacilities = json['preferred_facilities'];
@@ -44,6 +50,7 @@ class UserProfile {
       preferredFacilities: parsedFacilities,
       preferredRules: parsedRules,
       preferredLocation: json['preferred_location'] ?? 'Karawaci',
+      completedAt: json['completed_at'] as String?,
     );
   }
 
@@ -58,6 +65,7 @@ class UserProfile {
       'preferred_facilities': preferredFacilities,
       'preferred_rules': preferredRules,
       'preferred_location': preferredLocation,
+      'completed_at': completedAt,
     };
   }
 }

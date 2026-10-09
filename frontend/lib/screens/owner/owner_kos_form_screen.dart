@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/owner_kos_provider.dart';
 import '../../models/kos.dart';
 import '../../models/kos_room_type.dart';
 import '../../config/app_theme.dart';
 import '../../widgets/premium_button.dart';
 import '../../widgets/location_picker_field.dart';
+import '../../widgets/app_network_image.dart';
 
 class OwnerKosFormScreen extends StatefulWidget {
   final Kos? kos;
@@ -406,7 +406,7 @@ class _OwnerKosFormScreenState extends State<OwnerKosFormScreen> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(14),
-                              child: CachedNetworkImage(imageUrl: img.url, width: 92, height: 92, fit: BoxFit.cover),
+                              child: AppNetworkImage(imageUrl: img.url, width: 92, height: 92, fit: BoxFit.cover),
                             ),
                             Positioned(
                               right: 3,

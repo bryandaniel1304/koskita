@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/app_network_image.dart';
 
 /// Galeri foto layar penuh -- dibuka dari detail kos (ketuk foto mana pun,
 /// atau tombol "Lihat semua foto") supaya calon penyewa bisa lihat SEMUA
@@ -85,7 +85,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                     child: Center(
                       child: Hero(
                         tag: widget.heroTagPrefix != null ? '${widget.heroTagPrefix}_$index' : 'gallery_$index',
-                        child: CachedNetworkImage(
+                        child: AppNetworkImage(
                           imageUrl: url,
                           fit: BoxFit.contain,
                           placeholder: (context, url) => const Center(child: CircularProgressIndicator(color: Colors.white54, strokeWidth: 2)),
@@ -120,7 +120,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                           borderRadius: BorderRadius.circular(8),
                           child: Opacity(
                             opacity: active ? 1 : 0.5,
-                            child: CachedNetworkImage(imageUrl: widget.images[index], fit: BoxFit.cover, width: 50, height: 50),
+                            child: AppNetworkImage(imageUrl: widget.images[index], fit: BoxFit.cover, width: 50, height: 50),
                           ),
                         ),
                       ),

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:screen_protector/screen_protector.dart';
 import '../../providers/auth_provider.dart';
@@ -15,6 +14,7 @@ import '../../widgets/notification_preferences_toggle.dart';
 import '../../widgets/app_version_label.dart';
 import '../../widgets/user_avatar.dart';
 import '../../config/app_theme.dart';
+import '../../widgets/app_network_image.dart';
 
 class OwnerProfileScreen extends StatefulWidget {
   const OwnerProfileScreen({super.key});
@@ -328,7 +328,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
                       const SizedBox(height: 12),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: CachedNetworkImage(imageUrl: user!.qrisUrl!, width: 140, height: 140, fit: BoxFit.contain),
+                        child: AppNetworkImage(imageUrl: user!.qrisUrl!, width: 140, height: 140, fit: BoxFit.contain),
                       ),
                       const SizedBox(height: 8),
                       TextButton(

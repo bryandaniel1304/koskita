@@ -4,12 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/kos_provider.dart';
 import '../models/kos.dart';
 import '../config/app_theme.dart';
 import '../utils/price_format.dart';
+import '../widgets/app_network_image.dart';
 
 /// Peta sebaran semua kos -- SENGAJA tidak pakai lokasi GPS pengguna
 /// ("cari di sekitar saya") supaya tidak perlu izin lokasi native
@@ -471,7 +471,7 @@ class _KosPreviewCard extends StatelessWidget {
                 onTap: onOpen,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(imageUrl: kos.coverImage, width: 64, height: 64, fit: BoxFit.cover),
+                  child: AppNetworkImage(imageUrl: kos.coverImage, width: 64, height: 64, fit: BoxFit.cover),
                 ),
               ),
               const SizedBox(width: 12),
@@ -587,7 +587,7 @@ class _KosListSheet extends StatelessWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: CachedNetworkImage(imageUrl: kos.coverImage, width: 52, height: 52, fit: BoxFit.cover),
+                                child: AppNetworkImage(imageUrl: kos.coverImage, width: 52, height: 52, fit: BoxFit.cover),
                               ),
                               const SizedBox(width: 12),
                               Expanded(

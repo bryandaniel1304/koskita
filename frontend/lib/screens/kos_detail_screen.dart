@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:screen_protector/screen_protector.dart';
@@ -20,6 +19,7 @@ import '../utils/haptics.dart';
 import '../utils/undo_snackbar.dart';
 import 'photo_gallery_screen.dart';
 import '../utils/price_format.dart';
+import '../widgets/app_network_image.dart';
 
 class KosDetailScreen extends StatefulWidget {
   final int kosId;
@@ -484,7 +484,7 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
                                   onTap: () => _openGallery(index),
                                   child: Hero(
                                     tag: 'kos_${widget.kosId}_gallery_$index',
-                                    child: CachedNetworkImage(
+                                    child: AppNetworkImage(
                                       imageUrl: images[index],
                                       fit: BoxFit.cover,
                                       placeholder: (context, url) =>
@@ -900,7 +900,7 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
                                 const SizedBox(height: 10),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: CachedNetworkImage(imageUrl: Provider.of<KosProvider>(context, listen: false).qrisUrl!, width: 180, height: 180, fit: BoxFit.contain),
+                                  child: AppNetworkImage(imageUrl: Provider.of<KosProvider>(context, listen: false).qrisUrl!, width: 180, height: 180, fit: BoxFit.contain),
                                 ),
                               ],
                             ),
@@ -1240,7 +1240,7 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
                                     const SizedBox(height: 8),
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
-                                      child: CachedNetworkImage(
+                                      child: AppNetworkImage(
                                         imageUrl: review.photoUrl!,
                                         height: 140,
                                         width: double.infinity,
@@ -1476,7 +1476,7 @@ class _SimilarKosSection extends StatelessWidget {
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(16),
                         ),
-                        child: CachedNetworkImage(
+                        child: AppNetworkImage(
                           imageUrl: kos.coverImage,
                           height: 90,
                           width: double.infinity,

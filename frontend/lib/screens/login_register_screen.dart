@@ -129,11 +129,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
         // langsung ke dashboard kelola kos.
         context.go('/owner/koses');
       } else {
-        // Baru mendaftar -> langsung ke Beranda (bukan Onboarding lagi).
-        // Profil preferensi tetap ada nilai default (dibuat backend saat
-        // registrasi) supaya rekomendasi cold-start tetap jalan; pengguna
-        // bisa sesuaikan kapan saja lewat Profil > Edit Profil Preferensi.
-        context.go('/home');
+        // Baru mendaftar -> wajib isi profil preferensi dulu (Onboarding);
+        // router juga memaksa ini selama profil belum lengkap, lihat
+        // app_router.dart.
+        context.go('/onboarding?from=register');
       }
     } else {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
