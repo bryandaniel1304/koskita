@@ -23,3 +23,12 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Foto kos & avatar juga dimuat aplikasi versi web di coba.koskita (subdomain
+# lain). Flutter web mengambil gambar lewat fetch, bukan <img>, jadi tanpa
+# header ini browser memblokirnya dan foto tidak tampil.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpe?g|png|gif|webp)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>

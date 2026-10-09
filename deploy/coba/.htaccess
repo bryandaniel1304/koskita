@@ -1,0 +1,10 @@
+# Document root subdomain coba.koskita -- disalin deploy.sh.
+Options -Indexes
+
+# Tanpa ini browser responden bisa terus memakai versi lama halaman/aplikasi
+# setelah build baru di-deploy (main.dart.js & bootstrap tidak ber-hash).
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|js|json)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

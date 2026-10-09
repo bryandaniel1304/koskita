@@ -50,6 +50,11 @@ class AppConfig {
   /// "Pengaturan Server" supaya pengguna tahu apa yang sedang terisi.
   static String get currentOverride => _runtimeOverride ?? '';
 
+  /// true kalau alamat server dikunci saat build (`--dart-define`), mis.
+  /// build web uji coba responden -- tombol "Pengaturan Server" disembunyikan
+  /// karena isiannya toh tidak akan dipakai (dart-define selalu menang).
+  static bool get isServerFixed => _overrideBaseUrl.isNotEmpty;
+
   static String get apiBaseUrl {
     if (_overrideBaseUrl.isNotEmpty) {
       return _overrideBaseUrl;

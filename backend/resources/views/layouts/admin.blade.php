@@ -237,6 +237,11 @@
                         <i class="bi bi-search"></i> Pencarian Nihil
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ Route::is('admin.sus.*') ? 'active' : '' }}" href="{{ route('admin.sus.index') }}">
+                        <i class="bi bi-clipboard-check"></i> Kuesioner SUS
+                    </a>
+                </li>
             </ul>
             <p class="sidebar-section-label mb-1">Pengaturan</p>
             <ul class="nav flex-column">

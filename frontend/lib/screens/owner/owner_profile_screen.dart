@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -102,7 +103,8 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
     // pemilik -- cukup sensitif untuk dicegah screenshot/perekaman layar
     // (FLAG_SECURE di Android, dicabut lagi di dispose() begitu keluar
     // dari layar ini supaya tidak "bocor" ke layar lain).
-    ScreenProtector.preventScreenshotOn();
+    // Plugin ini tidak punya implementasi web (browser tidak bisa dicegah screenshot).
+    if (!kIsWeb) ScreenProtector.preventScreenshotOn();
     // Sinkronkan status verifikasi terbaru begitu layar Profil dibuka
     // (mis. setelah user balik dari klik link verifikasi di Gmail).
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -112,7 +114,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
 
   @override
   void dispose() {
-    ScreenProtector.preventScreenshotOff();
+    if (!kIsWeb) ScreenProtector.preventScreenshotOff();
     super.dispose();
   }
 

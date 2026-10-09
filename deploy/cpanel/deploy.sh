@@ -55,6 +55,19 @@ fi
 # tetapi isinya tetap tidak bisa didaftar.
 chmod 711 "$REPO"
 
+# 2b. Halaman uji coba responden (coba.koskita) -- statis, hasil
+# deploy/coba/build.sh yang sudah di-commit. Dilewati kalau document root
+# subdomainnya belum dibuat di cPanel > Domains.
+COBA_DOCROOT="${COBA_DOCROOT:-$HOME/public_html/koskita/coba}"
+if [ -d "$COBA_DOCROOT" ]; then
+    echo "-- menyalin halaman uji coba ke $COBA_DOCROOT"
+    rm -rf "$COBA_DOCROOT/app"
+    cp -R "$REPO/deploy/coba/." "$COBA_DOCROOT/"
+    rm -f "$COBA_DOCROOT/build.sh"
+else
+    echo "-- $COBA_DOCROOT belum ada: halaman uji coba dilewati"
+fi
+
 # 3. Laravel -- hanya setelah .env dibuat (lewat File Manager, dari .env.example).
 if [ ! -f "$APP/.env" ]; then
     echo "!! $APP/.env belum ada: migrate & cache dilewati. Buat .env lalu deploy ulang."

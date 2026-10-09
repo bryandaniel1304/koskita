@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../models/message.dart';
 import '../config/app_theme.dart';
 import '../widgets/error_state.dart';
+import '../widgets/picked_image.dart';
 import '../widgets/skeleton_box.dart';
 import '../utils/haptics.dart';
 import '../utils/image_source_picker.dart';
@@ -286,7 +286,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: Image.file(File(_pendingPhoto!.path), width: 56, height: 56, fit: BoxFit.cover),
+                            child: PickedImage(_pendingPhoto!, width: 56, height: 56),
                           ),
                           const SizedBox(width: 8),
                           Expanded(

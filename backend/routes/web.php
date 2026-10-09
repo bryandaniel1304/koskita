@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminBookingController;
 use App\Http\Controllers\Admin\AdminBroadcastController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSearchLogController;
+use App\Http\Controllers\Admin\AdminSusController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\Web\WebAuthController;
 use App\Http\Controllers\Web\WebBookingController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Web\WebProfileController;
 use App\Http\Controllers\Web\WebRecommendationController;
 use App\Http\Controllers\Web\WebTipsController;
 use App\Http\Controllers\Web\SitemapController;
+use App\Http\Controllers\Web\SusQuestionnaireController;
 use App\Http\Controllers\Web\WidgetController;
 use App\Http\Controllers\Admin\AdminArticleController;
 
@@ -41,6 +43,13 @@ Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 've
 // sebagai footer link di situs publik.
 Route::view('/privacy', 'legal.privacy')->name('legal.privacy');
 Route::view('/terms', 'legal.terms')->name('legal.terms');
+
+// Kuesioner SUS publik -- dibuka responden dari halaman uji coba online
+// (coba.koskita) setelah mencoba aplikasi versi web. Hasilnya hanya
+// terlihat di panel admin (admin.sus.index).
+Route::get('/kuesioner', [SusQuestionnaireController::class, 'create'])->name('sus.create');
+Route::post('/kuesioner', [SusQuestionnaireController::class, 'store'])->name('sus.store')->middleware('throttle:10,1');
+Route::get('/kuesioner/terima-kasih', [SusQuestionnaireController::class, 'thanks'])->name('sus.thanks');
 
 // ============================================================
 // App Links (Android) / Universal Links (iOS) -- file verifikasi yang
@@ -277,4 +286,8 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
 
     // Pencarian kos yang hasilnya nihil -- lihat SearchLogService.
     Route::get('/pencarian-nihil', [AdminSearchLogController::class, 'index'])->name('admin.search-logs.index');
+
+    // Hasil kuesioner SUS uji coba online -- lihat SusQuestionnaireController.
+    Route::get('/kuesioner-sus/export', [AdminSusController::class, 'exportCsv'])->name('admin.sus.export');
+    Route::get('/kuesioner-sus', [AdminSusController::class, 'index'])->name('admin.sus.index');
 });

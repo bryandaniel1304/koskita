@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +11,7 @@ import '../providers/kos_provider.dart';
 import '../models/kos.dart';
 import '../widgets/error_state.dart';
 import '../widgets/kos_location_map.dart';
+import '../widgets/picked_image.dart';
 import '../widgets/premium_button.dart';
 import '../widgets/skeleton_box.dart';
 import '../config/app_theme.dart';
@@ -70,7 +71,7 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
   /// build() tiap render, tapi guard `_screenshotProtected` memastikan
   /// hanya benar-benar memanggil channel native sekali per kunjungan layar.
   void _protectScreenshotIfHasQris(bool hasQris) {
-    if (hasQris && !_screenshotProtected) {
+    if (hasQris && !_screenshotProtected && !kIsWeb) {
       _screenshotProtected = true;
       ScreenProtector.preventScreenshotOn();
     }
@@ -197,8 +198,8 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          File(selectedPhoto!.path),
+                        child: PickedImage(
+                          selectedPhoto!,
                           height: 120,
                           width: double.infinity,
                           fit: BoxFit.cover,

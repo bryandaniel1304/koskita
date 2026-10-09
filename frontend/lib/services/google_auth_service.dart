@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'api_service.dart';
 
@@ -15,7 +16,11 @@ class GoogleAuthService {
   /// layar Masuk/Daftar untuk sembunyikan tombol "Masuk dengan Google"
   /// daripada tampil tapi selalu gagal kalau ditekan (pola sama seperti
   /// WebAuthController::googleLoginConfigured() di web).
+  ///
+  /// Selalu false di versi web: google_sign_in web butuh Client ID & origin
+  /// terdaftar tersendiri, jadi responden uji coba online daftar pakai email.
   static Future<bool> isConfigured() async {
+    if (kIsWeb) return false;
     try {
       final response = await ApiService.get('/auth/google/config');
       final data = jsonDecode(response.body);

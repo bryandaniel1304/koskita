@@ -282,14 +282,15 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton(
-                            icon: Icon(Icons.settings_ethernet_rounded, color: AppTheme.muted.withValues(alpha: 0.6), size: 20),
-                            tooltip: 'Pengaturan Server',
-                            onPressed: _showServerSettingsDialog,
+                        if (!AppConfig.isServerFixed)
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: IconButton(
+                              icon: Icon(Icons.settings_ethernet_rounded, color: AppTheme.muted.withValues(alpha: 0.6), size: 20),
+                              tooltip: 'Pengaturan Server',
+                              onPressed: _showServerSettingsDialog,
+                            ),
                           ),
-                        ),
                         const SizedBox(height: 8),
 
                         // Lockup logo -- badge kecil bergradasi brand, bukan
@@ -592,7 +593,10 @@ class _RoleCard extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     gradient: selected ? AppTheme.primaryGradient : null,
-                    color: selected ? null : Colors.white.withValues(alpha: 0.6),
+                    // Mode gelap: putih 60% membuat ikon abu-abu di atasnya nyaris tak terlihat.
+                    color: selected
+                        ? null
+                        : Colors.white.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.6),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: selected ? Colors.white : const Color(0xFF94A3B8), size: 22),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:go_router/go_router.dart';
 import 'package:quick_actions/quick_actions.dart';
 
@@ -18,8 +19,11 @@ class AppShortcutsService {
   /// (lihat `app_router.dart`) yang menjaga kalau ternyata sesi sudah
   /// habis/role tidak cocok saat shortcut ditekan (mis. app baru dibuka
   /// dari kondisi ter-kill lalu auto-login gagal).
+  ///
+  /// Dilewati di web: quick_actions tidak punya implementasi browser, dan
+  /// error-nya tidak tertangkap di sini sehingga app gagal terbuka.
   static Future<void> initialize(GoRouter router) async {
-    if (_initialized) return;
+    if (_initialized || kIsWeb) return;
     _initialized = true;
     await _instance.initialize((type) {
       final path = _routeForType(type);
@@ -48,6 +52,7 @@ class AppShortcutsService {
   /// login lagi -- shortcut dikosongkan supaya tidak mengarahkan ke layar
   /// yang butuh sesi yang sudah tidak ada.
   static Future<void> syncShortcuts(String? role) async {
+    if (kIsWeb) return;
     try {
       if (role == 'owner') {
         await _instance.setShortcutItems(const [
