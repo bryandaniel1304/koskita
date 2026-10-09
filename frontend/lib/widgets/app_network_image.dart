@@ -1,15 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image_platform_interface/cached_network_image_platform_interface.dart'
-    show ImageRenderMethodForWeb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
-/// CachedNetworkImage dengan cara muat yang aman untuk versi web.
+/// Gambar dari jaringan yang aman untuk versi web (coba.koskita).
 ///
-/// Bawaan paketnya di web memuat gambar lewat elemen `<img>` (HtmlImage).
-/// Di renderer CanvasKit, gambar yang dimuat begitu berubah jadi hitam/putih
-/// setelah pindah halaman (mis. buka detail kos lalu kembali ke Beranda) --
-/// HttpGet mengunduh byte gambarnya sendiri sehingga tetap tampil. Di
-/// Android/iOS parameter ini diabaikan, perilakunya sama seperti sebelumnya.
+/// Di Android/iOS tetap CachedNetworkImage seperti sebelumnya. Di web paket
+/// itu bermasalah di renderer CanvasKit: mode bawaannya (HtmlImage) membuat
+/// foto jadi hitam/putih setelah pindah halaman, sedangkan mode HttpGet
+/// gagal total kalau browser menolak CORS -- mis. Safari yang memakai salinan
+/// foto dari cache lama tanpa header CORS. Image.network dengan strategi
+/// fallback mencoba fetch biasa dulu, lalu otomatis menampilkan elemen <img>
+/// kalau CORS ditolak, jadi foto selalu tampil. Cache-nya cache HTTP browser.
 class AppNetworkImage extends StatelessWidget {
   final String imageUrl;
   final BoxFit? fit;
@@ -30,6 +31,20 @@ class AppNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Image.network(
+        imageUrl,
+        fit: fit,
+        width: width,
+        height: height,
+        webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+        loadingBuilder: placeholder == null
+            ? null
+            : (context, child, progress) => progress == null ? child : placeholder!(context, imageUrl),
+        errorBuilder: (context, error, stackTrace) =>
+            errorWidget?.call(context, imageUrl, error) ?? const Icon(Icons.error),
+      );
+    }
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: fit,
@@ -37,7 +52,6 @@ class AppNetworkImage extends StatelessWidget {
       height: height,
       placeholder: placeholder,
       errorWidget: errorWidget,
-      imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet,
     );
   }
 }
