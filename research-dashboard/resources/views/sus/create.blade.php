@@ -7,7 +7,8 @@
     <div class="col-lg-8">
         <div class="card-custom p-4 p-md-5">
             <h4 class="fw-bold mb-1">Kuesioner Usabilitas KOSKITA</h4>
-            <p class="text-muted mb-4">Terima kasih sudah mencoba aplikasi KOSKITA! Isi 10 pernyataan di bawah berdasarkan pengalamanmu memakai aplikasinya. Skala: <strong>1 = Sangat Tidak Setuju</strong>, <strong>5 = Sangat Setuju</strong>.</p>
+            <p class="text-muted mb-2">Terima kasih sudah mencoba aplikasi KOSKITA! Isi 10 pernyataan di bawah berdasarkan pengalamanmu memakai aplikasinya. Kata <strong>"sistem"</strong> pada setiap pernyataan berarti <strong>aplikasi KOSKITA</strong> yang baru saja kamu gunakan.</p>
+            <p class="text-muted mb-4">Skala: <strong>1 = Sangat Tidak Setuju</strong>, 2 = Tidak Setuju, 3 = Netral, 4 = Setuju, <strong>5 = Sangat Setuju</strong>. Semua pernyataan wajib diisi; tidak ada jawaban benar atau salah.</p>
 
             @if($errors->any())
                 <div class="alert alert-danger">Mohon isi semua pernyataan (1-5).</div>

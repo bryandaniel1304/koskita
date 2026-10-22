@@ -25,8 +25,8 @@
     </div>
     <div class="col-md-4">
         <div class="card-custom p-3">
-            <div class="stat-label">Interpretasi (Bangor et al.)</div>
-            <div class="stat-value" style="font-size: 20px;">{{ $avgScore ? \App\Models\SusResponse::interpret($avgScore) : '—' }}</div>
+            <div class="stat-label">Peringkat CGS (Sauro–Lewis)</div>
+            <div class="stat-value" style="font-size: 20px;">{{ $avgScore ? \App\Models\SusResponse::interpret($avgScore).' · persentil '.\App\Models\SusResponse::percentileRange($avgScore) : '—' }}</div>
         </div>
     </div>
 </div>
@@ -38,11 +38,11 @@
         <h6 class="fw-bold mb-2">📝 Kesimpulan Analisis SUS</h6>
         <p class="mb-2">
             Dari <strong>{{ $count }}</strong> responden, rata-rata skor SUS adalah <strong>{{ number_format($avgScore, 1) }}</strong>
-            (kategori <strong>{{ \App\Models\SusResponse::interpret($avgScore) }}</strong>), yang berarti
+            (peringkat CGS <strong>{{ \App\Models\SusResponse::interpret($avgScore) }}</strong>, persentil {{ \App\Models\SusResponse::percentileRange($avgScore) }}), yang berarti
             @if($avgScore >= 68)
-                <strong class="text-success">berada di atas rata-rata acuan industri SUS (68.0)</strong> -- usabilitas aplikasi KosKita menurut responden tergolong baik.
+                <strong class="text-success">memenuhi ambang 68, yaitu rata-rata data acuan CGS Sauro–Lewis</strong> -- usabilitas aplikasi KosKita menurut responden berada di atas rata-rata.
             @else
-                <strong class="text-danger">berada di bawah rata-rata acuan industri SUS (68.0)</strong> -- masih ada ruang perbaikan usabilitas sebelum dianggap setara standar industri.
+                <strong class="text-danger">belum mencapai ambang 68, yaitu rata-rata data acuan CGS Sauro–Lewis</strong> -- usabilitas masih di bawah rata-rata dan perlu diperbaiki.
             @endif
         </p>
         @if($strongestQuestion && $weakestQuestion)
@@ -65,8 +65,8 @@
         </div>
         <div class="col-lg-5">
             <div class="card-custom p-3">
-                <h6 class="fw-bold mb-1">Sebaran Kategori Interpretasi</h6>
-                <p class="small text-muted">Berapa persen responden masuk tiap kategori Bangor et al.</p>
+                <h6 class="fw-bold mb-1">Sebaran Peringkat CGS</h6>
+                <p class="small text-muted">Jumlah responden per peringkat Curved Grading Scale Sauro–Lewis (A+ sampai F).</p>
                 <canvas id="chartGradeDistribution" height="220"></canvas>
             </div>
         </div>
