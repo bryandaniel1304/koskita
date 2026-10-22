@@ -7,7 +7,7 @@ use App\Models\SusResponse;
 
 /**
  * Hasil kuesioner SUS dari uji coba online -- ringkasan skor, aspek
- * terlemah/terkuat, sebaran kategori Bangor et al., dan ekspor CSV untuk
+ * terlemah/terkuat, sebaran peringkat CGS Sauro-Lewis, dan ekspor CSV untuk
  * diolah di Bab IV.
  */
 class AdminSusController extends Controller
@@ -31,7 +31,7 @@ class AdminSusController extends Controller
         return response()->streamDownload(function () use ($responses) {
             $out = fopen('php://output', 'w');
             $questionColumns = array_map(fn (int $num) => "Q$num", array_keys(SusResponse::QUESTIONS));
-            fputcsv($out, ['No', 'Nama', 'Email', ...$questionColumns, 'Skor SUS', 'Kategori', 'Kesan & Saran', 'Waktu Isi']);
+            fputcsv($out, ['No', 'Nama', 'Email', ...$questionColumns, 'Skor SUS', 'Peringkat CGS', 'Kesan & Saran', 'Waktu Isi']);
             foreach ($responses as $i => $response) {
                 fputcsv($out, [
                     $i + 1,

@@ -39,7 +39,8 @@
             @enderror
         </div>
 
-        <p class="small text-muted mb-0"><strong>1</strong> = Sangat Tidak Setuju &nbsp;·&nbsp; <strong>5</strong> = Sangat Setuju</p>
+        <p class="small text-muted mb-1">Kata <strong>"sistem"</strong> pada setiap pernyataan berarti <strong>aplikasi KosKita</strong> yang baru saja kamu coba. Tidak ada jawaban benar atau salah.</p>
+        <p class="small text-muted mb-0"><strong>1</strong> = Sangat Tidak Setuju &nbsp;·&nbsp; 2 = Tidak Setuju &nbsp;·&nbsp; 3 = Netral &nbsp;·&nbsp; 4 = Setuju &nbsp;·&nbsp; <strong>5</strong> = Sangat Setuju</p>
 
         @foreach(\App\Models\SusResponse::QUESTIONS as $num => $text)
             <div class="question {{ $errors->has("q$num") ? 'is-missing' : '' }}">

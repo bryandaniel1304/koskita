@@ -37,8 +37,11 @@
         <div class="card-custom d-flex align-items-center gap-3">
             <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3"><i class="bi bi-award fs-3"></i></div>
             <div>
-                <p class="text-muted mb-0 small">Kategori (Bangor et al., 2009)</p>
+                <p class="text-muted mb-0 small">Peringkat CGS (Sauro–Lewis)</p>
                 <h3 class="mb-0 fw-bold text-dark">{{ $avgScore !== null ? \App\Models\SusResponse::interpret($avgScore) : '-' }}</h3>
+                @if($avgScore !== null)
+                    <p class="text-muted mb-0 small">Persentil {{ \App\Models\SusResponse::percentileRange($avgScore) }}</p>
+                @endif
             </div>
         </div>
     </div>
@@ -70,7 +73,7 @@
     </div>
     <div class="col-lg-4">
         <div class="card-custom h-100">
-            <h6 class="fw-bold mb-3">Sebaran Kategori</h6>
+            <h6 class="fw-bold mb-3">Sebaran Peringkat CGS</h6>
             @foreach($gradeDistribution as $grade => $total)
                 <div class="mb-2">
                     <div class="d-flex justify-content-between small"><span>{{ $grade }}</span><span class="text-muted">{{ $total }}</span></div>
