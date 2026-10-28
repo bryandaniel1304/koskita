@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\SusResponse;
-use Illuminate\Http\Request;
 
 class SusController extends Controller
 {
@@ -40,33 +39,12 @@ class SusController extends Controller
     }
 
     /**
-     * Form publik -- link ini yang dibagikan ke 150 responden setelah
-     * mereka selesai memakai app KosKita, tanpa perlu login.
+     * Kuesioner resmi diisi responden di server (/kuesioner, satu akun satu
+     * kali) -- dashboard tidak lagi punya form sendiri supaya semua jawaban
+     * berada di satu tabel yang sama dengan data rating responden.
      */
     public function create()
     {
-        return view('sus.create');
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'respondent_name' => 'nullable|string|max:255',
-            'source_user_id' => 'nullable|integer',
-            'q1' => 'required|integer|min:1|max:5',
-            'q2' => 'required|integer|min:1|max:5',
-            'q3' => 'required|integer|min:1|max:5',
-            'q4' => 'required|integer|min:1|max:5',
-            'q5' => 'required|integer|min:1|max:5',
-            'q6' => 'required|integer|min:1|max:5',
-            'q7' => 'required|integer|min:1|max:5',
-            'q8' => 'required|integer|min:1|max:5',
-            'q9' => 'required|integer|min:1|max:5',
-            'q10' => 'required|integer|min:1|max:5',
-        ]);
-
-        SusResponse::create($validated);
-
-        return redirect()->route('sus.create')->with('success', 'Terima kasih! Jawabanmu berhasil disimpan.');
+        return redirect()->away(config('services.koskita.questionnaire_url'));
     }
 }

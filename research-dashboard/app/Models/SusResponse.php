@@ -6,16 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Satu pengisian kuesioner System Usability Scale (Brooke, 1996) oleh
- * responden. Skor dihitung otomatis pakai formula baku SUS (lihat
- * calculateScore()) saat record dibuat.
+ * responden. sus_score sudah dihitung backend saat responden mengirim
+ * form; calculateScore() di sini rumus yang sama untuk verifikasi & test.
  */
 class SusResponse extends Model
 {
-    protected $fillable = [
-        'source_user_id',
-        'respondent_name',
-        'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10',
-        'sus_score',
+    /**
+     * Jawaban responden dibaca langsung dari tabel sus_responses milik
+     * backend KosKita (diisi lewat form online /kuesioner di server), bukan
+     * dari database lokal dashboard -- supaya analisis Bab IV memakai satu
+     * sumber data yang sama dengan rating responden. Dashboard tidak pernah
+     * menulis ke koneksi ini.
+     */
+    protected $connection = 'source';
+
+    protected $table = 'sus_responses';
+
+    protected $casts = [
+        'sus_score' => 'float',
     ];
 
     /**
@@ -64,16 +72,6 @@ class SusResponse extends Model
 
     /** Pertanyaan bernomor GANJIL bernada positif, GENAP bernada negatif -- pola baku SUS. */
     public const POSITIVE_QUESTIONS = [1, 3, 5, 7, 9];
-
-    protected static function booted(): void
-    {
-        static::creating(function (SusResponse $response) {
-            $response->sus_score = self::calculateScore([
-                $response->q1, $response->q2, $response->q3, $response->q4, $response->q5,
-                $response->q6, $response->q7, $response->q8, $response->q9, $response->q10,
-            ]);
-        });
-    }
 
     /**
      * Formula baku SUS: pertanyaan ganjil (positif) kontribusinya

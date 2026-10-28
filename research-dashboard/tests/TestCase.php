@@ -92,5 +92,18 @@ abstract class TestCase extends BaseTestCase
             $table->string('status')->default('pending');
             $table->timestamps();
         });
+        // Sama dengan tabel sus_responses backend (form /kuesioner).
+        $schema->create('sus_responses', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->string('respondent_name');
+            $table->string('respondent_email');
+            foreach (range(1, 10) as $n) {
+                $table->unsignedTinyInteger("q$n");
+            }
+            $table->float('sus_score');
+            $table->text('feedback')->nullable();
+            $table->timestamps();
+        });
     }
 }

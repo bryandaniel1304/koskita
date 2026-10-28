@@ -28,6 +28,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Form SUS resmi di server KosKita -- tempat responden mengisi kuesioner.
+    'koskita' => [
+        'questionnaire_url' => env('KOSKITA_QUESTIONNAIRE_URL', 'https://koskita.kreasidigital-si.my.id/kuesioner'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

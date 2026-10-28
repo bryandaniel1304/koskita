@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-1">Hasil System Usability Scale</h4>
-        <p class="text-muted mb-0">Bagikan link <a href="{{ route('sus.create') }}" target="_blank">{{ route('sus.create') }}</a> ke 150 responden setelah mereka mencoba app.</p>
+        <p class="text-muted mb-0">Responden mengisi kuesioner di <a href="{{ config('services.koskita.questionnaire_url') }}" target="_blank" rel="noopener">{{ config('services.koskita.questionnaire_url') }}</a> (tautan juga ada di halaman uji coba). Data dibaca langsung dari server KosKita.</p>
     </div>
 </div>
 

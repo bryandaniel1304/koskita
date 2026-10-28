@@ -20,5 +20,4 @@ Route::get('/respondents', [RespondentController::class, 'index'])->name('respon
 Route::prefix('sus')->name('sus.')->group(function () {
     Route::get('/', [SusController::class, 'index'])->name('index');
     Route::get('/isi', [SusController::class, 'create'])->name('create');
-    Route::post('/', [SusController::class, 'store'])->name('store');
 });
