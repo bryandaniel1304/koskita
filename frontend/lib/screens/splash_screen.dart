@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -51,6 +52,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     if (!mounted) return;
     if (!authProvider.isAuthenticated) {
+      // Versi web dipakai responden uji coba lewat halaman coba.koskita yang
+      // sudah punya tombol Panduan sendiri -- slide perkenalan di sini cuma
+      // menunda mereka sampai ke halaman masuk, jadi langsung ke login.
+      if (kIsWeb) {
+        context.go('/login');
+        return;
+      }
       final prefs = await SharedPreferences.getInstance();
       final hasSeenWalkthrough = prefs.getBool('has_seen_walkthrough') ?? false;
       if (!mounted) return;

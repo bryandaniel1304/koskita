@@ -133,9 +133,27 @@
       padding: 16px; padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom));
     }
     .sheet.open { display: block; }
-    .sheet-head { display: flex; justify-content: space-between; align-items: center; }
+    .sheet-head { display: flex; justify-content: flex-end; align-items: center; }
     .sheet .guide h1 { font-size: 1.35rem; margin-top: 18px; }
-    .close { background: var(--surface); border: 1px solid var(--line); color: var(--text); width: 40px; height: 40px; border-radius: 12px; font-size: 1.2rem; cursor: pointer; }
+    .back-to-app { padding: 10px 14px; border-radius: 12px; font-size: .85rem; }
+    .sheet-foot { margin-top: 16px; }
+    .sheet-foot .btn { width: 100%; }
+
+    /* Petunjuk tipis untuk pengunjung baru: tidak menutupi aplikasi,
+       hilang sendiri setelah panduan pernah dibuka. */
+    .hint {
+      flex: none; display: block; width: 100%; line-height: 1.45;
+      padding: 9px 12px; border: 0; border-bottom: 1px solid var(--line);
+      background: var(--brand-soft); color: var(--brand);
+      font: inherit; font-size: .8rem; font-weight: 600; text-align: left; cursor: pointer;
+    }
+    .hint b { text-decoration: underline; }
+    .hint[hidden] { display: none; }
+    .btn-guide-new { background: var(--brand); color: #fff; border-color: var(--brand); position: relative; }
+    .btn-guide-new::after {
+      content: ""; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%;
+      background: #F59E0B; box-shadow: 0 0 0 2px var(--surface);
+    }
   </style>
 </head>
 <body>
@@ -181,14 +199,19 @@
       <button class="btn btn-ghost" type="button" data-open-guide>Panduan</button>
       <a class="btn" href="https://koskita.kreasidigital-si.my.id/kuesioner" target="_blank" rel="noopener">Kuesioner</a>
     </header>
+    <button class="hint" type="button" data-open-guide data-hint hidden>
+      Baru pertama kali? Ketuk <b>Panduan</b> untuk 7 langkah uji coba singkat.
+    </button>
     <iframe data-app title="Aplikasi KosKita" allow="geolocation; clipboard-write; web-share"></iframe>
   </div>
   <div class="sheet" role="dialog" aria-modal="true" aria-label="Panduan uji coba">
     <div class="sheet-head">
-      <span></span>
-      <button class="close" type="button" data-close-guide aria-label="Tutup panduan">✕</button>
+      <button class="btn btn-ghost back-to-app" type="button" data-close-guide>← Kembali ke Aplikasi</button>
     </div>
     <section class="guide" data-guide></section>
+    <div class="sheet-foot">
+      <button class="btn" type="button" data-close-guide>Mulai / Lanjut Coba Aplikasi</button>
+    </div>
   </div>
 
   <script>
@@ -239,18 +262,32 @@
       mountApp();
       if (wide.addEventListener) wide.addEventListener('change', mountApp);
 
+      // Di HP aplikasi (halaman masuk) tampil lebih dulu -- panduan TIDAK
+      // dibuka otomatis karena lembar layar penuh itu membuat responden
+      // bingung cara kembali ke aplikasi. Pengunjung baru cukup diberi
+      // petunjuk tipis + tombol Panduan yang disorot sampai pernah dibuka.
       var SEEN_KEY = 'koskita-uji-coba-panduan-dilihat';
       var sheet = document.querySelector('.sheet');
-      document.querySelector('[data-open-guide]').addEventListener('click', function () { sheet.classList.add('open'); });
-      document.querySelector('[data-close-guide]').addEventListener('click', function () {
-        sheet.classList.remove('open');
-        try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
-      });
-
-      // Kunjungan pertama di HP: langsung tampilkan panduan dulu.
+      var hint = document.querySelector('[data-hint]');
+      var guideButton = document.querySelector('.topbar [data-open-guide]');
       var seen = false;
       try { seen = localStorage.getItem(SEEN_KEY) === '1'; } catch (e) {}
-      if (!wide.matches && !seen) sheet.classList.add('open');
+      function markSeen() {
+        seen = true;
+        hint.hidden = true;
+        guideButton.classList.remove('btn-guide-new');
+        try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
+      }
+      if (!seen) {
+        hint.hidden = false;
+        guideButton.classList.add('btn-guide-new');
+      }
+      document.querySelectorAll('[data-open-guide]').forEach(function (b) {
+        b.addEventListener('click', function () { sheet.classList.add('open'); sheet.scrollTop = 0; markSeen(); });
+      });
+      document.querySelectorAll('[data-close-guide]').forEach(function (b) {
+        b.addEventListener('click', function () { sheet.classList.remove('open'); });
+      });
     })();
   </script>
 </body>
