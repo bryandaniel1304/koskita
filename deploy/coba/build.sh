@@ -6,8 +6,10 @@
 #
 #   bash deploy/coba/build.sh
 set -euo pipefail
+# Git Bash di Windows mengubah "/app/" jadi path Windows tanpa ini.
+export MSYS_NO_PATHCONV=1
 
-API_BASE_URL="${API_BASE_URL:-https://koskita.inovasidigital-si.id/api}"
+API_BASE_URL="${API_BASE_URL:-https://koskita.kreasidigital-si.my.id/api}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$ROOT/deploy/coba/app"
 
