@@ -123,7 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _searchController.text = filter.search ?? '';
       _selectedGender = filter.genderType;
-      _selectedLocation = filter.location;
+      // Filter tersimpan versi lama memakai 'BSD', sedangkan data kos memakai 'BSD City'.
+      _selectedLocation = filter.location == 'BSD' ? 'BSD City' : filter.location;
       _budgetRange = (filter.budgetMin != null && filter.budgetMax != null)
           ? RangeValues(filter.budgetMin!.toDouble(), filter.budgetMax!.toDouble())
           : null;
@@ -785,9 +786,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       decoration: const InputDecoration(hintText: 'Semua Area'),
                                       items: const [
                                         DropdownMenuItem(value: null, child: Text('Semua Area')),
+                                        // Nilai harus sama persis dengan kolom koses.location
+                                        // (filter backend memakai pencocokan tepat).
                                         DropdownMenuItem(value: 'Karawaci', child: Text('Karawaci')),
-                                        DropdownMenuItem(value: 'BSD', child: Text('BSD')),
+                                        DropdownMenuItem(value: 'BSD City', child: Text('BSD')),
                                         DropdownMenuItem(value: 'Serpong', child: Text('Serpong')),
+                                        DropdownMenuItem(value: 'Alam Sutera', child: Text('Alam Sutera')),
                                       ],
                                       onChanged: (val) {
                                         setState(() => _selectedLocation = val);

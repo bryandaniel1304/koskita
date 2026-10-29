@@ -484,6 +484,21 @@ class ImportRealKoses extends Command
         return $existing;
     }
 
+    /**
+     * Label area kos. Alam Sutera (bagian Serpong Utara) dipisahkan dari
+     * Serpong supaya filter area di aplikasi bisa memilihnya -- sama dengan
+     * migrasi 2026_10_29_100000_label_alam_sutera_koses.
+     */
+    protected function locationLabel(array $item): string
+    {
+        $text = mb_strtolower(($item['name'] ?? '') . ' ' . ($item['street_address'] ?? ''));
+        if ($item['area'] === 'serpong' && (str_contains($text, 'alam sutera') || str_contains($text, 'alsut'))) {
+            return 'Alam Sutera';
+        }
+
+        return self::AREA_LABEL[$item['area']];
+    }
+
     protected function replaceDatabase(array $combined, GoogleMapsService $maps): void
     {
         $owners = User::where('role', 'owner')->pluck('id')->values();
@@ -509,7 +524,7 @@ class ImportRealKoses extends Command
                     'name' => $item['name'],
                     'price' => $item['price'],
                     'gender_type' => $item['gender_type'],
-                    'location' => self::AREA_LABEL[$item['area']],
+                    'location' => $this->locationLabel($item),
                     'latitude' => $item['lat'],
                     'longitude' => $item['lng'],
                     'distance_to_campus' => round($distance, 2),

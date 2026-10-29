@@ -392,7 +392,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     onChanged: (String? newValue) {
                                       if (newValue != null) setState(() => _preferredLocation = newValue);
                                     },
-                                    items: <String>['Karawaci', 'BSD', 'Serpong'].map<DropdownMenuItem<String>>((String value) {
+                                    items: <String>['Karawaci', 'BSD', 'Serpong', 'Alam Sutera'].map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(value: value, child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600)));
                                     }).toList(),
                                   ),

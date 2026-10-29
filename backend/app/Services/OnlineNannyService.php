@@ -29,7 +29,16 @@ class OnlineNannyService
         'cuci baju' => 'Laundry',
     ];
 
-    protected array $locationKeywords = ['karawaci', 'bsd', 'serpong'];
+    // Alam Sutera dicek lebih dulu: teks seperti "alam sutera serpong"
+    // memuat keduanya, dan yang lebih spesifik yang dimaksud pengguna.
+    // Nilai = potongan nama area di kolom koses.location.
+    protected array $locationKeywords = [
+        'alam sutera' => 'alam sutera',
+        'alsut' => 'alam sutera',
+        'karawaci' => 'karawaci',
+        'bsd' => 'bsd',
+        'serpong' => 'serpong',
+    ];
 
     public function respond(User $user, string $message): array
     {
@@ -72,9 +81,9 @@ class OnlineNannyService
 
         $wantsBudget = $this->matchesAny($text, ['murah', 'budget', 'harga', 'mahal', 'hemat', 'juta', 'jt', 'rp']);
         $location = null;
-        foreach ($this->locationKeywords as $loc) {
-            if (str_contains($text, $loc)) {
-                $location = $loc;
+        foreach ($this->locationKeywords as $keyword => $area) {
+            if (str_contains($text, $keyword)) {
+                $location = $area;
                 break;
             }
         }
@@ -200,7 +209,7 @@ class OnlineNannyService
 
         if ($location) {
             $query->where('location', 'like', "%{$location}%");
-            $descriptors[] = 'di area ' . ucfirst($location);
+            $descriptors[] = 'di area ' . ucwords($location);
         }
 
         if ($facilityName) {

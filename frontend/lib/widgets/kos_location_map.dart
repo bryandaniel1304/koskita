@@ -23,6 +23,8 @@ class KosLocationMap extends StatelessWidget {
     'karawaci': LatLng(-6.2088, 106.6003),
     'bsd': LatLng(-6.3021, 106.6527),
     'serpong': LatLng(-6.3208, 106.6714),
+    'bsd city': LatLng(-6.3021, 106.6527),
+    'alam sutera': LatLng(-6.2410, 106.6520),
   };
 
   LatLng get _point {
