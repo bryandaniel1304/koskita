@@ -227,6 +227,7 @@
     </div>
     <p class="text-muted small mb-3">
         Dihitung real-time berdasarkan kondisi profil &amp; interaksi pengguna saat halaman ini dibuka, memakai algoritma yang sama persis dengan yang dipanggil aplikasi Flutter (<code>RecommendationService::getRecommendations</code>).
+        {{ $recommendationResult['candidate_count'] }} kos lolos batasan mutlak (gender, area, anggaran) dan diranking.
     </p>
     <div class="table-responsive">
         <table class="table align-middle table-hover mb-0">
@@ -259,7 +260,7 @@
                         </td>
                     </tr>
                 @empty
-                    @include('admin.partials.empty-row', ['colspan' => 7, 'icon' => 'bi-stars', 'text' => 'Belum ada kos untuk direkomendasikan.'])
+                    @include('admin.partials.empty-row', ['colspan' => 7, 'icon' => 'bi-stars', 'text' => 'Tidak ada kos yang memenuhi gender, area, dan anggaran pengguna ini.'])
                 @endforelse
             </tbody>
         </table>

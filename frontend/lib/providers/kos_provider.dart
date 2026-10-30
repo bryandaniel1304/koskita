@@ -18,6 +18,10 @@ class KosProvider with ChangeNotifier {
   List<Facility> _facilities = [];
   bool _isColdStart = true;
   int _ratingCount = 0;
+  // Preferensi wajib (area & anggaran) yang dipakai backend sebagai batasan
+  // mutlak -- ditampilkan saat tidak ada kos yang lolos supaya pengguna tahu
+  // preferensi mana yang perlu dilonggarkan.
+  Map<String, dynamic> _recommendationPreferences = {};
   bool _isLoading = false;
   bool _isRecommendationsLoading = false;
   bool _isFavoritesLoading = false;
@@ -43,6 +47,7 @@ class KosProvider with ChangeNotifier {
   List<Facility> get facilities => _facilities;
   bool get isColdStart => _isColdStart;
   int get ratingCount => _ratingCount;
+  Map<String, dynamic> get recommendationPreferences => _recommendationPreferences;
   bool get isLoading => _isLoading;
   bool get isRecommendationsLoading => _isRecommendationsLoading;
   bool get isFavoritesLoading => _isFavoritesLoading;
@@ -447,6 +452,7 @@ class KosProvider with ChangeNotifier {
       final data = jsonDecode(response.body);
       _isColdStart = data['is_cold_start'] ?? true;
       _ratingCount = data['rating_count'] ?? 0;
+      _recommendationPreferences = Map<String, dynamic>.from(data['preferences'] ?? {});
 
       final List<dynamic> recs = data['recommendations'] ?? [];
       _recommendations = recs.map((r) {

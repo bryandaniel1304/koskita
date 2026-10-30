@@ -51,8 +51,13 @@ class RecommendationService
         $ratingCount = $user->interactions()->whereNotNull('rating')->count();
         $isColdStart = ($ratingCount === 0);
 
-        // Ambil semua kos dengan relasi fasilitas & aturan
-        $koses = Kos::with('facilities', 'rules')->get();
+        // Ambil semua kos dengan relasi fasilitas & aturan, lalu gugurkan kos
+        // yang melanggar batasan mutlak (gender, area, anggaran). Penyaringan
+        // dilakukan sebelum penggabungan skor supaya Skor_CF yang tinggi pun
+        // tidak bisa memunculkan kos di luar preferensi wajib pengguna.
+        $koses = Kos::with('facilities', 'rules')->get()
+            ->filter(fn (Kos $kos) => $this->contentBasedFilter->violatedConstraint($kos, $profile) === null)
+            ->values();
 
         // Modul Content-Based Filtering selalu dihitung (dipakai baik saat
         // cold-start maupun warm-start).
@@ -92,6 +97,13 @@ class RecommendationService
             'is_cold_start' => $isColdStart,
             'rating_count' => $ratingCount,
             'alpha' => $this->combiner->effectiveAlpha($isColdStart),
+            'candidate_count' => $koses->count(),
+            'preferences' => [
+                'gender' => $profile->gender,
+                'location' => $profile->preferred_location,
+                'budget_min' => $profile->budget_min,
+                'budget_max' => $profile->budget_max,
+            ],
             'recommendations' => $recommendations,
         ];
     }
@@ -120,6 +132,20 @@ class RecommendationService
         $ratingCount = $user->interactions()->whereNotNull('rating')->count();
         $isColdStart = ($ratingCount === 0);
 
+        // Kos yang melanggar batasan mutlak tidak diberi persentase
+        // kecocokan -- cukup alasan kenapa kos ini di luar preferensi.
+        $violation = $this->contentBasedFilter->violatedConstraint($kos, $profile);
+        if ($violation !== null) {
+            return [
+                'score_cb' => 0.0,
+                'score_cf' => 0.0,
+                'score_hybrid' => 0.0,
+                'match_percentage' => 0,
+                'outside_preference' => true,
+                'explanation' => [$this->constraintMessage($violation, $kos, $profile)],
+            ];
+        }
+
         $koses = collect([$kos]);
 
         $cbScores = $this->contentBasedFilter->calculateScores($profile, $koses);
@@ -135,35 +161,29 @@ class RecommendationService
             'score_cf' => $scoreCF,
             'score_hybrid' => $scoreHybrid,
             'match_percentage' => (int) round($scoreHybrid * 100),
+            'outside_preference' => false,
             'explanation' => $this->generateExplanation($kos, $profile, $scoreCF),
         ];
     }
 
     /**
      * Hasilkan daftar alasan human-readable kenapa kos ini cocok/tidak cocok
-     * untuk profil pengguna. Dipakai di panel trace rekomendasi admin.
+     * untuk profil pengguna. Dipakai di detail kos dan panel trace
+     * rekomendasi admin.
      */
     protected function generateExplanation(Kos $kos, UserProfile $profile, float $scoreCF = 0.0): array
     {
+        $violation = $this->contentBasedFilter->violatedConstraint($kos, $profile);
+        if ($violation !== null) {
+            return [$this->constraintMessage($violation, $kos, $profile)];
+        }
+
         $reasons = [];
-
-        $kosGender = strtolower($kos->gender_type);
-        $userGender = strtolower($profile->gender);
-        if (($kosGender === 'putri' && $userGender === 'pria') ||
-            ($kosGender === 'putra' && $userGender === 'wanita')) {
-            return ['Tidak sesuai gender: kos ini untuk ' . $kos->gender_type . ', profil pengguna ' . $profile->gender];
-        }
         $reasons[] = 'Tipe kos (' . $kos->gender_type . ') sesuai dengan gender pengguna';
-
-        $price = $kos->price;
-        $min = $profile->budget_min ?? 1000000;
-        $max = $profile->budget_max ?? 3000000;
-        if ($price >= $min && $price <= $max) {
-            $reasons[] = 'Harga Rp' . number_format($price, 0, ',', '.') . ' masuk dalam rentang budget pengguna (Rp' . number_format($min, 0, ',', '.') . ' - Rp' . number_format($max, 0, ',', '.') . ')';
-        } else {
-            $reasons[] = 'Harga Rp' . number_format($price, 0, ',', '.') . ' di luar rentang budget pengguna (Rp' . number_format($min, 0, ',', '.') . ' - Rp' . number_format($max, 0, ',', '.') . ')';
+        if (filled($profile->preferred_location)) {
+            $reasons[] = 'Berada di area ' . $kos->location . ' sesuai area preferensi';
         }
-
+        $reasons[] = 'Harga ' . $this->rupiah($kos->price) . ' masuk dalam rentang budget pengguna (' . $this->budgetLabel($profile) . ')';
         $reasons[] = 'Jarak ke kampus ' . $kos->distance_to_campus . ' km';
 
         $prefFacilities = $profile->preferred_facilities ?? [];
@@ -185,5 +205,24 @@ class RecommendationService
         }
 
         return $reasons;
+    }
+
+    protected function constraintMessage(string $violation, Kos $kos, UserProfile $profile): string
+    {
+        return match ($violation) {
+            'gender' => 'Tidak sesuai gender: kos ini untuk ' . $kos->gender_type . ', profil pengguna ' . $profile->gender,
+            'location' => 'Di luar area preferensi: kos ini di ' . $kos->location . ', area pilihanmu ' . $profile->preferred_location,
+            default => 'Di luar budget: harga ' . $this->rupiah($kos->price) . ', budget pilihanmu ' . $this->budgetLabel($profile),
+        };
+    }
+
+    protected function budgetLabel(UserProfile $profile): string
+    {
+        return $this->rupiah($profile->budget_min ?? 0) . ' - ' . $this->rupiah($profile->budget_max ?? 0);
+    }
+
+    protected function rupiah($amount): string
+    {
+        return 'Rp' . number_format((float) $amount, 0, ',', '.');
     }
 }

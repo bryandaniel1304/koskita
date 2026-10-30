@@ -40,11 +40,7 @@ class ContentBasedFilter
         $userVector = $this->createUserPreferenceVector($profile);
 
         foreach ($koses as $kos) {
-            $kosGender = strtolower((string) $kos->gender_type);
-            $userGender = strtolower((string) $profile->gender);
-
-            if (($kosGender === 'putri' && $userGender === 'pria') ||
-                ($kosGender === 'putra' && $userGender === 'wanita')) {
+            if ($this->violatedConstraint($kos, $profile) !== null) {
                 $scores[$kos->id] = 0.0;
                 continue;
             }
@@ -54,6 +50,39 @@ class ContentBasedFilter
         }
 
         return $scores;
+    }
+
+    /**
+     * Batasan mutlak gender, area, dan anggaran -- identik dengan
+     * ContentBasedFilter::violatedConstraint() di production.
+     */
+    public function violatedConstraint(SourceKos $kos, SourceUserProfile $profile): ?string
+    {
+        $kosGender = strtolower((string) $kos->gender_type);
+        $userGender = strtolower((string) $profile->gender);
+        if (($kosGender === 'putri' && $userGender === 'pria') ||
+            ($kosGender === 'putra' && $userGender === 'wanita')) {
+            return 'gender';
+        }
+
+        $preferredArea = self::normalizeArea($profile->preferred_location);
+        if ($preferredArea !== '' && self::normalizeArea($kos->location) !== $preferredArea) {
+            return 'location';
+        }
+
+        if (($profile->budget_min !== null && $kos->price < $profile->budget_min) ||
+            ($profile->budget_max !== null && $kos->price > $profile->budget_max)) {
+            return 'budget';
+        }
+
+        return null;
+    }
+
+    public static function normalizeArea(?string $area): string
+    {
+        $area = strtolower(trim((string) $area));
+
+        return $area === 'bsd' ? 'bsd city' : $area;
     }
 
     protected function createUserPreferenceVector(SourceUserProfile $profile): array
@@ -96,17 +125,9 @@ class ContentBasedFilter
         $vector[] = ($kosGender === 'putri') ? 1.0 : 0.0;
         $vector[] = ($kosGender === 'campur') ? 1.0 : 0.0;
 
-        $price = $kos->price;
-        $min = $profile->budget_min ?? 1000000;
-        $max = $profile->budget_max ?? 3000000;
-
-        if ($price >= $min && $price <= $max) {
-            $vector[] = 1.0;
-        } elseif ($price < $min) {
-            $vector[] = $min > 0 ? $price / $min : 0.0;
-        } else {
-            $vector[] = max(0.0, 1.0 - (($price - $max) / max($max, 1)));
-        }
+        $min = $profile->budget_min ?? 0;
+        $max = $profile->budget_max ?? PHP_INT_MAX;
+        $vector[] = ($kos->price >= $min && $kos->price <= $max) ? 1.0 : 0.0;
 
         $distance = $kos->distance_to_campus;
         $vector[] = 1.0 / (1.0 + $distance);

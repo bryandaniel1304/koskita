@@ -187,6 +187,17 @@ class EvaluationService
             return array_keys($filtered);
         }
 
+        // Sama seperti production: kos yang melanggar batasan mutlak
+        // (gender, area, anggaran) gugur dari kandidat strategi yang memakai
+        // profil, sehingga tidak bisa naik peringkat lewat Skor_CF.
+        if (in_array($strategy, ['hybrid', 'cb_only'], true)) {
+            $kosById = $koses->keyBy('id');
+            $candidateKosIds = array_values(array_filter(
+                $candidateKosIds,
+                fn ($id) => $kosById->has($id) && $this->cb->violatedConstraint($kosById[$id], $user->profile) === null
+            ));
+        }
+
         $scoreCB = $this->cb->calculateScores($user->profile, $koses);
         $scoreCF = $strategy === 'cb_only'
             ? []

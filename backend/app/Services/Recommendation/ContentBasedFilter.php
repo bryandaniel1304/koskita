@@ -39,13 +39,8 @@ class ContentBasedFilter
         $userVector = $this->createUserPreferenceVector($profile);
 
         foreach ($koses as $kos) {
-            // Hard Constraint: Gender Match.
-            // Pria tidak boleh masuk kos putri, wanita tidak boleh masuk kos putra.
-            $kosGender = strtolower($kos->gender_type);
-            $userGender = strtolower($profile->gender);
-
-            if (($kosGender === 'putri' && $userGender === 'pria') ||
-                ($kosGender === 'putra' && $userGender === 'wanita')) {
+            // Kos yang melanggar batasan mutlak tidak dihitung kemiripannya.
+            if ($this->violatedConstraint($kos, $profile) !== null) {
                 $scores[$kos->id] = 0.0;
                 continue;
             }
@@ -69,13 +64,9 @@ class ContentBasedFilter
     public function calculateScoresForKos(Kos $kos, Collection $profiles): array
     {
         $scores = [];
-        $kosGender = strtolower($kos->gender_type);
 
         foreach ($profiles as $profile) {
-            $userGender = strtolower($profile->gender);
-
-            if (($kosGender === 'putri' && $userGender === 'pria') ||
-                ($kosGender === 'putra' && $userGender === 'wanita')) {
+            if ($this->violatedConstraint($kos, $profile) !== null) {
                 $scores[$profile->user_id] = 0.0;
                 continue;
             }
@@ -86,6 +77,48 @@ class ContentBasedFilter
         }
 
         return $scores;
+    }
+
+    /**
+     * Batasan mutlak (hard constraint): kos yang tidak memenuhi salah satu
+     * preferensi wajib pengguna gugur dari daftar kandidat, bukan sekadar
+     * diturunkan skornya. Mengembalikan kunci batasan yang dilanggar
+     * ('gender', 'location', 'budget') atau null bila kos lolos.
+     */
+    public function violatedConstraint(Kos $kos, UserProfile $profile): ?string
+    {
+        // 1. Jenis kelamin: pria tidak masuk kos putri, wanita tidak masuk kos putra.
+        $kosGender = strtolower((string) $kos->gender_type);
+        $userGender = strtolower((string) $profile->gender);
+        if (($kosGender === 'putri' && $userGender === 'pria') ||
+            ($kosGender === 'putra' && $userGender === 'wanita')) {
+            return 'gender';
+        }
+
+        // 2. Area preferensi: kos harus berada di area yang dipilih pengguna.
+        $preferredArea = self::normalizeArea($profile->preferred_location);
+        if ($preferredArea !== '' && self::normalizeArea($kos->location) !== $preferredArea) {
+            return 'location';
+        }
+
+        // 3. Rentang anggaran: harga sewa harus di dalam [budget_min, budget_max].
+        if (($profile->budget_min !== null && $kos->price < $profile->budget_min) ||
+            ($profile->budget_max !== null && $kos->price > $profile->budget_max)) {
+            return 'budget';
+        }
+
+        return null;
+    }
+
+    /**
+     * Samakan penulisan area: form profil menyimpan "BSD", sedangkan data
+     * kos memakai "BSD City".
+     */
+    public static function normalizeArea(?string $area): string
+    {
+        $area = strtolower(trim((string) $area));
+
+        return $area === 'bsd' ? 'bsd city' : $area;
     }
 
     /**
@@ -143,20 +176,12 @@ class ContentBasedFilter
         $vector[] = ($kosGender === 'putri') ? 1.0 : 0.0;
         $vector[] = ($kosGender === 'campur') ? 1.0 : 0.0;
 
-        // 4. Kesesuaian Budget.
-        // Jika harga masuk rentang budget, skor 1.0.
-        // Jika di luar rentang, hitung deviasinya secara linear.
-        $price = $kos->price;
-        $min = $profile->budget_min ?? 1000000;
-        $max = $profile->budget_max ?? 3000000;
-
-        if ($price >= $min && $price <= $max) {
-            $vector[] = 1.0;
-        } elseif ($price < $min) {
-            $vector[] = $price / $min;
-        } else {
-            $vector[] = max(0.0, 1.0 - (($price - $max) / $max));
-        }
+        // 4. Kesesuaian Budget: 1.0 bila harga di dalam rentang anggaran.
+        // Kos di luar rentang sudah gugur oleh batasan mutlak sebelum
+        // vektornya dibentuk, jadi nilai 0.0 di sini hanya pengaman.
+        $min = $profile->budget_min ?? 0;
+        $max = $profile->budget_max ?? PHP_INT_MAX;
+        $vector[] = ($kos->price >= $min && $kos->price <= $max) ? 1.0 : 0.0;
 
         // 5. Jarak ke Kampus (Jarak lebih dekat = nilai lebih besar).
         // Menggunakan formula: 1 / (1 + jarak_km)

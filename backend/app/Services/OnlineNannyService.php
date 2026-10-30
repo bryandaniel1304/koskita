@@ -171,7 +171,7 @@ class OnlineNannyService
         $recs = $result['recommendations'];
 
         if (empty($recs)) {
-            return $this->reply('Waduh, belum ada kos yang bisa aku rekomendasikan sekarang. Coba lengkapi dulu profil preferensimu di halaman Profil ya!');
+            return $this->reply('Waduh, belum ada kos yang sesuai area dan budget di profilmu. Coba longgarkan rentang budget atau ganti area di halaman Profil, nanti aku carikan lagi ya!');
         }
 
         $names = collect($recs)->map(fn ($r) => $r['kos']->name . ' (' . $r['match_percentage'] . '% cocok)')->implode(', ');

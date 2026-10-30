@@ -735,51 +735,60 @@ class _KosDetailScreenState extends State<KosDetailScreen> {
                         ),
                         if (kosProvider.currentRecommendation != null) ...[
                           const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppTheme.primary.withValues(alpha: 0.08),
-                                  AppTheme.primary.withValues(alpha: 0.02),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.15)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.auto_awesome_rounded, color: AppTheme.primary, size: 18),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${kosProvider.currentRecommendation!['match_percentage']}% Cocok dengan Profilmu',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary, fontSize: 13.5),
-                                    ),
+                          Builder(builder: (context) {
+                            // Kos yang melanggar gender/area/anggaran tidak
+                            // diberi persentase -- cukup alasan kenapa di luar
+                            // preferensi.
+                            final outside = kosProvider.currentRecommendation!['outside_preference'] == true;
+                            final accent = outside ? AppTheme.warning : AppTheme.primary;
+                            return Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    accent.withValues(alpha: 0.08),
+                                    accent.withValues(alpha: 0.02),
                                   ],
                                 ),
-                                const Divider(height: 20),
-                                ...((kosProvider.currentRecommendation!['explanation'] as List<dynamic>?) ?? [])
-                                    .map((reason) => Padding(
-                                          padding: const EdgeInsets.only(bottom: 6),
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              const Text('• ', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                                              Expanded(
-                                                child: Text(
-                                                  reason.toString(),
-                                                  style: const TextStyle(fontSize: 12.5, height: 1.35),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: accent.withValues(alpha: 0.15)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(outside ? Icons.info_outline_rounded : Icons.auto_awesome_rounded, color: accent, size: 18),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        outside
+                                            ? 'Di Luar Preferensimu'
+                                            : '${kosProvider.currentRecommendation!['match_percentage']}% Cocok dengan Profilmu',
+                                        style: TextStyle(fontWeight: FontWeight.bold, color: accent, fontSize: 13.5),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(height: 20),
+                                  ...((kosProvider.currentRecommendation!['explanation'] as List<dynamic>?) ?? [])
+                                      .map((reason) => Padding(
+                                            padding: const EdgeInsets.only(bottom: 6),
+                                            child: Row(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text('• ', style: TextStyle(fontWeight: FontWeight.bold, color: accent)),
+                                                Expanded(
+                                                  child: Text(
+                                                    reason.toString(),
+                                                    style: const TextStyle(fontSize: 12.5, height: 1.35),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        )),
-                              ],
-                            ),
-                          ),
+                                              ],
+                                            ),
+                                          )),
+                                ],
+                              ),
+                            );
+                          }),
                         ],
                         if (kos.ownerName != null) ...[
                           const SizedBox(height: 10),

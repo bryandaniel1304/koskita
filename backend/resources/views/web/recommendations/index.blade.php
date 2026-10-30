@@ -20,7 +20,12 @@
     @if(empty($recommendations))
         <div class="card-koskita p-5 text-center mt-3">
             <i class="bi bi-emoji-neutral fs-1 text-muted mb-3"></i>
-            <p class="text-muted mb-0">Belum ada kos yang bisa direkomendasikan saat ini.</p>
+            <p class="fw-semibold mb-1">Rekomendasi belum tersedia untuk preferensimu.</p>
+            <p class="text-muted small mb-0">
+                Belum ada kos di area {{ $preferences['location'] ?? '-' }} dengan harga
+                Rp{{ number_format($preferences['budget_min'] ?? 0, 0, ',', '.') }} - Rp{{ number_format($preferences['budget_max'] ?? 0, 0, ',', '.') }}
+                yang sesuai tipe kos untukmu. Coba longgarkan rentang budget atau pilih area lain di menu Profil pada aplikasi KosKita.
+            </p>
         </div>
     @else
         <div class="row g-4 mt-1">

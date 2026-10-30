@@ -40,7 +40,7 @@ class RecommendationLifecycleTest extends TestCase
     public function test_rating_a_kos_moves_tenant_from_cold_start_to_warm_start(): void
     {
         $tenant = $this->tenant();
-        $koses = Kos::factory()->count(3)->create(['gender_type' => 'campur']);
+        $koses = Kos::factory()->count(3)->create(['gender_type' => 'campur', 'location' => 'Karawaci', 'price' => 2000000]);
 
         $this->actingAs($tenant, 'sanctum')->getJson('/api/recommendations')
             ->assertOk()
@@ -90,7 +90,7 @@ class RecommendationLifecycleTest extends TestCase
     {
         $tenant = $this->tenant();
         $other = $this->tenant();
-        $koses = Kos::factory()->count(2)->create(['gender_type' => 'campur']);
+        $koses = Kos::factory()->count(2)->create(['gender_type' => 'campur', 'location' => 'Karawaci', 'price' => 2000000]);
 
         $this->actingAs($tenant, 'sanctum')->postJson("/api/kos/{$koses[0]->id}/rate", ['rating' => 5])->assertOk();
         $this->actingAs($tenant, 'sanctum')->postJson("/api/kos/{$koses[1]->id}/rate", ['is_favorite' => true])->assertOk();
@@ -110,7 +110,7 @@ class RecommendationLifecycleTest extends TestCase
     {
         $master = User::factory()->create(['role' => 'admin', 'is_master_admin' => true]);
         $tenant = $this->tenant();
-        $kos = Kos::factory()->create(['gender_type' => 'campur', 'name' => 'Kos Uji Rincian Skor']);
+        $kos = Kos::factory()->create(['gender_type' => 'campur', 'location' => 'Karawaci', 'price' => 2000000, 'name' => 'Kos Uji Rincian Skor']);
 
         $this->actingAs($master)->get("/admin/users/{$tenant->id}")
             ->assertOk()

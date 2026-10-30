@@ -346,6 +346,47 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Rekomendasi kosong berarti tidak ada kos yang lolos batasan mutlak
+  /// (gender, area, anggaran) -- tampilkan preferensinya beserta saran
+  /// melonggarkan, bukan sekadar "tidak ada data".
+  Widget _noRecommendationCard(BuildContext context, Map<String, dynamic> prefs) {
+    final area = prefs['location'] as String?;
+    final min = (prefs['budget_min'] as num?)?.toInt();
+    final max = (prefs['budget_max'] as num?)?.toInt();
+    final criteria = [
+      if (area != null && area.isNotEmpty) 'di area $area',
+      if (min != null && max != null) 'dengan harga ${formatKosPrice(min)} - ${formatKosPrice(max)}',
+    ].join(' ');
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Rekomendasi belum tersedia', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(height: 6),
+          Text(
+            criteria.isEmpty
+                ? 'Lengkapi profil preferensimu agar kami bisa mencarikan kos yang cocok.'
+                : 'Belum ada kos $criteria yang sesuai tipe kos untukmu. Coba longgarkan rentang budget atau pilih area lain.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.45),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => context.push('/onboarding'),
+            icon: const Icon(Icons.tune_rounded, size: 18),
+            label: const Text('Ubah Preferensi'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -508,7 +549,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Rekomendasi Terbaik Untukmu', style: Theme.of(context).textTheme.titleLarge),
-                                  if (kosProvider.recommendations.isEmpty) Text('Tidak ada data', style: Theme.of(context).textTheme.bodySmall),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -521,16 +561,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              height: 130,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Theme.of(context).dividerTheme.color ?? Colors.transparent),
-                              ),
-                              child: Text('Silakan lengkapi profil preferensi kamu.', style: Theme.of(context).textTheme.bodyMedium),
-                            ),
+                            child: _noRecommendationCard(context, kosProvider.recommendationPreferences),
                           ),
                         )
                       else

@@ -241,7 +241,9 @@ class OwnerKosController extends Controller
             ->whereHas('user', fn ($q) => $q->where('role', 'user'))
             ->get();
 
-        $scores = $cb->calculateScoresForKos($kos, $profiles);
+        // Penyewa yang preferensi wajibnya (gender, area, anggaran) tidak
+        // dipenuhi kos ini bernilai 0 dan tidak ditampilkan.
+        $scores = array_filter($cb->calculateScoresForKos($kos, $profiles), fn ($score) => $score > 0);
         arsort($scores);
         $top = array_slice($scores, 0, 10, true);
 

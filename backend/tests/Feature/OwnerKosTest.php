@@ -86,7 +86,7 @@ class OwnerKosTest extends TestCase
     public function test_matches_endpoint_only_returns_tenant_profiles_matching_kos_gender(): void
     {
         $owner = $this->makeOwner();
-        $kos = Kos::factory()->create(['owner_id' => $owner->id, 'gender_type' => 'putri']);
+        $kos = Kos::factory()->create(['owner_id' => $owner->id, 'gender_type' => 'putri', 'price' => 2000000]);
 
         $matchingTenant = User::factory()->create(['role' => 'user']);
         UserProfile::create([
