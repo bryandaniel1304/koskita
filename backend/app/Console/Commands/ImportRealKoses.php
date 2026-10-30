@@ -380,6 +380,14 @@ class ImportRealKoses extends Command
      */
     protected function isSameProperty(array $a, array $b): bool
     {
+        // (c) Alamat jalan + nomor identik = gedung yang sama, walau namanya
+        //     berbeda antarplatform ("GP Residence" vs "Kost Gpresiden",
+        //     keduanya Jl. Wates No.32).
+        $addressA = $this->addressKey($a['street_address'] ?? null);
+        if ($addressA !== null && $addressA === $this->addressKey($b['street_address'] ?? null)) {
+            return true;
+        }
+
         $nameA = $this->normalizeName($a['name']);
         $nameB = $this->normalizeName($b['name']);
 
@@ -406,6 +414,23 @@ class ImportRealKoses extends Command
         }
 
         return $this->haversineKm($a['lat'], $a['lng'], $b['lat'], $b['lng']) <= self::MAX_MATCH_DISTANCE_KM;
+    }
+
+    /**
+     * Kunci alamat: segmen pertama alamat (sebelum koma) tanpa tanda baca,
+     * spasi, dan kata "jalan/no/blok", sehingga "Jl. Wates No.32" dan
+     * "Jalan wates no 32" sama. Alamat tanpa angka (mis. hanya nama
+     * kecamatan) terlalu umum untuk dijadikan bukti dan diabaikan.
+     */
+    protected function addressKey(?string $address): ?string
+    {
+        $first = mb_strtolower(trim(explode(',', (string) $address)[0]));
+        if (!preg_match('/\d/', $first)) {
+            return null;
+        }
+        $first = preg_replace('/\b(jalan|jln|jl|nomor|no|blok|blk)\b/', ' ', preg_replace('/[^a-z0-9 ]/', ' ', $first));
+
+        return preg_replace('/\s+/', '', $first);
     }
 
     /**
