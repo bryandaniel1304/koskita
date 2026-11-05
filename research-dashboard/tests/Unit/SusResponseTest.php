@@ -39,6 +39,18 @@ class SusResponseTest extends TestCase
         $this->assertSame('41–59', SusResponse::percentileRange(68.0));
     }
 
+    public function test_quality_flags_mark_straight_lining_and_contradictory_answers(): void
+    {
+        $this->assertTrue(SusResponse::isStraightLining([3, 3, 3, 3, 3, 3, 3, 3, 3, 3]));
+        $this->assertFalse(SusResponse::isStraightLining([5, 1, 5, 1, 5, 1, 5, 1, 5, 1]));
+
+        // Q3 setuju "mudah" + Q2 setuju "rumit", atau + Q8 setuju "membingungkan".
+        $this->assertTrue(SusResponse::isContradictory([5, 4, 5, 4, 5, 4, 5, 4, 4, 4]));
+        $this->assertTrue(SusResponse::isContradictory([4, 3, 4, 3, 4, 3, 3, 4, 5, 5]));
+        $this->assertFalse(SusResponse::isContradictory([4, 4, 3, 5, 5, 4, 4, 4, 4, 3])); // Q3 netral
+        $this->assertFalse(SusResponse::isContradictory([5, 1, 5, 5, 5, 5, 5, 1, 5, 5]));
+    }
+
     public function test_scores_between_table_rows_round_to_one_decimal_like_the_table(): void
     {
         $this->assertSame('A+', SusResponse::interpret(84.06));

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\EvaluationRun;
 use App\Models\Source\SourceUser;
 use App\Models\Source\SourceUserInteraction;
-use App\Models\SusResponse;
+use App\Services\Sus\SusDataset;
 
 class DashboardController extends Controller
 {
@@ -22,8 +22,10 @@ class DashboardController extends Controller
         $occupationBreakdown = $respondents->pluck('profile.occupation')->filter()->countBy();
         $locationBreakdown = $respondents->pluck('profile.preferred_location')->filter()->countBy();
 
-        $susCount = SusResponse::count();
-        $avgSusScore = SusResponse::avg('sus_score');
+        $susRows = SusDataset::rows();
+        $susCount = $susRows->count();
+        $avgSusScore = SusDataset::summary($susRows)['mean'];
+        $susSourceCounts = $susRows->countBy('source');
 
         $latestBatchLabel = EvaluationRun::max('batch_label');
         $latestRuns = $latestBatchLabel
@@ -39,6 +41,7 @@ class DashboardController extends Controller
             'locationBreakdown',
             'susCount',
             'avgSusScore',
+            'susSourceCounts',
             'latestRuns'
         ));
     }

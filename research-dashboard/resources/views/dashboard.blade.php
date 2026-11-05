@@ -6,7 +6,7 @@
 <div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
     <div>
         <h4 class="fw-bold mb-1">Ringkasan Data Skripsi</h4>
-        <p class="text-muted mb-0">Semua angka di sini dihitung langsung dari database "koskita" (baca-saja) -- tidak ada data disintesis di dashboard ini.</p>
+        <p class="text-muted mb-0">Semua angka di sini dihitung langsung dari database "koskita" (baca-saja), ditambah jawaban SUS panel Populix yang diimpor ke database dashboard -- tidak ada data disintesis di dashboard ini.</p>
     </div>
     <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print">🖨️ Cetak / Simpan sebagai PDF</button>
 </div>
@@ -37,7 +37,7 @@
         <div class="card-custom p-3">
             <div class="stat-label">Rata-rata Skor SUS</div>
             <div class="stat-value">{{ $avgSusScore ? number_format($avgSusScore, 1) : '—' }}</div>
-            <div class="small text-muted">{{ $susCount }} responden mengisi</div>
+            <div class="small text-muted">{{ $susCount }} responden mengisi (KosKita {{ $susSourceCounts['koskita'] ?? 0 }} · Populix {{ $susSourceCounts['populix'] ?? 0 }})</div>
         </div>
     </div>
 </div>

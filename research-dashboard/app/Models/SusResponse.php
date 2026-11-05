@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * Satu pengisian kuesioner System Usability Scale (Brooke, 1996) oleh
@@ -92,6 +93,30 @@ class SusResponse extends Model
     }
 
     /**
+     * Penanda kualitas jawaban: kesepuluh pernyataan dijawab dengan angka
+     * yang sama (straight-lining), padahal arah pernyataan ganjil dan genap
+     * berlawanan.
+     *
+     * @param array<int, int> $answers 10 jawaban, q1..q10 berurutan.
+     */
+    public static function isStraightLining(array $answers): bool
+    {
+        return count(array_unique($answers)) === 1;
+    }
+
+    /**
+     * Penanda kualitas jawaban: setuju sistem "mudah digunakan" (Q3 >= 4)
+     * sekaligus setuju sistem "rumit" (Q2 >= 4) atau "membingungkan"
+     * (Q8 >= 4).
+     *
+     * @param array<int, int> $answers 10 jawaban, q1..q10 berurutan.
+     */
+    public static function isContradictory(array $answers): bool
+    {
+        return $answers[2] >= 4 && ($answers[1] >= 4 || $answers[7] >= 4);
+    }
+
+    /**
      * Peringkat CGS Sauro-Lewis untuk sebuah skor SUS (lihat CGS). Dulu
      * memakai campuran batas Bangor et al. dan CGS yang tidak bersumber;
      * kini satu tabel yang sama dengan Tabel 4.28 Buku TA.
@@ -130,11 +155,12 @@ class SusResponse extends Model
      * 1-5 yang arahnya bolak-balik tiap nomor genap/ganjil. Dipakai untuk
      * cari aspek aplikasi yang paling lemah/kuat menurut responden.
      *
+     * @param Collection<int, mixed>|null $responses baris berkolom q1..q10 (bawaan: seluruh tabel ini)
      * @return array<int, array{question:int, text:string, avg_raw:float, avg_contribution:float}>
      */
-    public static function perQuestionBreakdown(): array
+    public static function perQuestionBreakdown(?Collection $responses = null): array
     {
-        $responses = self::all(['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10']);
+        $responses ??= self::all(['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10']);
         $count = $responses->count();
 
         $breakdown = [];
@@ -159,13 +185,14 @@ class SusResponse extends Model
      * Sebaran jumlah responden per peringkat CGS -- dipakai chart "berapa
      * responden yang memberi skor setara A+/A/.../F".
      *
+     * @param Collection<int, mixed>|null $responses baris berkolom sus_score (bawaan: seluruh tabel ini)
      * @return array<string, int>
      */
-    public static function gradeDistribution(): array
+    public static function gradeDistribution(?Collection $responses = null): array
     {
         $grades = array_fill_keys(array_column(self::CGS, 1), 0);
 
-        self::pluck('sus_score')->each(function (float $score) use (&$grades) {
+        ($responses ?? self::all(['sus_score']))->pluck('sus_score')->each(function (float $score) use (&$grades) {
             $grades[self::interpret($score)]++;
         });
 
