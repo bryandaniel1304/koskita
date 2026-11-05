@@ -11,7 +11,7 @@
                         <i class="bi bi-stars me-1"></i>Rekomendasi otomatis, bukan cuma daftar kos
                     </span>
                     <h1 class="fw-bold display-6 mb-3">Temukan kos yang paling cocok buatmu, bukan cuma yang ada.</h1>
-                    <p class="mb-4" style="opacity: 0.92; max-width: 560px;">KosKita mencocokkan budget, preferensi fasilitas, dan gaya hidupmu dengan {{ $totalKos }}+ kos di Karawaci, BSD, dan Serpong -- lengkap dengan peta lokasi dan ulasan asli penyewa.</p>
+                    <p class="mb-4" style="opacity: 0.92; max-width: 560px;">KosKita mencocokkan budget, preferensi fasilitas, dan gaya hidupmu dengan {{ $totalKos }}+ kos di Karawaci, BSD, Serpong, dan Alam Sutera -- lengkap dengan peta lokasi dan ulasan asli penyewa.</p>
                 </div>
             </div>
 

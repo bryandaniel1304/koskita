@@ -122,7 +122,7 @@ class ContentBasedFilter
     }
 
     /**
-     * Membuat vektor preferensi pengguna (15 dimensi: tipe kos, budget,
+     * Membuat vektor preferensi pengguna (5 + F + A dimensi: tipe kos, budget,
      * jarak, fasilitas, aturan).
      */
     protected function createUserPreferenceVector(UserProfile $profile): array
@@ -148,13 +148,13 @@ class ContentBasedFilter
         // 5. Jarak (pengguna menginginkan jarak sedekat mungkin = 1.0)
         $vector[] = 1.0;
 
-        // 6-11. Fasilitas
+        // 6-(5+F). Fasilitas (F = jumlah baris tabel facilities)
         $prefFacilities = $profile->preferred_facilities ?? [];
         foreach ($this->facilityList() as $facName) {
             $vector[] = in_array($facName, $prefFacilities) ? 1.0 : 0.0;
         }
 
-        // 12-15. Aturan
+        // (6+F)-(5+F+A). Aturan (A = jumlah baris tabel rules)
         $prefRules = $profile->preferred_rules ?? [];
         foreach ($this->ruleList() as $ruleName) {
             $vector[] = in_array($ruleName, $prefRules) ? 1.0 : 0.0;
@@ -188,13 +188,13 @@ class ContentBasedFilter
         $distance = $kos->distance_to_campus;
         $vector[] = 1.0 / (1.0 + $distance);
 
-        // 6-11. Fasilitas
+        // 6-(5+F). Fasilitas (F = jumlah baris tabel facilities)
         $kosFacilities = $kos->facilities->pluck('name')->toArray();
         foreach ($this->facilityList() as $facName) {
             $vector[] = in_array($facName, $kosFacilities) ? 1.0 : 0.0;
         }
 
-        // 12-15. Aturan
+        // (6+F)-(5+F+A). Aturan (A = jumlah baris tabel rules)
         $kosRules = $kos->rules->pluck('name')->toArray();
         foreach ($this->ruleList() as $ruleName) {
             $vector[] = in_array($ruleName, $kosRules) ? 1.0 : 0.0;

@@ -35,6 +35,18 @@ void main() {
     expect(find.text('Penyedia Kos'), findsOneWidget);
   });
 
+  testWidgets('forgot-password link shows only on the login form', (tester) async {
+    await tester.pumpWidget(wrap(const LoginRegisterScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lupa password?'), findsOneWidget);
+
+    await tester.tap(find.text('Belum punya akun? Daftar sekarang'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lupa password?'), findsNothing);
+  });
+
   testWidgets('submitting registration without picking a role shows a validation message', (tester) async {
     await tester.pumpWidget(wrap(const LoginRegisterScreen()));
     await tester.pumpAndSettle();

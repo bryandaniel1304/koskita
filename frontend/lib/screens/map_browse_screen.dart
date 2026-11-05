@@ -183,23 +183,19 @@ class _MapBrowseScreenState extends State<MapBrowseScreen> {
                     },
                   ),
                   children: [
-                    // Gaya peta ikut mode tema aplikasi -- gelap & moody pas
-                    // dark mode (senada dengan tampilan peta app modern),
-                    // terang & bersih pas light mode. Tile CartoDB dipakai
-                    // (bukan cuma OSM standar) karena punya varian dark_all
-                    // siap pakai tanpa API key.
+                    // Tile OSM standar, sama seperti peta di detail kos. Tile
+                    // CartoDB tidak dipakai lagi karena kini menampilkan
+                    // watermark "API KEY REQUIRED" tanpa kunci. Pada dark mode
+                    // warna tile dibalik lewat darkModeTileBuilder.
                     TileLayer(
-                      urlTemplate: isDark
-                          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                      subdomains: const ['a', 'b', 'c', 'd'],
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.koskita.frontend',
+                      tileBuilder: isDark ? darkModeTileBuilder : null,
                     ),
                     RichAttributionWidget(
                       alignment: AttributionAlignment.bottomLeft,
                       attributions: [
                         TextSourceAttribution('OpenStreetMap contributors', onTap: () {}),
-                        const TextSourceAttribution('CARTO'),
                       ],
                     ),
                     MarkerLayer(

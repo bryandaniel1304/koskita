@@ -266,6 +266,13 @@
         </table>
     </div>
 </div>
+@elseif($targetUser->role === 'user')
+<div class="card-custom">
+    <h6 class="fw-bold mb-2"><i class="bi bi-stars"></i> Rekomendasi Saat Ini (Live)</h6>
+    <p class="text-muted small mb-0">
+        Pengguna ini belum menyelesaikan pengisian profil preferensi, sehingga vektor preferensi belum terbentuk dan rekomendasi belum dihitung.
+    </p>
+</div>
 @endif
 
 <div class="mt-4">

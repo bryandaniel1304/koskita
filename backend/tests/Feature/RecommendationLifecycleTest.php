@@ -32,6 +32,7 @@ class RecommendationLifecycleTest extends TestCase
             'preferred_facilities' => [],
             'preferred_rules' => [],
             'preferred_location' => 'Karawaci',
+            'completed_at' => now(),
         ]);
 
         return $user;
@@ -126,6 +127,19 @@ class RecommendationLifecycleTest extends TestCase
             ->assertOk()
             ->assertSee('Hybrid CB+CF (α = 0.6)')
             ->assertDontSee('Content-Based Murni (α = 1.0)');
+    }
+
+    public function test_score_breakdown_waits_until_tenant_completes_profile(): void
+    {
+        $master = User::factory()->create(['role' => 'admin', 'is_master_admin' => true]);
+        $tenant = $this->tenant();
+        $tenant->profile->update(['completed_at' => null]);
+        Kos::factory()->create(['gender_type' => 'campur', 'location' => 'Karawaci', 'price' => 2000000]);
+
+        $this->actingAs($master)->get("/admin/users/{$tenant->id}")
+            ->assertOk()
+            ->assertSee('vektor preferensi belum terbentuk')
+            ->assertDontSee('Score Hybrid');
     }
 
     public function test_regular_admin_and_tenant_cannot_open_the_score_breakdown(): void

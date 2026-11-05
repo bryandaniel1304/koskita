@@ -89,8 +89,11 @@ class AdminUserController extends Controller
     {
         $user = User::with(['profile', 'interactions.kos', 'koses'])->findOrFail($id);
 
+        // Profil awal dari registrasi berisi nilai bawaan (completed_at null),
+        // bukan pilihan pengguna -- vektor preferensinya belum terbentuk,
+        // jadi rekomendasi tidak dihitung (alur alternatif UC-45).
         $recommendationResult = null;
-        if ($user->role === 'user') {
+        if ($user->role === 'user' && $user->profile?->completed_at !== null) {
             $recommendationResult = $recommendationService->getRecommendations((int) $id, 10);
         }
 

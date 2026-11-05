@@ -104,7 +104,10 @@ class WebKosController extends Controller
         // discroll ke samping (lihat .table-responsive di compare.blade.php).
         // 50 di sini murni jaga-jaga anti-abuse (mis. seseorang comot query
         // string berisi ratusan id), bukan batas UX.
-        $ids = array_slice(array_filter(array_map('intval', explode(',', (string) $request->query('ids')))), 0, 50);
+        // ?ids=1,2 (format tautan) maupun ?ids[]=1&ids[]=2 (form) diterima.
+        $raw = $request->query('ids');
+        $raw = is_array($raw) ? implode(',', $raw) : (string) $raw;
+        $ids = array_slice(array_filter(array_map('intval', explode(',', $raw))), 0, 50);
 
         if (count($ids) < 2) {
             return redirect()->route('web.kos.index')->withErrors(['compare' => 'Pilih minimal 2 kos dulu buat dibandingkan.']);

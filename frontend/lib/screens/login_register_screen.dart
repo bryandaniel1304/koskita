@@ -480,7 +480,19 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                                             ],
                                           ),
                                         )
-                                      : const SizedBox(width: double.infinity),
+                                      // Atur ulang password (UC-07) memakai halaman situs
+                                      // (/lupa-password) karena tautan reset dari email
+                                      // memang dibuka di browser.
+                                      : Align(
+                                          alignment: Alignment.centerRight,
+                                          child: TextButton(
+                                            onPressed: () => openLegalPage(context, '/lupa-password'),
+                                            child: const Text(
+                                              'Lupa password?',
+                                              style: TextStyle(fontSize: 12.5, color: AppTheme.primary, fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                        ),
                                 ),
                                 const SizedBox(height: 22),
 

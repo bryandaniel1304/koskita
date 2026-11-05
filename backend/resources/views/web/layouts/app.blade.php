@@ -15,7 +15,7 @@
     </script>
     @php
         $pageTitle = trim((string) ($__env->yieldContent('title') ?: 'Cari Kos Terbaik'));
-        $pageDescription = trim((string) ($__env->yieldContent('meta_description') ?: 'KosKita membantu kamu menemukan kos yang paling cocok di sekitar Karawaci, BSD, dan Serpong -- lengkap dengan rekomendasi otomatis, peta lokasi, dan ulasan penyewa lain.'));
+        $pageDescription = trim((string) ($__env->yieldContent('meta_description') ?: 'KosKita membantu kamu menemukan kos yang paling cocok di sekitar Karawaci, BSD, Serpong, dan Alam Sutera -- lengkap dengan rekomendasi otomatis, peta lokasi, dan ulasan penyewa lain.'));
         $pageOgImage = trim((string) ($__env->yieldContent('og_image') ?: asset('images/logo_icon.png')));
         $pageOgType = trim((string) ($__env->yieldContent('og_type') ?: 'website'));
     @endphp
@@ -392,7 +392,7 @@
                         <img src="{{ asset('images/logo_icon.png') }}" alt="KosKita">
                         KosKita
                     </div>
-                    <p class="small mb-0">Platform rekomendasi kos untuk mahasiswa di Karawaci, BSD, dan Serpong -- mencocokkan kamu dengan kos yang paling sesuai budget, preferensi, dan gaya hidup lewat sistem rekomendasi hybrid.</p>
+                    <p class="small mb-0">Platform rekomendasi kos untuk mahasiswa di Karawaci, BSD, Serpong, dan Alam Sutera -- mencocokkan kamu dengan kos yang paling sesuai budget, preferensi, dan gaya hidup lewat sistem rekomendasi hybrid.</p>
                 </div>
                 <div class="col-lg-2 col-6">
                     <h6>Jelajahi</h6>

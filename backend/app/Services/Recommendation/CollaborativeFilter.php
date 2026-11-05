@@ -62,14 +62,11 @@ class CollaborativeFilter
             }
         }
 
-        // 3. Prediksi Rating untuk setiap kos yang belum dirating oleh target user
+        // 3. Prediksi rating setiap kos dari rating para tetangga (persamaan
+        // 2.3). Rating milik target user sendiri tidak dipakai sebagai skor,
+        // termasuk untuk kos yang sudah ia rating, sehingga skor produksi sama
+        // dengan model yang dievaluasi di research-dashboard.
         foreach ($koses as $kos) {
-            // Jika user sudah merating kos ini, kita bisa memberikan skor berdasarkan rating aktualnya
-            if (isset($targetRatings[$kos->id])) {
-                $scores[$kos->id] = $targetRatings[$kos->id] / 5.0; // Normalisasi ke [0,1]
-                continue;
-            }
-
             $weightedSum = 0.0;
             $similaritySum = 0.0;
 

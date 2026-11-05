@@ -82,6 +82,30 @@ class RecommendationServiceTest extends TestCase
         $this->assertEquals(0.6, $result['alpha']);
     }
 
+    /**
+     * Skor_CF mengikuti persamaan (2.3): rata-rata terbobot rating tetangga.
+     * Rating milik pengguna sendiri tidak dijadikan skor, jadi kos yang
+     * hanya ia rating sendiri (tanpa tetangga) bernilai nol.
+     */
+    public function test_cf_score_comes_only_from_neighbours_ratings(): void
+    {
+        $user = $this->makeUserWithProfile();
+        $neighbour = User::factory()->create(['role' => 'user']);
+        [$sharedKos, $ownOnlyKos, $neighbourOnlyKos] = $this->matchingKos(3)->all();
+
+        UserInteraction::create(['user_id' => $user->id, 'kos_id' => $sharedKos->id, 'rating' => 5]);
+        UserInteraction::create(['user_id' => $user->id, 'kos_id' => $ownOnlyKos->id, 'rating' => 5]);
+        UserInteraction::create(['user_id' => $neighbour->id, 'kos_id' => $sharedKos->id, 'rating' => 3]);
+        UserInteraction::create(['user_id' => $neighbour->id, 'kos_id' => $neighbourOnlyKos->id, 'rating' => 4]);
+
+        $result = (new RecommendationService())->getRecommendations($user->id, 10);
+        $cf = collect($result['recommendations'])->mapWithKeys(fn ($rec) => [$rec['kos']->id => $rec['score_cf']]);
+
+        $this->assertEqualsWithDelta(3 / 5, $cf[$sharedKos->id], 1e-9);
+        $this->assertEqualsWithDelta(0.0, $cf[$ownOnlyKos->id], 1e-9);
+        $this->assertEqualsWithDelta(4 / 5, $cf[$neighbourOnlyKos->id], 1e-9);
+    }
+
     public function test_gender_mismatch_is_excluded(): void
     {
         $user = $this->makeUserWithProfile(['gender' => 'pria']);

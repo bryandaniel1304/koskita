@@ -60,12 +60,8 @@ class CollaborativeFilter
             }
         }
 
+        // Skor hanya dari rating tetangga (persamaan 2.3), sama dengan production.
         foreach ($koses as $kos) {
-            if (isset($targetRatings[$kos->id])) {
-                $scores[$kos->id] = $targetRatings[$kos->id] / 5.0;
-                continue;
-            }
-
             $weightedSum = 0.0;
             $similaritySum = 0.0;
 

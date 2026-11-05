@@ -6,8 +6,9 @@ namespace App\Services\Recommendation;
  * Port dari backend/app/Services/Recommendation/SwitchingWeightedCombiner.php
  * (skripsi subbab 2.2.3 & 2.9.1). Alpha sengaja tetap bisa diganti-ganti
  * lewat constructor -- dashboard ini justru dipakai untuk BEREKSPERIMEN
- * mencari alpha optimal (lihat EvaluationService::compareAlphas()), yang di
- * production nilainya sudah ditetapkan 0.6 berdasarkan hasil eksperimen ini.
+ * mencari alpha optimal (lihat EvaluationService::compareAlphas()). Production
+ * memakai 0.6 sebagai bobot dasar awal (skripsi subbab 4.3.4) sampai hasil
+ * eksperimen ini menunjukkan nilai yang lebih baik.
  */
 class SwitchingWeightedCombiner
 {
