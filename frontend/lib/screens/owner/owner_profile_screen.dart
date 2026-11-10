@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:screen_protector/screen_protector.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/legal_links.dart';
+import '../../utils/logout_confirmation.dart';
 import '../../utils/image_source_picker.dart';
 import '../../widgets/theme_mode_selector.dart';
 import '../../widgets/biometric_toggle.dart';
@@ -172,10 +172,7 @@ class _OwnerProfileScreenState extends State<OwnerProfileScreen> {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             tooltip: 'Keluar',
-            onPressed: () async {
-              await authProvider.logout();
-              if (context.mounted) context.go('/login');
-            },
+            onPressed: () => confirmAndLogout(context),
           ),
         ],
       ),

@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/auth_provider.dart';
 import '../providers/kos_provider.dart';
 import '../utils/legal_links.dart';
+import '../utils/logout_confirmation.dart';
 import '../utils/image_source_picker.dart';
 import '../widgets/theme_mode_selector.dart';
 import '../widgets/biometric_toggle.dart';
@@ -124,10 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             tooltip: 'Keluar',
-            onPressed: () async {
-              await authProvider.logout();
-              if (context.mounted) context.go('/login');
-            },
+            onPressed: () => confirmAndLogout(context),
           ),
         ],
       ),
