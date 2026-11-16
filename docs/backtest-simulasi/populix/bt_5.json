@@ -1,0 +1,331 @@
+{
+    "seed": 5,
+    "stats": {
+        "ratings": 997,
+        "relevant": 566,
+        "users": 100,
+        "gender": {
+            "pria": 60,
+            "wanita": 40
+        },
+        "occupation": {
+            "pekerja": 77,
+            "mahasiswa": 23
+        },
+        "rating_dist": {
+            "1": 170,
+            "2": 134,
+            "3": 127,
+            "4": 149,
+            "5": 417
+        },
+        "warm_eligible": 98,
+        "cold_eligible": 100
+    },
+    "warm": [
+        {
+            "strategy": "hybrid",
+            "alpha": 0.6,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.07142857142857147,
+                    "recall": 0.3163265306122449,
+                    "ndcg": 0.2491565035981858,
+                    "map": 0.2227040816326531
+                },
+                "10": {
+                    "precision": 0.058163265306122425,
+                    "recall": 0.5,
+                    "ndcg": 0.31173016460632713,
+                    "map": 0.24865970197602852
+                }
+            }
+        },
+        {
+            "strategy": "cb_only",
+            "alpha": 1,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.07346938775510208,
+                    "recall": 0.336734693877551,
+                    "ndcg": 0.26456043268195795,
+                    "map": 0.2375
+                },
+                "10": {
+                    "precision": 0.05714285714285712,
+                    "recall": 0.49489795918367346,
+                    "ndcg": 0.31903979493582985,
+                    "map": 0.2593071752510528
+                }
+            }
+        },
+        {
+            "strategy": "cf_only",
+            "alpha": 0,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.006122448979591837,
+                    "recall": 0.025510204081632654,
+                    "ndcg": 0.010762521204869703,
+                    "map": 0.005612244897959184
+                },
+                "10": {
+                    "precision": 0.008163265306122448,
+                    "recall": 0.07653061224489796,
+                    "ndcg": 0.0268917593486167,
+                    "map": 0.012058632977000322
+                }
+            }
+        },
+        {
+            "strategy": "popularity",
+            "alpha": 0,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.00816326530612245,
+                    "recall": 0.04081632653061224,
+                    "ndcg": 0.02249369563818853,
+                    "map": 0.01683673469387755
+                },
+                "10": {
+                    "precision": 0.006122448979591836,
+                    "recall": 0.05612244897959184,
+                    "ndcg": 0.027778481659748756,
+                    "map": 0.0188613540654357
+                }
+            }
+        }
+    ],
+    "cold": [
+        {
+            "strategy": "hybrid",
+            "alpha": 0.6,
+            "scenario": "cold",
+            "users_evaluated": 100,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.2559999999999998,
+                    "recall": 0.2844531024531024,
+                    "ndcg": 0.31322818256173385,
+                    "map": 0.23472499999999996
+                },
+                "10": {
+                    "precision": 0.2260000000000001,
+                    "recall": 0.4656129148629149,
+                    "ndcg": 0.3859782236818484,
+                    "map": 0.2688209089191233
+                }
+            }
+        },
+        {
+            "strategy": "cb_only",
+            "alpha": 1,
+            "scenario": "cold",
+            "users_evaluated": 100,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.2559999999999998,
+                    "recall": 0.2844531024531024,
+                    "ndcg": 0.31322818256173385,
+                    "map": 0.23472499999999996
+                },
+                "10": {
+                    "precision": 0.2260000000000001,
+                    "recall": 0.4656129148629149,
+                    "ndcg": 0.3859782236818484,
+                    "map": 0.2688209089191233
+                }
+            }
+        },
+        {
+            "strategy": "cf_only",
+            "alpha": 0,
+            "scenario": "cold",
+            "users_evaluated": 100,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0,
+                    "recall": 0,
+                    "ndcg": 0,
+                    "map": 0
+                },
+                "10": {
+                    "precision": 0,
+                    "recall": 0,
+                    "ndcg": 0,
+                    "map": 0
+                }
+            }
+        },
+        {
+            "strategy": "popularity",
+            "alpha": 0,
+            "scenario": "cold",
+            "users_evaluated": 100,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.019999999999999997,
+                    "recall": 0.01727380952380952,
+                    "ndcg": 0.018612625877865375,
+                    "map": 0.008533333333333332
+                },
+                "10": {
+                    "precision": 0.022000000000000006,
+                    "recall": 0.03710714285714286,
+                    "ndcg": 0.027927510113359918,
+                    "map": 0.010020039682539682
+                }
+            }
+        }
+    ],
+    "alphas": [
+        {
+            "strategy": "hybrid",
+            "alpha": 0.2,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.06530612244897963,
+                    "recall": 0.2857142857142857,
+                    "ndcg": 0.22074720012374613,
+                    "map": 0.19285714285714284
+                },
+                "10": {
+                    "precision": 0.05408163265306121,
+                    "recall": 0.45918367346938777,
+                    "ndcg": 0.2810317319446443,
+                    "map": 0.21852121801101387
+                }
+            }
+        },
+        {
+            "strategy": "hybrid",
+            "alpha": 0.3,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.06530612244897963,
+                    "recall": 0.2857142857142857,
+                    "ndcg": 0.22102085285962844,
+                    "map": 0.19328231292517006
+                },
+                "10": {
+                    "precision": 0.056122448979591816,
+                    "recall": 0.4744897959183674,
+                    "ndcg": 0.2856912526600127,
+                    "map": 0.2206430191124069
+                }
+            }
+        },
+        {
+            "strategy": "hybrid",
+            "alpha": 0.4,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.06734693877551023,
+                    "recall": 0.29591836734693877,
+                    "ndcg": 0.2303580109623483,
+                    "map": 0.20272108843537412
+                },
+                "10": {
+                    "precision": 0.05714285714285712,
+                    "recall": 0.4846938775510204,
+                    "ndcg": 0.29624011767907044,
+                    "map": 0.2313127632005183
+                }
+            }
+        },
+        {
+            "strategy": "hybrid",
+            "alpha": 0.5,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.07142857142857147,
+                    "recall": 0.3163265306122449,
+                    "ndcg": 0.24645231071389626,
+                    "map": 0.2177721088435374
+                },
+                "10": {
+                    "precision": 0.058163265306122425,
+                    "recall": 0.49489795918367346,
+                    "ndcg": 0.3087194282178967,
+                    "map": 0.2449263038548753
+                }
+            }
+        },
+        {
+            "strategy": "hybrid",
+            "alpha": 0.6,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.07142857142857147,
+                    "recall": 0.3163265306122449,
+                    "ndcg": 0.2491565035981858,
+                    "map": 0.2227040816326531
+                },
+                "10": {
+                    "precision": 0.058163265306122425,
+                    "recall": 0.5,
+                    "ndcg": 0.31173016460632713,
+                    "map": 0.24865970197602852
+                }
+            }
+        },
+        {
+            "strategy": "hybrid",
+            "alpha": 0.7,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.0755102040816327,
+                    "recall": 0.336734693877551,
+                    "ndcg": 0.2574053717065921,
+                    "map": 0.22729591836734697
+                },
+                "10": {
+                    "precision": 0.056122448979591816,
+                    "recall": 0.4846938775510204,
+                    "ndcg": 0.30718589022653586,
+                    "map": 0.2475421120829284
+                }
+            }
+        },
+        {
+            "strategy": "hybrid",
+            "alpha": 0.8,
+            "scenario": "warm",
+            "users_evaluated": 98,
+            "metrics_by_k": {
+                "5": {
+                    "precision": 0.06938775510204086,
+                    "recall": 0.3163265306122449,
+                    "ndcg": 0.2430673673668083,
+                    "map": 0.21462585034013607
+                },
+                "10": {
+                    "precision": 0.055102040816326504,
+                    "recall": 0.4846938775510204,
+                    "ndcg": 0.2998954082196688,
+                    "map": 0.23858722060252674
+                }
+            }
+        }
+    ]
+}
