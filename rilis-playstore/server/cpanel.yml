@@ -1,0 +1,7 @@
+---
+# .cpanel.yml KHUSUS branch "rilis-playstore" (instance produksi Play Store).
+# Di branch itu, isi file ini disalin menjadi .cpanel.yml di root repo.
+# Branch main/skripsi tetap memakai .cpanel.yml aslinya -- tidak berubah.
+deployment:
+  tasks:
+    - /bin/bash $HOME/koskita-playstore/rilis-playstore/server/deploy.sh > $HOME/koskita-playstore-deploy.log 2>&1

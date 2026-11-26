@@ -43,6 +43,9 @@ Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 've
 // sebagai footer link di situs publik.
 Route::view('/privacy', 'legal.privacy')->name('legal.privacy');
 Route::view('/terms', 'legal.terms')->name('legal.terms');
+// Petunjuk hapus akun -- URL ini diisi di Play Console (App content >
+// Data safety > "Delete account URL"), wajib untuk aplikasi Play Store.
+Route::view('/hapus-akun', 'legal.delete-account')->name('legal.delete-account');
 
 // Kuesioner SUS publik -- dibuka responden dari halaman uji coba online
 // (coba.koskita) setelah mencoba aplikasi versi web. Hasilnya hanya

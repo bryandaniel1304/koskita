@@ -1,0 +1,7 @@
+# Salin file ini menjadi "key.properties" (di folder yang sama) lalu isi.
+# JANGAN commit key.properties maupun file .jks -- keduanya sudah di-.gitignore.
+storePassword=ISI_PASSWORD_KEYSTORE
+keyPassword=ISI_PASSWORD_KEY
+keyAlias=upload
+# Path relatif terhadap folder android/app, atau path absolut.
+storeFile=../koskita-upload.jks

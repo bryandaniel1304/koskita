@@ -416,7 +416,7 @@
                 </div>
             </div>
             <hr class="border-secondary my-4">
-            <p class="small mb-0 text-center">&copy; {{ date('Y') }} KosKita. Dibangun sebagai bagian dari penelitian skripsi sistem rekomendasi kos.</p>
+            <p class="small mb-0 text-center">&copy; {{ date('Y') }} KosKita. @unless (config('koskita.rilis_publik'))Dibangun sebagai bagian dari penelitian skripsi sistem rekomendasi kos.@endunless</p>
         </div>
     </footer>
 

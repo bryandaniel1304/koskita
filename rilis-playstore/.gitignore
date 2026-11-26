@@ -1,0 +1,6 @@
+# Rahasia penandatanganan aplikasi -- JANGAN PERNAH di-commit.
+*.jks
+*.keystore
+key.properties
+# Hasil build untuk diunggah ke Play Console.
+hasil-build/

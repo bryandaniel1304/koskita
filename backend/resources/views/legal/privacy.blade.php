@@ -23,7 +23,11 @@
             <li>Menghasilkan rekomendasi kos yang dipersonalisasi (algoritma hybrid Content-Based & Collaborative Filtering).</li>
             <li>Memproses pengajuan booking antara penyewa dan pemilik kos.</li>
             <li>Verifikasi identitas (link verifikasi email) untuk mencegah penyalahgunaan akun.</li>
+            @if (config('koskita.rilis_publik'))
+            <li>Analisis internal untuk meningkatkan layanan (tidak dijual/dibagikan ke pihak ketiga).</li>
+            @else
             <li>Analisis internal untuk pengembangan aplikasi (penelitian akademik, tidak dijual/dibagikan ke pihak ketiga untuk kepentingan komersial).</li>
+            @endif
         </ul>
 
         <h2 class="fw-bold h5 mt-4">3. Berbagi Data</h2>
@@ -35,14 +39,28 @@
         <h2 class="fw-bold h5 mt-4">5. Hak Anda</h2>
         <ul>
             <li>Mengakses dan memperbarui data profil Anda kapan saja lewat halaman Profil di aplikasi.</li>
+            @if (config('koskita.rilis_publik'))
+            <li>Menghapus akun & seluruh data terkait kapan saja lewat menu <strong>Profil &gt; Hapus Akun</strong> di aplikasi, atau mengikuti petunjuk di halaman <a href="{{ route('legal.delete-account') }}">Hapus Akun</a>.</li>
+            @else
             <li>Meminta penghapusan akun & data terkait dengan menghubungi kami.</li>
+            @endif
             <li>Mereset riwayat interaksi/rating Anda lewat fitur "Reset Riwayat Rating & Favorit" di aplikasi.</li>
         </ul>
 
         <h2 class="fw-bold h5 mt-4">6. Kontak</h2>
+        @if (config('koskita.rilis_publik'))
+        <p>Pertanyaan seputar privasi dapat dikirim ke
+            @if (config('koskita.email_kontak'))
+                <a href="mailto:{{ config('koskita.email_kontak') }}">{{ config('koskita.email_kontak') }}</a>.
+            @else
+                pengelola KosKita lewat fitur Online Nanny di aplikasi.
+            @endif
+        </p>
+        @else
         <p>Pertanyaan seputar privasi dapat diajukan lewat fitur Online Nanny di aplikasi atau menghubungi pengembang secara langsung.</p>
 
         <p class="text-muted small mt-4 mb-0">Dokumen ini dibuat untuk keperluan aplikasi penelitian skripsi KosKita dan akan diperbarui seiring pengembangan aplikasi.</p>
+        @endif
     </div>
 </div>
 @endsection

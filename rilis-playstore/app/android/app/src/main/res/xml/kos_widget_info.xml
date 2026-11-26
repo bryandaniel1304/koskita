@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget layar utama "Kos Terakhir Dilihat", ukuran kecil (2x1 sel),
+     bisa diperbesar horizontal/vertical. updatePeriodMillis="0" karena
+     kontennya di-push manual dari Flutter (HomeWidget.updateWidget) tiap
+     kali kos baru dibuka/riwayat berubah, bukan di-poll berkala oleh
+     Android sendiri, lebih hemat baterai & datanya selalu langsung
+     terbaru begitu ada perubahan, tidak nunggu jadwal polling. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="90dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:previewImage="@mipmap/ic_launcher"
+    android:initialLayout="@layout/kos_widget"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen" />

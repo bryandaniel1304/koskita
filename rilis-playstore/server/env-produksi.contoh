@@ -1,0 +1,40 @@
+# ======================================================================
+# Contoh backend/.env untuk instance PRODUKSI (~/koskita-playstore/backend/.env)
+# Cara termudah: SALIN .env server skripsi (~/koskita/backend/.env) lalu ubah
+# hanya baris-baris di bawah ini. Jangan pernah pakai database skripsi.
+# ======================================================================
+
+APP_NAME=KosKita
+APP_ENV=production
+APP_DEBUG=false
+# Kosongkan APP_KEY -- dibuat otomatis oleh deploy.sh saat deploy pertama.
+APP_KEY=
+APP_URL=https://GANTI-domain-produksi
+
+# Database BARU khusus produksi (buat di cPanel > MySQL Databases).
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=GANTI_nama_db_produksi
+DB_USERNAME=GANTI_user_db_produksi
+DB_PASSWORD=GANTI_password_db_produksi
+
+# --- Khusus KosKita rilis Play Store (lihat backend/config/koskita.php) ---
+# Wajib true: hanya kos yang sudah diverifikasi admin yang tampil di aplikasi.
+KOSKITA_HANYA_KOS_TERVERIFIKASI=true
+# Teks Kebijakan Privasi/Hapus Akun versi publik (tanpa kata skripsi).
+KOSKITA_RILIS_PUBLIK=true
+# Email kontak resmi klien untuk privasi & permintaan hapus akun.
+KOSKITA_EMAIL_KONTAK=GANTI@email-klien.com
+
+# Email verifikasi akun WAJIB terkirim sungguhan (booking & chat butuh email
+# terverifikasi) -- pakai SMTP yang sama dengan server skripsi atau milik klien.
+MAIL_MAILER=smtp
+MAIL_FROM_ADDRESS=GANTI@email-klien.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+# Realtime chat/notifikasi: kalau .env skripsi memakai Pusher
+# (BROADCAST_CONNECTION=pusher), BUAT APP PUSHER BARU untuk produksi dan isi
+# PUSHER_APP_ID/KEY/SECRET di sini. JANGAN memakai key yang sama dengan
+# skripsi -- nomor ID pengguna kedua database bisa sama, sehingga notifikasi
+# bisa nyasar ke pengguna instance lain.

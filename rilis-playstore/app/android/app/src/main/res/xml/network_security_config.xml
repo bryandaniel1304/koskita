@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Versi rilis Play Store: HANYA HTTPS. Backend produksi wajib memakai
+    sertifikat SSL (cPanel AutoSSL/Let's Encrypt gratis). Berbeda dengan app
+    skripsi yang mengizinkan HTTP biasa untuk server XAMPP/LAN.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>
