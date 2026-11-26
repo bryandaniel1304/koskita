@@ -9,10 +9,72 @@
         Jawaban System Usability Scale dari responden uji coba online. Form publik:
         <a href="{{ route('sus.create') }}" target="_blank" rel="noopener">{{ route('sus.create') }}</a>
     </p>
-    <a href="{{ route('admin.sus.export') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
-        <i class="bi bi-download"></i> Ekspor CSV
-    </a>
+    <div class="d-flex gap-2">
+        @if(auth()->user()->isMasterAdmin())
+            <button type="button" class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#sus-import-modal">
+                <i class="bi bi-upload"></i> Unggah Excel
+            </button>
+        @endif
+        <a href="{{ route('admin.sus.export') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <i class="bi bi-download"></i> Ekspor CSV
+        </a>
+    </div>
 </div>
+
+@if(session('import_errors'))
+    <div class="alert alert-danger">
+        <div class="fw-semibold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> File belum diimpor — tidak ada jawaban yang disimpan.</div>
+        <ul class="mb-1 small">
+            @foreach(session('import_errors') as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        @if(session('import_error_total') > count(session('import_errors')))
+            <div class="small">… dan {{ session('import_error_total') - count(session('import_errors')) }} masalah lainnya.</div>
+        @endif
+        <div class="small">Perbaiki file lalu unggah ulang.</div>
+    </div>
+@endif
+@if(session('import_columns'))
+    <div class="alert alert-light border small">
+        <span class="fw-semibold">Kolom yang dikenali:</span>
+        @foreach(session('import_columns') as $label => $header)
+            <span class="badge text-bg-light border me-1" title="{{ $header }}">{{ $label }} ← {{ $header }}</span>
+        @endforeach
+    </div>
+@endif
+
+@if(auth()->user()->isMasterAdmin())
+    <div class="modal fade" id="sus-import-modal" tabindex="-1" aria-labelledby="sus-import-title" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" action="{{ route('admin.sus.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sus-import-title">Unggah Jawaban SUS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="file" name="file" class="form-control mb-3" accept=".xlsx,.xls,.csv,.ods" required>
+                    <p class="small mb-2">Bisa langsung memakai file ekspor Google Form (Unduh respons .csv / Google Sheets → .xlsx). Urutan kolom bebas — kolom dikenali dari judulnya:</p>
+                    <ul class="small text-muted mb-2">
+                        <li><strong>Nama</strong> — wajib</li>
+                        <li><strong>Q1 – Q10</strong> — judul "Q1"…"Q10", "1. …", atau teks pernyataan SUS. Isi angka 1–5 atau label (Sangat Tidak Setuju … Sangat Setuju)</li>
+                        <li><strong>Timestamp / Stempel waktu</strong>, <strong>Email</strong>, <strong>Kesan & Saran</strong> — opsional</li>
+                    </ul>
+                    <p class="small text-muted mb-0">Skor SUS dihitung otomatis. Jika ada baris yang tidak valid, tidak ada data yang disimpan. Baris yang sama persis dengan data yang sudah ada dilewati.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-upload"></i> Unggah</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Modal harus anak langsung <body>; di dalam area konten ia tertutup backdrop-nya sendiri.
+        document.body.appendChild(document.getElementById('sus-import-modal'));
+    </script>
+@endif
 
 <div class="row g-3 mb-4">
     <div class="col-md-4">

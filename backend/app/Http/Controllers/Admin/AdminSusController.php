@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SusResponse;
+use App\Services\SusImporter;
 use Illuminate\Http\Request;
 
 /**
@@ -32,7 +33,7 @@ class AdminSusController extends Controller
         return response()->streamDownload(function () use ($responses) {
             $out = fopen('php://output', 'w');
             $questionColumns = array_map(fn (int $num) => "Q$num", array_keys(SusResponse::QUESTIONS));
-            fputcsv($out, ['No', 'Nama', 'Email', ...$questionColumns, 'Skor SUS', 'Peringkat CGS', 'Kesan & Saran', 'Waktu Isi']);
+            fputcsv($out, ['No', 'Nama', 'Email', ...$questionColumns, 'Skor SUS', 'Peringkat CGS', 'Kesan & Saran', 'Waktu Isi', 'Sumber']);
             foreach ($responses as $i => $response) {
                 fputcsv($out, [
                     $i + 1,
@@ -43,6 +44,7 @@ class AdminSusController extends Controller
                     SusResponse::interpret($response->sus_score),
                     $response->feedback ?? '',
                     $response->created_at?->format('Y-m-d H:i'),
+                    $response->source === 'import' ? 'Impor file' : 'Form KosKita',
                 ]);
             }
             fclose($out);
@@ -85,6 +87,38 @@ class AdminSusController extends Controller
         $response->delete();
 
         return redirect()->route('admin.sus.index')->with('success', 'Jawaban ' . $response->respondent_name . ' berhasil dihapus.');
+    }
+
+    /**
+     * Unggah file jawaban (mis. ekspor Google Form). Kolom dikenali dari
+     * judulnya, lihat SusImporter.
+     */
+    public function import(Request $request, SusImporter $importer)
+    {
+        $request->validate([
+            'file' => 'required|file|max:5120|mimes:xlsx,xls,csv,txt,ods',
+        ], [
+            'file.required' => 'Pilih file Excel/CSV terlebih dahulu.',
+            'file.mimes' => 'Format file harus .xlsx, .xls, .csv, atau .ods.',
+            'file.max' => 'Ukuran file maksimal 5 MB.',
+        ]);
+
+        $file = $request->file('file');
+        $result = $importer->import($file->getRealPath(), $file->getClientOriginalName());
+
+        if ($result['errors']) {
+            return redirect()->route('admin.sus.index')
+                ->with('import_errors', array_slice($result['errors'], 0, 15))
+                ->with('import_error_total', count($result['errors']))
+                ->with('import_columns', $result['columns']);
+        }
+
+        $message = $result['imported'] . ' jawaban berhasil diimpor dari ' . $file->getClientOriginalName() . '.';
+        if ($result['skipped']) {
+            $message .= ' ' . $result['skipped'] . ' baris dilewati karena sudah ada.';
+        }
+
+        return redirect()->route('admin.sus.index')->with('success', $message)->with('import_columns', $result['columns']);
     }
 
     /** Hapus beberapa jawaban sekaligus (mis. data uji coba). */

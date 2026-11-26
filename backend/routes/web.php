@@ -297,6 +297,7 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
     // Koreksi/hapus jawaban SUS & data responden -- khusus Master Admin.
     Route::middleware('master.admin')->group(function () {
         Route::delete('/kuesioner-sus', [AdminSusController::class, 'bulkDestroy'])->name('admin.sus.bulk-destroy');
+        Route::post('/kuesioner-sus/import', [AdminSusController::class, 'import'])->name('admin.sus.import');
         Route::get('/kuesioner-sus/{id}/edit', [AdminSusController::class, 'edit'])->name('admin.sus.edit');
         Route::put('/kuesioner-sus/{id}', [AdminSusController::class, 'update'])->name('admin.sus.update');
         Route::delete('/kuesioner-sus/{id}', [AdminSusController::class, 'destroy'])->name('admin.sus.destroy');
