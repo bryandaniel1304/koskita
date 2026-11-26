@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Facility;
+use App\Models\Rule;
 use App\Models\User;
+use App\Models\UserInteraction;
+use App\Models\UserProfile;
 use App\Services\RecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule as ValidationRule;
 
 class AdminUserController extends Controller
 {
@@ -170,5 +175,101 @@ class AdminUserController extends Controller
         return back()->with('success', $request->decision === 'approved'
             ? 'Pemilik berhasil diverifikasi.'
             : 'Verifikasi pemilik ditolak.');
+    }
+
+    /** Area yang sama dengan pilihan di layar profil aplikasi. */
+    public const LOCATIONS = ['Karawaci', 'BSD', 'Serpong', 'Alam Sutera'];
+
+    /** @return array<int, string> area baku + area lama pengguna bila di luar daftar */
+    private static function locationOptions(User $user): array
+    {
+        $current = $user->profile?->preferred_location;
+
+        return $current && !in_array($current, self::LOCATIONS, true)
+            ? [...self::LOCATIONS, $current]
+            : self::LOCATIONS;
+    }
+
+    public function edit($id)
+    {
+        $user = User::with('profile')->findOrFail($id);
+
+        // Pilihan = master data + nilai lama di profil yang mungkin sudah
+        // tidak ada di master, supaya menyimpan form tidak diam-diam membuangnya.
+        $facilityOptions = Facility::orderBy('name')->pluck('name')
+            ->merge($user->profile?->preferred_facilities ?? [])->unique()->values();
+        $ruleOptions = Rule::orderBy('name')->pluck('name')
+            ->merge($user->profile?->preferred_rules ?? [])->unique()->values();
+
+        return view('admin.users.edit', [
+            'targetUser' => $user,
+            'facilityOptions' => $facilityOptions,
+            'ruleOptions' => $ruleOptions,
+            'locations' => self::locationOptions($user),
+        ]);
+    }
+
+    /**
+     * Ubah data akun (nama, email, HP) dan -- untuk penyewa -- profil
+     * preferensinya. Aturan validasi profil sama dengan
+     * Api\AuthController::updateProfile.
+     */
+    public function updateData(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', 'max:255', ValidationRule::unique('users', 'email')->ignore($user->id)],
+            'phone' => 'nullable|string|max:20',
+        ];
+        if ($user->role === 'user') {
+            $rules += [
+                'gender' => 'required|in:pria,wanita',
+                'occupation' => 'required|in:mahasiswa,pekerja',
+                'preferred_location' => ['required', ValidationRule::in(self::locationOptions($user))],
+                'budget_min' => 'required|integer|min:0',
+                'budget_max' => 'required|integer|gte:budget_min',
+                'preferred_facilities' => 'nullable|array',
+                'preferred_facilities.*' => 'string|max:255',
+                'preferred_rules' => 'nullable|array',
+                'preferred_rules.*' => 'string|max:255',
+            ];
+        }
+        $validated = $request->validate($rules);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+        ]);
+
+        if ($user->role === 'user') {
+            $profile = $user->profile ?? new UserProfile(['user_id' => $user->id]);
+            $profile->fill([
+                'gender' => $validated['gender'],
+                'occupation' => $validated['occupation'],
+                'preferred_location' => $validated['preferred_location'],
+                'budget_min' => $validated['budget_min'],
+                'budget_max' => $validated['budget_max'],
+                'preferred_facilities' => array_values($validated['preferred_facilities'] ?? []),
+                'preferred_rules' => array_values($validated['preferred_rules'] ?? []),
+            ]);
+            // Preferensi yang diisikan admin dianggap profil lengkap, supaya
+            // rekomendasinya ikut terhitung (lihat show()).
+            $profile->completed_at ??= now();
+            $profile->save();
+        }
+
+        return redirect()->route('admin.users.show', $user->id)->with('success', 'Data ' . $user->name . ' berhasil diperbarui.');
+    }
+
+    /** Hapus satu interaksi (rating/favorit/klik) milik pengguna. */
+    public function destroyInteraction($userId, $interactionId)
+    {
+        $interaction = UserInteraction::where('user_id', $userId)->findOrFail($interactionId);
+        $interaction->delete();
+
+        return back()->with('success', 'Interaksi berhasil dihapus.');
     }
 }

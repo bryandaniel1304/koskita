@@ -232,6 +232,9 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
         Route::get('/users/export', [AdminUserController::class, 'exportCsv'])->name('admin.users.export');
         Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
         Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('admin.users.show');
+        Route::get('/users/{id}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/users/{id}/data', [AdminUserController::class, 'updateData'])->name('admin.users.update-data');
+        Route::delete('/users/{user}/interaksi/{interaction}', [AdminUserController::class, 'destroyInteraction'])->name('admin.users.interactions.destroy');
         Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
         Route::put('/users/{id}/verifikasi', [AdminUserController::class, 'verifyOwner'])->name('admin.users.verify-owner');
@@ -290,4 +293,12 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
     // Hasil kuesioner SUS uji coba online -- lihat SusQuestionnaireController.
     Route::get('/kuesioner-sus/export', [AdminSusController::class, 'exportCsv'])->name('admin.sus.export');
     Route::get('/kuesioner-sus', [AdminSusController::class, 'index'])->name('admin.sus.index');
+
+    // Koreksi/hapus jawaban SUS & data responden -- khusus Master Admin.
+    Route::middleware('master.admin')->group(function () {
+        Route::delete('/kuesioner-sus', [AdminSusController::class, 'bulkDestroy'])->name('admin.sus.bulk-destroy');
+        Route::get('/kuesioner-sus/{id}/edit', [AdminSusController::class, 'edit'])->name('admin.sus.edit');
+        Route::put('/kuesioner-sus/{id}', [AdminSusController::class, 'update'])->name('admin.sus.update');
+        Route::delete('/kuesioner-sus/{id}', [AdminSusController::class, 'destroy'])->name('admin.sus.destroy');
+    });
 });

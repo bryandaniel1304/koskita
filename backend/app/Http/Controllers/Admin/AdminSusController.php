@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SusResponse;
+use Illuminate\Http\Request;
 
 /**
  * Hasil kuesioner SUS dari uji coba online -- ringkasan skor, aspek
@@ -46,5 +47,56 @@ class AdminSusController extends Controller
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /*
+     * Koreksi & pembersihan data (khusus Master Admin, lihat routes/web.php).
+     */
+
+    public function edit($id)
+    {
+        $response = SusResponse::findOrFail($id);
+
+        return view('admin.sus.edit', compact('response'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $response = SusResponse::findOrFail($id);
+
+        $rules = [
+            'respondent_name' => 'required|string|max:255',
+            'respondent_email' => 'nullable|email|max:255',
+            'feedback' => 'nullable|string|max:2000',
+        ];
+        foreach (array_keys(SusResponse::QUESTIONS) as $num) {
+            $rules["q$num"] = 'required|integer|between:1,5';
+        }
+        $validated = $request->validate($rules);
+
+        $response->fill($validated)->save();
+
+        return redirect()->route('admin.sus.index')->with('success', 'Jawaban ' . $response->respondent_name . ' berhasil diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        $response = SusResponse::findOrFail($id);
+        $response->delete();
+
+        return redirect()->route('admin.sus.index')->with('success', 'Jawaban ' . $response->respondent_name . ' berhasil dihapus.');
+    }
+
+    /** Hapus beberapa jawaban sekaligus (mis. data uji coba). */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer',
+        ]);
+
+        $deleted = SusResponse::whereIn('id', $validated['ids'])->delete();
+
+        return redirect()->route('admin.sus.index')->with('success', $deleted . ' jawaban berhasil dihapus.');
     }
 }

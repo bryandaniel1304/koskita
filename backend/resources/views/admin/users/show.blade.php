@@ -8,6 +8,9 @@
     <a href="{{ route('admin.users', ['role' => $targetUser->role]) }}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left"></i> Kembali ke Daftar
     </a>
+    <a href="{{ route('admin.users.edit', $targetUser->id) }}" class="btn btn-outline-primary btn-sm ms-auto me-3">
+        <i class="bi bi-pencil"></i> Ubah Data
+    </a>
     <form action="{{ route('admin.users.update', $targetUser->id) }}" method="POST" class="d-flex align-items-center gap-2">
         @csrf
         @method('PUT')
@@ -146,6 +149,7 @@
                                 <th>Rating</th>
                                 <th>Favorit</th>
                                 <th>Klik</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,9 +159,17 @@
                                     <td>{{ $i->rating ?? '-' }}</td>
                                     <td>{!! $i->is_favorite ? '<i class="bi bi-heart-fill text-danger"></i>' : '-' !!}</td>
                                     <td>{{ $i->click_count }}</td>
+                                    <td class="text-end">
+                                        <form action="{{ route('admin.users.interactions.destroy', [$targetUser->id, $i->id]) }}" method="POST" class="d-inline"
+                                              onsubmit="return confirm('Hapus interaksi ini (rating, favorit, klik)?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Hapus interaksi"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @empty
-                                @include('admin.partials.empty-row', ['colspan' => 4, 'icon' => 'bi-activity', 'text' => 'Belum ada interaksi.'])
+                                @include('admin.partials.empty-row', ['colspan' => 5, 'icon' => 'bi-activity', 'text' => 'Belum ada interaksi.'])
                             @endforelse
                         </tbody>
                     </table>

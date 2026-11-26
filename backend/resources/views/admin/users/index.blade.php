@@ -65,7 +65,10 @@
                             <td>
                                 <span class="fw-bold text-dark">{{ $u->koses->count() }} kos</span>
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap">
+                                <a href="{{ route('admin.users.edit', $u->id) }}" class="btn btn-sm btn-outline-secondary" title="Ubah data" onclick="event.stopPropagation()">
+                                    <i class="bi bi-pencil"></i> Ubah
+                                </a>
                                 <a href="{{ route('admin.users.show', $u->id) }}" class="btn btn-sm btn-outline-primary">
                                     Detail &amp; Verifikasi <i class="bi bi-arrow-right"></i>
                                 </a>
@@ -116,7 +119,10 @@
                                     -
                                     @endif
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap">
+                                <a href="{{ route('admin.users.edit', $u->id) }}" class="btn btn-sm btn-outline-secondary" title="Ubah data" onclick="event.stopPropagation()">
+                                    <i class="bi bi-pencil"></i> Ubah
+                                </a>
                                 <a href="{{ route('admin.users.show', $u->id) }}" class="btn btn-sm btn-outline-primary">
                                     Detail &amp; Rekomendasi <i class="bi bi-arrow-right"></i>
                                 </a>

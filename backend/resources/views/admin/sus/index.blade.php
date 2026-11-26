@@ -86,12 +86,33 @@
     </div>
 </div>
 
+@php($canEdit = auth()->user()->isMasterAdmin())
+@if ($errors->any())
+    <div class="alert alert-danger">{{ $errors->first() }}</div>
+@endif
 <div class="card-custom">
-    <h6 class="fw-bold mb-3">Jawaban Responden</h6>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h6 class="fw-bold mb-0">Jawaban Responden</h6>
+        @if($canEdit)
+            <button type="submit" form="sus-bulk-delete" class="btn btn-outline-danger btn-sm" id="sus-bulk-btn" disabled>
+                <i class="bi bi-trash"></i> Hapus yang dipilih (<span id="sus-bulk-count">0</span>)
+            </button>
+        @endif
+    </div>
+    @if($canEdit)
+        <form id="sus-bulk-delete" action="{{ route('admin.sus.bulk-destroy') }}" method="POST"
+              onsubmit="return confirm('Hapus semua jawaban yang dipilih? Tindakan ini tidak bisa dibatalkan.');">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endif
     <div class="table-responsive">
         <table class="table align-middle table-hover mb-0">
             <thead class="table-light">
                 <tr>
+                    @if($canEdit)
+                        <th><input type="checkbox" class="form-check-input" id="sus-check-all" aria-label="Pilih semua"></th>
+                    @endif
                     <th>Responden</th>
                     @foreach(array_keys(\App\Models\SusResponse::QUESTIONS) as $num)
                         <th class="text-center">Q{{ $num }}</th>
@@ -99,11 +120,17 @@
                     <th class="text-end">Skor</th>
                     <th>Kesan & Saran</th>
                     <th>Waktu</th>
+                    @if($canEdit)
+                        <th class="text-end">Aksi</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
                 @forelse($responses as $response)
                     <tr>
+                        @if($canEdit)
+                            <td><input type="checkbox" class="form-check-input sus-check" name="ids[]" value="{{ $response->id }}" form="sus-bulk-delete" aria-label="Pilih {{ $response->respondent_name }}"></td>
+                        @endif
                         <td class="small">
                             <div class="fw-semibold">{{ $response->respondent_name }}</div>
                             <div class="text-muted">{{ $response->respondent_email }}</div>
@@ -114,13 +141,43 @@
                         <td class="small text-end fw-bold">{{ number_format($response->sus_score, 1, ',', '.') }}</td>
                         <td class="small" style="min-width: 220px;">{{ $response->feedback ?: '-' }}</td>
                         <td class="small text-muted text-nowrap">{{ $response->created_at->format('d M Y H:i') }}</td>
+                        @if($canEdit)
+                            <td class="text-end text-nowrap">
+                                <a href="{{ route('admin.sus.edit', $response->id) }}" class="btn btn-sm btn-outline-primary" title="Ubah"><i class="bi bi-pencil"></i></a>
+                                <button type="submit" form="sus-delete-{{ $response->id }}" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+                            </td>
+                        @endif
                     </tr>
                 @empty
-                    @include('admin.partials.empty-row', ['colspan' => 14, 'icon' => 'bi-clipboard-check', 'text' => 'Belum ada responden yang mengisi kuesioner.'])
+                    @include('admin.partials.empty-row', ['colspan' => $canEdit ? 16 : 14, 'icon' => 'bi-clipboard-check', 'text' => 'Belum ada responden yang mengisi kuesioner.'])
                 @endforelse
             </tbody>
         </table>
     </div>
+    @if($canEdit)
+        @foreach($responses as $response)
+            <form id="sus-delete-{{ $response->id }}" action="{{ route('admin.sus.destroy', $response->id) }}" method="POST" class="d-none"
+                  onsubmit="return confirm('Hapus jawaban responden ini? Tindakan ini tidak bisa dibatalkan.');">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+        <script>
+            (function () {
+                const all = document.getElementById('sus-check-all');
+                const boxes = () => document.querySelectorAll('.sus-check');
+                const btn = document.getElementById('sus-bulk-btn');
+                const count = document.getElementById('sus-bulk-count');
+                const sync = () => {
+                    const n = [...boxes()].filter(b => b.checked).length;
+                    count.textContent = n;
+                    btn.disabled = n === 0;
+                };
+                all?.addEventListener('change', () => { boxes().forEach(b => b.checked = all.checked); sync(); });
+                boxes().forEach(b => b.addEventListener('change', sync));
+            })();
+        </script>
+    @endif
     <div class="mt-3">{{ $responses->links() }}</div>
 </div>
 @endsection

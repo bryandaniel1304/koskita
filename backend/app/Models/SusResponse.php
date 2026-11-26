@@ -70,7 +70,9 @@ class SusResponse extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (SusResponse $response) {
+        // saving (bukan creating) supaya koreksi jawaban oleh master admin
+        // ikut menghitung ulang skornya.
+        static::saving(function (SusResponse $response) {
             $response->sus_score = self::calculateScore(array_map(
                 fn (int $num) => (int) $response->{"q$num"},
                 array_keys(self::QUESTIONS)
