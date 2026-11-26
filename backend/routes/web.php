@@ -233,7 +233,8 @@ Route::prefix('admin')->middleware(\App\Http\Middleware\IsAdmin::class)->group(f
         Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users');
         Route::get('/users/{id}', [AdminUserController::class, 'show'])->name('admin.users.show');
         Route::get('/users/{id}/edit', [AdminUserController::class, 'edit'])->name('admin.users.edit');
-        Route::put('/users/{id}/data', [AdminUserController::class, 'updateData'])->name('admin.users.update-data');
+        Route::patch('/users/{id}/sel', [AdminUserController::class, 'updateCell'])->name('admin.users.update-cell');
+        Route::put('/users/{id}/data',[AdminUserController::class, 'updateData'])->name('admin.users.update-data');
         Route::delete('/users/{user}/interaksi/{interaction}', [AdminUserController::class, 'destroyInteraction'])->name('admin.users.interactions.destroy');
         Route::put('/users/{id}', [AdminUserController::class, 'update'])->name('admin.users.update');
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');

@@ -36,7 +36,10 @@ class AdminUserController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.users.index', compact('users', 'search', 'role'));
+        $editMode = $role === 'user' && $request->query('mode') === 'edit';
+        $locations = self::LOCATIONS;
+
+        return view('admin.users.index', compact('users', 'search', 'role', 'editMode', 'locations'));
     }
 
     /**
@@ -262,6 +265,63 @@ class AdminUserController extends Controller
         }
 
         return redirect()->route('admin.users.show', $user->id)->with('success', 'Data ' . $user->name . ' berhasil diperbarui.');
+    }
+
+    /**
+     * Simpan satu sel dari mode "Edit Tabel" di daftar responden (dipanggil
+     * lewat fetch tiap kali sel diubah). Aturan validasinya sama dengan
+     * updateData(), hanya per kolom.
+     */
+    public function updateCell(Request $request, $id)
+    {
+        $user = User::with('profile')->where('role', 'user')->findOrFail($id);
+        $profile = $user->profile ?? new UserProfile(['user_id' => $user->id]);
+
+        $field = $request->input('field');
+        $rules = match ($field) {
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', 'max:255', ValidationRule::unique('users', 'email')->ignore($user->id)],
+            'gender' => 'required|in:pria,wanita',
+            'occupation' => 'required|in:mahasiswa,pekerja',
+            'preferred_location' => ['required', ValidationRule::in(self::locationOptions($user))],
+            'budget_min', 'budget_max' => 'required|integer|min:0|max:100000000',
+            default => null,
+        };
+        if ($rules === null) {
+            return response()->json(['message' => 'Kolom tidak bisa diubah.'], 422);
+        }
+
+        $validator = validator($request->only('value'), ['value' => $rules], [
+            'value.required' => 'Tidak boleh kosong.',
+            'value.email' => 'Format email tidak valid.',
+            'value.unique' => 'Email sudah dipakai akun lain.',
+            'value.integer' => 'Harus angka bulat.',
+            'value.min' => 'Tidak boleh negatif.',
+        ]);
+        if ($validator->fails()) {
+            $error = $validator->errors()->first('value');
+
+            return response()->json(['message' => $error, 'errors' => ['value' => [$error]]], 422);
+        }
+        $value = $validator->validated()['value'];
+
+        $error = match (true) {
+            $field === 'budget_min' && $profile->budget_max !== null && (int) $value > $profile->budget_max => 'Budget min tidak boleh melebihi budget maks.',
+            $field === 'budget_max' && $profile->budget_min !== null && (int) $value < $profile->budget_min => 'Budget maks tidak boleh kurang dari budget min.',
+            default => null,
+        };
+        if ($error) {
+            return response()->json(['message' => $error, 'errors' => ['value' => [$error]]], 422);
+        }
+
+        if (in_array($field, ['name', 'email'], true)) {
+            $user->update([$field => $value]);
+        } else {
+            $profile->{$field} = $value;
+            $profile->save();
+        }
+
+        return response()->json(['message' => 'Tersimpan.', 'value' => $value]);
     }
 
     /** Hapus satu interaksi (rating/favorit/klik) milik pengguna. */
