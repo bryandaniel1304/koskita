@@ -18,25 +18,31 @@
 </ul>
 
 <div class="card-custom">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <form method="GET" class="d-flex gap-2" style="max-width: 400px;">
+    <style>
+        /* Kolom cari, tombol cari, dan tombol aksi dibuat setinggi & sejarak sama. */
+        .users-toolbar .form-control,
+        .users-toolbar .btn { height: 44px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
+        .users-toolbar .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: 0 20px; }
+    </style>
+    <div class="users-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <form method="GET" class="d-flex gap-3 flex-grow-1" style="max-width: 420px;">
             <input type="hidden" name="role" value="{{ $role }}">
-            <input type="text" name="search" value="{{ $search }}" class="form-control" placeholder="Cari nama atau email...">
+            <input type="text" name="search" value="{{ $search }}" class="form-control fw-normal" placeholder="Cari nama atau email...">
             <button type="submit" class="btn btn-primary-custom"><i class="bi bi-search"></i></button>
         </form>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-3">
             @if($role === 'user')
                 @if($editMode)
-                    <a href="{{ route('admin.users', ['role' => 'user', 'search' => $search, 'page' => $users->currentPage()]) }}" class="btn btn-primary d-flex align-items-center gap-2">
+                    <a href="{{ route('admin.users', ['role' => 'user', 'search' => $search, 'page' => $users->currentPage()]) }}" class="btn btn-primary">
                         <i class="bi bi-check2"></i> Selesai Edit
                     </a>
                 @else
-                    <a href="{{ route('admin.users', ['role' => 'user', 'search' => $search, 'page' => $users->currentPage(), 'mode' => 'edit']) }}" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                    <a href="{{ route('admin.users', ['role' => 'user', 'search' => $search, 'page' => $users->currentPage(), 'mode' => 'edit']) }}" class="btn btn-outline-primary">
                         <i class="bi bi-table"></i> Edit Tabel
                     </a>
                 @endif
             @endif
-            <a href="{{ route('admin.users.export', ['role' => $role]) }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+            <a href="{{ route('admin.users.export', ['role' => $role]) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-download"></i> Export CSV
             </a>
         </div>

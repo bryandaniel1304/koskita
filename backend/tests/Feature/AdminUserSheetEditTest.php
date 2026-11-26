@@ -79,7 +79,8 @@ class AdminUserSheetEditTest extends TestCase
             ->assertJsonPath('errors.value.0', 'Budget min tidak boleh melebihi budget maks.');
         $this->cell($admin, $user, 'email', 'dipakai@example.com')->assertStatus(422)
             ->assertJsonPath('errors.value.0', 'Email sudah dipakai akun lain.');
-        $this->cell($admin, $user, 'gender', 'lainnya')->assertStatus(422);
+        $this->cell($admin, $user, 'gender', 'lainnya')->assertStatus(422)->assertJsonPath('errors.value.0', 'Pilihan tidak valid.');
+        $this->cell($admin, $user, 'budget_max', '999999999')->assertStatus(422)->assertJsonPath('errors.value.0', 'Budget terlalu besar.');
         $this->cell($admin, $user, 'name', '')->assertStatus(422);
         $this->cell($admin, $user, 'role', 'admin')->assertStatus(422);
 

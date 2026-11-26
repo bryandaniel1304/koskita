@@ -293,6 +293,9 @@ class AdminUserController extends Controller
 
         $validator = validator($request->only('value'), ['value' => $rules], [
             'value.required' => 'Tidak boleh kosong.',
+            'value.in' => 'Pilihan tidak valid.',
+            'value.string' => 'Isian tidak valid.',
+            'value.max' => str_starts_with((string) $field, 'budget') ? 'Budget terlalu besar.' : 'Isian terlalu panjang.',
             'value.email' => 'Format email tidak valid.',
             'value.unique' => 'Email sudah dipakai akun lain.',
             'value.integer' => 'Harus angka bulat.',
