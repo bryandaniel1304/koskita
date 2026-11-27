@@ -10,7 +10,7 @@
 @endphp
 
 <div class="card-custom">
-    <div class="d-flex gap-2 mb-3">
+    <div class="d-flex flex-wrap gap-2 mb-3">
         <a href="{{ route('admin.reports.index', ['status' => 'pending']) }}" class="btn btn-sm {{ $status === 'pending' ? 'btn-primary-custom' : 'btn-outline-secondary' }}">Menunggu</a>
         <a href="{{ route('admin.reports.index', ['status' => 'reviewed']) }}" class="btn btn-sm {{ $status === 'reviewed' ? 'btn-primary-custom' : 'btn-outline-secondary' }}">Ditinjau</a>
         <a href="{{ route('admin.reports.index', ['status' => 'dismissed']) }}" class="btn btn-sm {{ $status === 'dismissed' ? 'btn-primary-custom' : 'btn-outline-secondary' }}">Ditolak</a>

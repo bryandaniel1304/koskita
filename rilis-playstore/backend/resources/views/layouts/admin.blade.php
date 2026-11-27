@@ -232,6 +232,46 @@
             .navbar-top h4 {
                 font-size: 1.1rem;
             }
+
+            .card-custom {
+                padding: 16px;
+                border-radius: 14px;
+            }
+
+            /* Baris judul + tombol (mis. "Daftar Kos" + Export + Tambah)
+               turun ke baris baru alih-alih memeras judul jadi 2-3 baris. */
+            #content .d-flex.justify-content-between {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            #content .btn {
+                white-space: nowrap;
+            }
+
+            #content .navbar-top.d-flex {
+                flex-wrap: nowrap;
+            }
+
+            /* Tabel tetap digeser ke samping di dalam kartunya; judul kolom
+               tidak dipatah per kata supaya tetap terbaca. */
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table-responsive th {
+                white-space: nowrap;
+            }
+
+            /* Pesan "belum ada data" ikut menempel di layar, tidak ikut
+               tergeser ke tengah tabel yang lebar. */
+            .empty-row-msg {
+                position: sticky;
+                left: 0;
+                width: calc(100vw - 80px);
+                max-width: 100%;
+                white-space: normal;
+            }
         }
 
         .page-item.disabled .page-link {

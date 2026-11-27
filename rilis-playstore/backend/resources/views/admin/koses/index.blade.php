@@ -6,7 +6,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h5 class="fw-bold mb-0 text-secondary">Daftar Kos Terdaftar</h5>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         <a href="{{ route('admin.koses.export') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
             <i class="bi bi-download"></i> Export CSV
         </a>
