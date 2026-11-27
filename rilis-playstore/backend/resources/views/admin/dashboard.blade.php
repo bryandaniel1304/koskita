@@ -63,7 +63,7 @@
         <a href="{{ route('admin.bookings.index', ['status' => 'pending']) }}" class="text-decoration-none">
             <div class="card-custom d-flex align-items-center gap-3">
                 <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-3 flex-shrink-0">
-                    <i class="bi bi-calendar-exclamation fs-3"></i>
+                    <i class="bi bi-hourglass-split fs-3"></i>
                 </div>
                 <div style="min-width: 0">
                     <p class="text-muted mb-0 small">Booking Menunggu</p>

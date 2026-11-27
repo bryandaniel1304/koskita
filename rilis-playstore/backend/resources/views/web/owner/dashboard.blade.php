@@ -57,7 +57,7 @@
             <a href="{{ route('web.owner.bookings.index', ['status' => 'pending']) }}" class="text-decoration-none">
                 <div class="card-koskita p-3 h-100" style="{{ $stats['pending_bookings'] > 0 ? 'border-color: #F59E0B;' : '' }}">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3"><i class="bi bi-calendar-exclamation fs-4"></i></div>
+                        <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3"><i class="bi bi-hourglass-split fs-4"></i></div>
                         <div>
                             <p class="text-muted mb-0 small">Booking Menunggu</p>
                             <h4 class="mb-0 fw-bold">{{ $stats['pending_bookings'] }}</h4>
