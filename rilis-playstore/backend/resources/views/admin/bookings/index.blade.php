@@ -22,8 +22,8 @@
 @endphp
 
 <div class="card-custom">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('admin.bookings.index') }}" class="btn btn-sm {{ !$status ? 'btn-primary-custom' : 'btn-outline-secondary' }}">Semua</a>
             @foreach($statusLabels as $key => $label)
                 <a href="{{ route('admin.bookings.index', ['status' => $key]) }}" class="btn btn-sm {{ $status === $key ? 'btn-primary-custom' : 'btn-outline-secondary' }}">{{ $label }}</a>
