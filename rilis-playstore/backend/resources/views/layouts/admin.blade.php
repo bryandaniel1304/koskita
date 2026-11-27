@@ -36,7 +36,8 @@
             z-index: 100;
             background-color: #0F172A;
             color: #94A3B8;
-            transition: all 0.3s;
+            transition: transform 0.25s ease;
+            overflow-y: auto;
         }
 
         #sidebar .nav-link {
@@ -167,6 +168,72 @@
             box-shadow: 0 4px 10px -2px rgba(53, 93, 219, 0.35);
         }
 
+        /* Di HP/tablet (< 992px) sidebar disembunyikan di luar layar dan
+           dibuka lewat tombol menu di navbar atas, supaya konten tidak
+           tertutup sidebar selebar 260px. */
+        .sidebar-toggle {
+            border: 1px solid #E2E8F0;
+            background: #FFF;
+            color: #0F172A;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        #sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s;
+        }
+
+        @media (max-width: 991.98px) {
+            #sidebar {
+                transform: translateX(-100%);
+                z-index: 1045;
+            }
+
+            body.sidebar-open #sidebar {
+                transform: translateX(0);
+                box-shadow: 0 0 40px rgba(0, 0, 0, 0.35);
+            }
+
+            body.sidebar-open #sidebar-backdrop {
+                opacity: 1;
+                visibility: visible;
+                z-index: 1040;
+            }
+
+            body.sidebar-open {
+                overflow: hidden;
+            }
+
+            #content {
+                margin-left: 0;
+                padding: 20px 16px;
+            }
+
+            .navbar-top {
+                padding: 12px 16px;
+                margin: -20px -16px 20px -16px;
+                position: sticky;
+                top: 0;
+                z-index: 1030;
+            }
+
+            .navbar-top h4 {
+                font-size: 1.1rem;
+            }
+        }
+
         .page-item.disabled .page-link {
             color: #CBD5E1;
             background-color: #F8FAFC;
@@ -177,6 +244,7 @@
 <body>
 
     <!-- Sidebar -->
+    <div id="sidebar-backdrop" aria-hidden="true"></div>
     <div id="sidebar" class="d-flex flex-column justify-content-between">
         <div>
             <div class="px-4 py-4 d-flex align-items-center gap-2 border-bottom border-secondary mb-3">
@@ -273,10 +341,15 @@
     <div id="content">
         <!-- Top Navbar -->
         <div class="navbar-top d-flex justify-content-between align-items-center">
-            <h4 class="mb-0 fw-bold text-dark">@yield('page_name')</h4>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" style="min-width: 0">
+                <button type="button" id="sidebar-toggle" class="sidebar-toggle d-lg-none" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h4 class="mb-0 fw-bold text-dark text-truncate">@yield('page_name')</h4>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
                 <div class="navbar-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
-                <span class="text-dark fw-semibold small">{{ Auth::user()->name }}</span>
+                <span class="text-dark fw-semibold small d-none d-sm-inline">{{ Auth::user()->name }}</span>
             </div>
         </div>
 
@@ -289,6 +362,33 @@
 
         @yield('content')
     </div>
+
+    <script>
+        (function () {
+            var body = document.body;
+            var toggle = document.getElementById('sidebar-toggle');
+            var backdrop = document.getElementById('sidebar-backdrop');
+            if (!toggle) return;
+
+            function setOpen(open) {
+                body.classList.toggle('sidebar-open', open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                toggle.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
+            }
+
+            toggle.addEventListener('click', function () {
+                setOpen(!body.classList.contains('sidebar-open'));
+            });
+            backdrop.addEventListener('click', function () { setOpen(false); });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') setOpen(false);
+            });
+            // Kembali ke layar lebar: pastikan status "terbuka" tidak nyangkut.
+            window.matchMedia('(min-width: 992px)').addEventListener('change', function (e) {
+                if (e.matches) setOpen(false);
+            });
+        })();
+    </script>
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
