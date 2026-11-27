@@ -33,8 +33,8 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="card-koskita p-3 h-100">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3"><i class="bi bi-houses-fill fs-4"></i></div>
+                <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 gap-sm-3">
+                    <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3 flex-shrink-0"><i class="bi bi-houses-fill fs-4"></i></div>
                     <div>
                         <p class="text-muted mb-0 small">Kos Aktif</p>
                         <h4 class="mb-0 fw-bold">{{ $stats['total_kos'] }}</h4>
@@ -44,8 +44,8 @@
         </div>
         <div class="col-6 col-lg-3">
             <div class="card-koskita p-3 h-100">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-2 bg-info bg-opacity-10 text-info rounded-3"><i class="bi bi-eye-fill fs-4"></i></div>
+                <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 gap-sm-3">
+                    <div class="p-2 bg-info bg-opacity-10 text-info rounded-3 flex-shrink-0"><i class="bi bi-eye-fill fs-4"></i></div>
                     <div>
                         <p class="text-muted mb-0 small">Total Dilihat</p>
                         <h4 class="mb-0 fw-bold">{{ $stats['total_views'] }}</h4>
@@ -56,8 +56,8 @@
         <div class="col-6 col-lg-3">
             <a href="{{ route('web.owner.bookings.index', ['status' => 'pending']) }}" class="text-decoration-none">
                 <div class="card-koskita p-3 h-100" style="{{ $stats['pending_bookings'] > 0 ? 'border-color: #F59E0B;' : '' }}">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3"><i class="bi bi-hourglass-split fs-4"></i></div>
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 gap-sm-3">
+                        <div class="p-2 bg-warning bg-opacity-10 text-warning rounded-3 flex-shrink-0"><i class="bi bi-hourglass-split fs-4"></i></div>
                         <div>
                             <p class="text-muted mb-0 small">Booking Menunggu</p>
                             <h4 class="mb-0 fw-bold">{{ $stats['pending_bookings'] }}</h4>
@@ -68,8 +68,8 @@
         </div>
         <div class="col-6 col-lg-3">
             <div class="card-koskita p-3 h-100">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-2 bg-success bg-opacity-10 text-success rounded-3"><i class="bi bi-cash-coin fs-4"></i></div>
+                <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 gap-sm-3">
+                    <div class="p-2 bg-success bg-opacity-10 text-success rounded-3 flex-shrink-0"><i class="bi bi-cash-coin fs-4"></i></div>
                     <div>
                         <p class="text-muted mb-0 small">Belum Ditandai Lunas</p>
                         <h4 class="mb-0 fw-bold">{{ $stats['unpaid_confirmed'] }}</h4>

@@ -18,19 +18,19 @@
                 <p class="text-muted small mb-3">Dari dilihat sampai booking dikonfirmasi -- lihat di tahap mana calon penyewa paling sering "hilang".</p>
                 <canvas id="funnelChart" height="220"></canvas>
                 <div class="row text-center mt-3 g-2">
-                    <div class="col-3">
+                    <div class="col-6 col-sm-3">
                         <p class="fw-bold mb-0">{{ $funnel['views'] }}</p>
                         <p class="text-muted small mb-0">Dilihat</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-6 col-sm-3">
                         <p class="fw-bold mb-0">{{ $funnel['favorites'] }}</p>
                         <p class="text-muted small mb-0">Difavoritkan</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-6 col-sm-3">
                         <p class="fw-bold mb-0">{{ $funnel['bookings_submitted'] }}</p>
                         <p class="text-muted small mb-0">Diajukan</p>
                     </div>
-                    <div class="col-3">
+                    <div class="col-6 col-sm-3">
                         <p class="fw-bold mb-0">{{ $funnel['bookings_confirmed'] }}</p>
                         <p class="text-muted small mb-0">Dikonfirmasi</p>
                     </div>
