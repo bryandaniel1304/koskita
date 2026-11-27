@@ -113,7 +113,9 @@ log "Mengambil kode (hanya folder rilis-playstore, branch $BRANCH)"
 if [ ! -d "$BASE/.git" ]; then
     mkdir -p "$BASE" && chown www-data:www-data "$BASE"
     as_web git clone --filter=blob:none --no-checkout --branch "$BRANCH" "$REPO_URL" "$BASE"
-    as_web git -C "$BASE" sparse-checkout set rilis-playstore/backend rilis-playstore/server
+    # Mode non-cone: HANYA dua folder ini yang diunduh, file lain di repo
+    # (termasuk seluruh file skripsi) tidak ikut ke server.
+    as_web git -C "$BASE" sparse-checkout set --no-cone '/rilis-playstore/backend/' '/rilis-playstore/server/'
     as_web git -C "$BASE" checkout "$BRANCH"
 else
     as_web git -C "$BASE" pull --ff-only
