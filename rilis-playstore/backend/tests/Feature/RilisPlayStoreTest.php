@@ -22,12 +22,12 @@ class RilisPlayStoreTest extends TestCase
     private function buatKos(): array
     {
         $terverifikasi = Kos::factory()->create(['name' => 'Kos Klien', 'verified_at' => now()]);
-        $scraping = Kos::factory()->create(['name' => 'Kos Hasil Scraping']);
+        $scraping = Kos::factory()->belumDiverifikasi()->create(['name' => 'Kos Hasil Scraping']);
 
         return [$terverifikasi, $scraping];
     }
 
-    public function test_instance_skripsi_tetap_menampilkan_semua_kos(): void
+    public function test_filter_bisa_dimatikan_lewat_env(): void
     {
         config(['koskita.hanya_kos_terverifikasi' => false]);
         $this->buatKos();
@@ -75,7 +75,7 @@ class RilisPlayStoreTest extends TestCase
     {
         config(['koskita.hanya_kos_terverifikasi' => true]);
         $owner = User::factory()->create(['role' => 'owner']);
-        Kos::factory()->create(['name' => 'Kos Baru Pemilik', 'owner_id' => $owner->id]);
+        Kos::factory()->belumDiverifikasi()->create(['name' => 'Kos Baru Pemilik', 'owner_id' => $owner->id]);
 
         $response = $this->actingAs($owner, 'sanctum')->getJson('/api/owner/koses')->assertOk();
         $this->assertStringContainsString('Kos Baru Pemilik', $response->getContent());
@@ -111,7 +111,7 @@ class RilisPlayStoreTest extends TestCase
     {
         config(['koskita.hanya_kos_terverifikasi' => true]);
         $owner = User::factory()->create(['role' => 'owner']);
-        $belum = Kos::factory()->create(['owner_id' => $owner->id]);
+        $belum = Kos::factory()->belumDiverifikasi()->create(['owner_id' => $owner->id]);
         $sudah = Kos::factory()->create(['owner_id' => $owner->id, 'verified_at' => now()]);
 
         $this->actingAs($owner, 'sanctum')
@@ -132,13 +132,41 @@ class RilisPlayStoreTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $admin->id]);
     }
 
-    public function test_halaman_hapus_akun_dan_privasi_bisa_dibuka(): void
+    public function test_halaman_legal_tanpa_istilah_riset(): void
     {
-        $this->get('/hapus-akun')->assertOk()->assertSee('Hapus Akun KosKita');
-        $this->get('/privacy')->assertOk()->assertSee('skripsi')->assertSee('dengan menghubungi kami')->assertDontSee('Profil &gt; Hapus Akun', false);
+        config(['koskita.email_kontak' => 'halo@contoh.id']);
 
-        config(['koskita.rilis_publik' => true, 'koskita.email_kontak' => 'halo@contoh.id']);
-        $this->get('/privacy')->assertOk()->assertDontSee('skripsi')->assertSee('halo@contoh.id')->assertSee('Profil &gt; Hapus Akun', false);
+        foreach (['/hapus-akun', '/privacy', '/terms', '/'] as $url) {
+            $html = $this->get($url)->assertOk()->getContent();
+            foreach (['skripsi', 'penelitian', 'responden', 'kuesioner'] as $kata) {
+                $this->assertDoesNotMatchRegularExpression('/\\b'.$kata.'\\b/i', $html, "$url memuat kata '$kata'");
+            }
+        }
+        $this->get('/privacy')->assertSee('halo@contoh.id')->assertSee('Profil &gt; Hapus Akun', false);
+        $this->get('/kuesioner')->assertNotFound();
+    }
+
+    public function test_master_admin_pertama_dibuat_dari_env_sekali_saja(): void
+    {
+        config(['koskita.master_admin_email' => 'admin@klien.id']);
+
+        $this->artisan('koskita:siapkan-master-admin')->assertSuccessful();
+        $admin = User::where('email', 'admin@klien.id')->first();
+        $this->assertTrue($admin->isMasterAdmin());
+        $hash = $admin->password;
+
+        $this->artisan('koskita:siapkan-master-admin')->assertSuccessful();
+        $this->assertSame($hash, $admin->fresh()->password);
+        $this->assertSame(1, User::where('role', 'admin')->count());
+    }
+
+    public function test_db_seed_bawaan_tidak_mengisi_data_contoh(): void
+    {
+        $this->seed();
+
+        $this->assertDatabaseCount('koses', 0);
+        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('facilities', 6);
     }
 
     public function test_produksi_seeder_hanya_mengisi_master_data(): void

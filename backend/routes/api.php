@@ -17,7 +17,6 @@ use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Controllers\Api\OwnerVerificationController;
 use App\Http\Controllers\Api\BroadcastingController;
 use App\Http\Controllers\Api\FcmTokenController;
-use App\Http\Controllers\Api\AccountDeletionController;
 
 // Parameter koneksi publik Reverb -- tidak butuh login sama sekali (mirip
 // app key publik Pusher), dipanggil sekali oleh Flutter sebelum konek WS.
@@ -69,9 +68,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
     Route::delete('/profile/avatar', [AuthController::class, 'deleteAvatar']);
     Route::post('/profile/reset-interactions', [AuthController::class, 'resetInteractions']);
-    // Hapus akun sendiri (wajib kebijakan Google Play) -- lihat
-    // AccountDeletionController. Dibatasi ketat karena tidak bisa dibatalkan.
-    Route::delete('/profile', [AccountDeletionController::class, 'destroy'])->middleware('throttle:3,1');
     // Kirim email sungguhan (SMTP) -- dibatasi ketat (3x/10 menit) supaya
     // tombol "Kirim Ulang" tidak bisa dispam jadi banjir SMTP/kena rate
     // limit Gmail.

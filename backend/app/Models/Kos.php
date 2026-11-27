@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,48 +42,6 @@ class Kos extends Model
         'longitude' => 'float',
         'verified_at' => 'datetime',
     ];
-
-    /**
-     * Mode "hanya kos terverifikasi" (instance produksi Play Store, lihat
-     * config/koskita.php). Mati secara bawaan -- instance skripsi tidak
-     * terpengaruh sama sekali.
-     *
-     * Dipasang sebagai global scope supaya SEMUA jalur publik (API daftar/
-     * detail/bandingkan/favorit, rekomendasi, chatbot, situs web, sitemap)
-     * ikut tersaring tanpa harus diingat satu per satu. Pengecualian:
-     * perintah artisan (migrasi/seeder), panel admin (harus bisa melihat kos
-     * baru untuk memverifikasinya), panel pemilik (pemilik melihat kosnya
-     * sendiri walau belum diverifikasi), serta riwayat booking/notifikasi
-     * (supaya booking lama tidak kehilangan data kosnya kalau verifikasi
-     * suatu saat dicabut).
-     */
-    protected static function booted(): void
-    {
-        static::addGlobalScope('hanya_terverifikasi', function (Builder $query) {
-            if (! config('koskita.hanya_kos_terverifikasi') || self::lewatiFilterVerifikasi()) {
-                return;
-            }
-            $query->whereNotNull($query->getModel()->qualifyColumn('verified_at'));
-        });
-    }
-
-    public static function lewatiFilterVerifikasi(): bool
-    {
-        if (app()->runningInConsole() && ! app()->runningUnitTests()) {
-            return true;
-        }
-
-        $request = request();
-
-        return $request->is(
-            'admin', 'admin/*',
-            'pemilik', 'pemilik/*',
-            'api/owner/*',
-            'api/bookings', 'api/bookings/*',
-            'api/notifications',
-            'booking-saya', 'booking-saya/*',
-        );
-    }
 
     public function owner()
     {

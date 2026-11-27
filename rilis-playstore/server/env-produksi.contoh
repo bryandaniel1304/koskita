@@ -1,5 +1,6 @@
 # ======================================================================
-# Contoh backend/.env untuk instance PRODUKSI (~/koskita-playstore/backend/.env)
+# Contoh .env untuk instance PRODUKSI:
+#   ~/koskita-playstore/rilis-playstore/backend/.env
 # Cara termudah: SALIN .env server skripsi (~/koskita/backend/.env) lalu ubah
 # hanya baris-baris di bawah ini. Jangan pernah pakai database skripsi.
 # ======================================================================
@@ -19,13 +20,18 @@ DB_DATABASE=GANTI_nama_db_produksi
 DB_USERNAME=GANTI_user_db_produksi
 DB_PASSWORD=GANTI_password_db_produksi
 
-# --- Khusus KosKita rilis Play Store (lihat backend/config/koskita.php) ---
-# Wajib true: hanya kos yang sudah diverifikasi admin yang tampil di aplikasi.
-KOSKITA_HANYA_KOS_TERVERIFIKASI=true
-# Teks Kebijakan Privasi/Hapus Akun versi publik (tanpa kata skripsi).
-KOSKITA_RILIS_PUBLIK=true
-# Email kontak resmi klien untuk privasi & permintaan hapus akun.
+# --- Khusus KosKita rilis (lihat rilis-playstore/backend/config/koskita.php) ---
+# Filter "hanya kos terverifikasi" SELALU aktif di versi rilis (tidak perlu diisi).
+# Email kontak resmi klien (tampil di Kebijakan Privasi, S&K, Hapus Akun).
 KOSKITA_EMAIL_KONTAK=GANTI@email-klien.com
+# Master admin pertama -- dibuat otomatis saat deploy bila belum ada admin.
+# Kata sandi acak tercetak SEKALI di ~/koskita-playstore-deploy.log.
+KOSKITA_MASTER_ADMIN_EMAIL=GANTI@email-admin.com
+KOSKITA_MASTER_ADMIN_NAMA="Master Admin"
+
+# Email & notifikasi dikirim lewat antrean; diproses cron tiap menit
+# (PANDUAN langkah 2h).
+QUEUE_CONNECTION=database
 
 # Email verifikasi akun WAJIB terkirim sungguhan (booking & chat butuh email
 # terverifikasi) -- pakai SMTP yang sama dengan server skripsi atau milik klien.

@@ -7,8 +7,8 @@
 # repo ~/koskita-playstore di cPanel Git Version Control.
 # Log: ~/koskita-playstore-deploy.log
 #
-# Instance skripsi (~/koskita, deploy/cpanel/deploy.sh) TIDAK disentuh sama
-# sekali oleh script ini.
+# Memakai backend salinan rilis (rilis-playstore/backend), BUKAN folder
+# backend/ skripsi. Instance skripsi (~/koskita) tidak disentuh sama sekali.
 #
 # Tata letak di server:
 #   ~/koskita-playstore                 repo lengkap (di luar public_html)
@@ -17,7 +17,7 @@ set -euo pipefail
 
 PHP="${PHP:-/usr/local/bin/php}"
 REPO="${REPO:-$HOME/koskita-playstore}"
-APP="$REPO/backend"
+APP="$REPO/rilis-playstore/backend"
 DOCROOT="${DOCROOT:-$HOME/public_html/koskita-app}"
 COMPOSER="$HOME/composer.phar"
 
@@ -44,8 +44,8 @@ COMPOSER_HOME="$HOME/.composer" "$PHP" -d memory_limit=-1 "$COMPOSER" install \
 echo "-- menyalin file publik ke $DOCROOT"
 mkdir -p "$DOCROOT"
 cp -R "$APP/public/." "$DOCROOT/"
-sed "s#__APP_PATH__#$APP#" "$REPO/deploy/cpanel/index.php" > "$DOCROOT/index.php"
-cp "$REPO/deploy/cpanel/user.ini" "$DOCROOT/.user.ini"
+sed "s#__APP_PATH__#$APP#" "$REPO/rilis-playstore/server/index.php" > "$DOCROOT/index.php"
+cp "$REPO/rilis-playstore/server/user.ini" "$DOCROOT/.user.ini"
 if [ -L "$DOCROOT/storage" ]; then
     :
 elif [ -e "$DOCROOT/storage" ]; then
@@ -61,9 +61,8 @@ if [ ! -f "$APP/.env" ]; then
     exit 0
 fi
 chmod 600 "$APP/.env"
-if ! grep -q '^KOSKITA_HANYA_KOS_TERVERIFIKASI=true' "$APP/.env"; then
-    echo "!! .env produksi belum berisi KOSKITA_HANYA_KOS_TERVERIFIKASI=true -- dibatalkan"
-    echo "   supaya kos yang belum diverifikasi tidak pernah tampil di aplikasi Play Store."
+if grep -qiE '^KOSKITA_HANYA_KOS_TERVERIFIKASI=(false|0)' "$APP/.env"; then
+    echo "!! .env produksi mematikan filter kos terverifikasi -- dibatalkan."
     exit 1
 fi
 if ! grep -q '^APP_KEY=base64:' "$APP/.env"; then
@@ -75,6 +74,9 @@ echo "-- migrate"
 # Hanya master fasilitas & aturan -- TIDAK ada kos/pengguna contoh.
 echo "-- seed master data produksi"
 "$PHP" artisan db:seed --class=ProduksiSeeder --force
+# Master admin pertama dari KOSKITA_MASTER_ADMIN_EMAIL (hanya bila belum ada
+# admin). Kata sandi acak tercetak SEKALI di log ini -- catat lalu ganti.
+"$PHP" artisan koskita:siapkan-master-admin
 echo "-- cache konfigurasi, rute, view"
 "$PHP" artisan config:cache
 "$PHP" artisan route:cache
