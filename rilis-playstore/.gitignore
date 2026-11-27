@@ -4,3 +4,7 @@
 key.properties
 # Hasil build untuk diunggah ke Play Console.
 hasil-build/
+
+# Salinan ganda otomatis iCloud (mis. "composer 2.json") -- jangan pernah di-commit.
+* [0-9].*
+* [0-9]

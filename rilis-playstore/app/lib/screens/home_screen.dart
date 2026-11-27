@@ -373,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             criteria.isEmpty
                 ? 'Lengkapi profil preferensimu agar kami bisa mencarikan kos yang cocok.'
-                : 'Belum ada kos $criteria yang sesuai tipe kos untukmu. Coba longgarkan rentang budget atau pilih area lain.',
+                : 'Belum ada kos mitra $criteria yang sesuai untukmu. Kos terverifikasi di KosKita terus bertambah -- sementara itu, lihat kos yang tersedia di bawah atau ubah preferensimu.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.45),
           ),
           const SizedBox(height: 12),

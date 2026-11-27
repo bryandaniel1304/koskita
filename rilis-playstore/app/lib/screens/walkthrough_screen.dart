@@ -30,8 +30,8 @@ class _WalkthroughScreenState extends State<WalkthroughScreen> {
   static const _slides = [
     _WalkthroughSlide(
       icon: Icons.auto_awesome_rounded,
-      title: 'Rekomendasi Otomatis',
-      description: 'Cukup isi preferensimu -- KosKita langsung mencarikan kos yang paling cocok, tanpa perlu scroll ratusan listing.',
+      title: 'Kos Terverifikasi & Cocok',
+      description: 'Setiap kos di KosKita sudah diperiksa langsung bersama pemiliknya. Isi preferensimu, KosKita mencarikan yang paling cocok untukmu.',
     ),
     _WalkthroughSlide(
       icon: Icons.chat_bubble_rounded,
