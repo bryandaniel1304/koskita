@@ -44,15 +44,21 @@ class BackupDatabase extends Command
         $filename = 'koskita-' . now()->format('Y-m-d_H-i-s') . '.sql';
         $path = $backupDir . DIRECTORY_SEPARATOR . $filename;
 
+        // Linux (VPS): kata sandi lewat MYSQL_PWD supaya tidak terlihat di
+        // daftar proses, stderr dibuang supaya peringatan tidak ikut masuk ke
+        // file .sql, --no-tablespaces supaya tidak butuh hak PROCESS (MySQL 8).
+        $isWindows = PHP_OS_FAMILY === 'Windows';
         $command = sprintf(
-            '"%s" --host=%s --port=%s --user=%s %s %s > "%s" 2>&1',
+            '%s"%s" --host=%s --port=%s --user=%s %s --single-transaction --no-tablespaces %s > "%s" 2>%s',
+            (! $isWindows && $config['password']) ? 'MYSQL_PWD=' . escapeshellarg($config['password']) . ' ' : '',
             $mysqldump,
             escapeshellarg($config['host']),
             escapeshellarg((string) $config['port']),
             escapeshellarg($config['username']),
-            $config['password'] ? '--password=' . escapeshellarg($config['password']) : '',
+            ($isWindows && $config['password']) ? '--password=' . escapeshellarg($config['password']) : '',
             escapeshellarg($config['database']),
-            $path
+            $path,
+            $isWindows ? 'NUL' : '/dev/null'
         );
 
         $this->info("Membuat backup ke: $path");
@@ -87,7 +93,9 @@ class BackupDatabase extends Command
 
         foreach ($candidates as $candidate) {
             if ($candidate === 'mysqldump') {
-                exec('where mysqldump 2>NUL', $out, $code);
+                // Linux (VPS produksi) pakai `command -v`; Windows pakai `where`.
+                $lookup = PHP_OS_FAMILY === 'Windows' ? 'where mysqldump 2>NUL' : 'command -v mysqldump 2>/dev/null';
+                exec($lookup, $out, $code);
                 if ($code === 0 && !empty($out)) {
                     return trim($out[0]);
                 }

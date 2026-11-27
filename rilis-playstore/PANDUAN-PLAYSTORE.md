@@ -7,7 +7,7 @@ Folder `rilis-playstore/` adalah **sistem KosKita lengkap versi rilis**: aplikas
 | Aplikasi Flutter | `frontend/` | `rilis-playstore/app/` |
 | Backend (website, admin, API) | `backend/` | `rilis-playstore/backend/` |
 | ID aplikasi Android | `com.koskita.frontend` | `com.koskita.app` |
-| Server/backend | `~/koskita` → koskita.kreasidigital-si.my.id | `~/koskita-playstore` → subdomain baru |
+| Server/backend | cPanel → koskita.kreasidigital-si.my.id | **VPS sendiri** → domain .com baru (mis. `koskitaapp.com`) |
 | Database | database skripsi (data scraping, responden, SUS) | **database baru**, kosong |
 | Kos yang tampil | semua | **hanya kos yang diverifikasi admin** |
 | Branch git yang di-deploy | `main` | `rilis-playstore` |
@@ -48,57 +48,92 @@ Akun sebaiknya **milik klien**, karena aplikasi akan tercatat atas namanya.
 4. Selesaikan **verifikasi identitas** (KTP/dokumen usaha) dan **verifikasi nomor HP**. Proses ini bisa memakan 1–3 hari, jadi kerjakan paling awal.
 5. Minta klien menambahkan email kamu sebagai pengguna: **Users and permissions → Invite new users → Admin**. Dengan begitu kamu bisa mengunggah build tanpa memegang kata sandi klien.
 
-## Langkah 2 — Server produksi (cPanel, terpisah dari skripsi)
+## Langkah 2 — Domain .com & server VPS (tanpa cPanel)
 
-### 2a. Subdomain + SSL
-1. cPanel → **Domains → Create A New Domain**: buat subdomain produksi, misalnya `app.<domain-klien>`. Atur *Document Root* ke `public_html/koskita-app`.
-2. cPanel → **SSL/TLS Status → Run AutoSSL**. Aplikasi rilis **hanya menerima HTTPS**.
+Versi rilis berjalan di **VPS sendiri**, bukan cPanel. Keuntungannya: chat realtime, email antrean, dan backup harian berjalan sebagai proses latar. Semuanya dipasang oleh satu skrip (`rilis-playstore/server/setup.sh`).
 
-### 2b. Database baru
-1. cPanel → **MySQL Databases**: buat database baru dan user baru, lalu beri user itu *ALL PRIVILEGES* ke database tersebut.
-2. **Jangan memakai database skripsi.**
+### 2a. Beli domain .com
+`koskita.com` **sudah dimiliki orang lain**. Nama-nama berikut masih **tersedia** per 27 November 2026 (dicek lewat registry resmi .com/Verisign):
 
-### 2c. Branch `rilis-playstore`
-Branch ini **sudah dibuat dan ada di GitHub**. Isinya sama dengan branch skripsi, kecuali `.cpanel.yml`-nya menjalankan `rilis-playstore/server/deploy.sh`. Branch skripsi tetap memakai `.cpanel.yml` aslinya.
+| Nama | Catatan |
+|---|---|
+| **`koskitaapp.com`** | Rekomendasi: pendek, tanpa tanda hubung, jelas sebagai aplikasi |
+| `kos-kita.com` | Paling mirip nama asli, tapi tanda hubung sering lupa diketik |
+| `carikoskita.com`, `koskitaid.com`, `koskitamitra.com` | Alternatif |
 
-### 2d. Clone kedua di cPanel
-1. cPanel → **Git™ Version Control → Create**.
-2. Isi *Clone URL* dengan repo yang sama seperti `~/koskita`. Isi *Repository Path* dengan `koskita-playstore`.
-3. Buka **Manage** pada repo itu, ubah *Checked-Out Branch* menjadi `rilis-playstore`, lalu klik **Update from Remote**.
+Tempat beli (harga tahun pertama, cek ulang saat membeli):
+- **Rumahweb**: .com promo Rp137.000/tahun pertama (normal Rp219.000; perpanjangan ± Rp201.000/tahun).
+- **IDwebhost**: .com sekitar Rp134.900–149.900/tahun pertama.
 
-### 2e. `.env` produksi
-1. File Manager: salin `~/koskita/backend/.env` (milik skripsi) ke `~/koskita-playstore/rilis-playstore/backend/.env`.
-2. Ubah isinya sesuai `rilis-playstore/server/env-produksi.contoh`: `APP_URL`, `DB_*`, `APP_KEY` dikosongkan, `QUEUE_CONNECTION`, dan baris `KOSKITA_*` (email kontak & email master admin).
-3. Kalau `.env` skripsi memakai Pusher, buat app Pusher baru untuk produksi (penjelasannya ada di file contoh).
-4. Di cPanel Git → **Deploy HEAD Commit**. Hasilnya bisa dicek di `~/koskita-playstore-deploy.log`; baris terakhir harus `== selesai`.
-   Script deploy **menolak berjalan** kalau `.env` mencoba mematikan filter kos terverifikasi, sebagai pengaman.
-5. Buka `https://app.<domain-klien>/privacy` dan `/hapus-akun` di browser untuk memastikan servernya hidup.
+Saat membeli, **matikan add-on hosting** (tidak dibutuhkan, karena pakai VPS). Daftarkan domain **atas nama klien** supaya kepemilikannya jelas.
+
+### 2b. Sewa VPS
+Spesifikasi minimum: **2 GB RAM, 1–2 vCPU, ≥ 20 GB SSD, Ubuntu 24.04**, data center Indonesia.
+
+| Penyedia | Paket | Harga ± /bulan |
+|---|---|---|
+| **Biznet Gio** (rekomendasi) | NEO Lite SS 2.1: 1 vCPU, 2 GB RAM, 60 GB SSD | Rp80.000 |
+| IDCloudHost | Cloud VPS 2 vCPU, 2 GB RAM, 20 GB | ± Rp87.000–149.000 |
+
+Saat membuat VPS, pilih image **Ubuntu 24.04**, lalu catat **IP publik** dan kata sandi/SSH key root-nya.
+
+### 2c. Arahkan domain ke VPS
+Di panel DNS tempat membeli domain, buat dua record:
+
+| Tipe | Nama | Isi |
+|---|---|---|
+| A | `@` | IP publik VPS |
+| A | `www` | IP publik VPS |
+
+Tunggu 5–60 menit sampai aktif. Cek dengan `ping koskitaapp.com`; hasilnya harus menampilkan IP VPS.
+
+### 2d. Siapkan email pengirim (SMTP)
+Email verifikasi akun **wajib** terkirim; tanpa email, penyewa tidak bisa booking atau chat. Pilihan termudah:
+- **Gmail klien + App Password**: host `smtp.gmail.com`, port `587`, user alamat Gmail, password = *App Password* (Google Account → Security → 2-Step Verification → App passwords). Batas ± 500 email/hari, cukup untuk awal.
+- Atau layanan email transaksional (Brevo/Mailgun) kalau klien ingin alamat `@koskitaapp.com`.
+
+### 2e. Jalankan skrip setup (sekali)
+Login ke VPS (`ssh root@IP-VPS`), lalu jalankan:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bryandaniel1304/koskita/rilis-playstore/rilis-playstore/server/setup.sh -o setup.sh
+```
+
+```bash
+DOMAIN=koskitaapp.com ADMIN_EMAIL=admin@contoh.com SMTP_HOST=smtp.gmail.com SMTP_PORT=587 SMTP_USER=klien@gmail.com SMTP_PASS='app-password' bash setup.sh
+```
+
+Skrip ini (± 5–10 menit) otomatis:
+- memasang Nginx, PHP 8.4, MySQL 8, dan Composer;
+- mengunduh **hanya folder `rilis-playstore/`** dari branch `rilis-playstore`, tanpa file skripsi;
+- membuat database baru dengan kata sandi acak, file `.env` produksi, migrasi, master fasilitas & aturan, dan **akun master admin pertama**;
+- memasang HTTPS Let's Encrypt (perpanjang otomatis);
+- menjalankan queue worker (email & notifikasi) dan Reverb (chat realtime) lewat Supervisor;
+- memasang cron scheduler (backup database harian, simpan 7 hari) dan firewall (hanya SSH, HTTP, HTTPS).
+
+Skrip aman dijalankan ulang. Kalau saat dijalankan DNS belum aktif, HTTPS dilewati; jalankan ulang setelah DNS aktif.
 
 ### 2f. Akun master admin
-1. Deploy pertama otomatis membuat master admin dari `KOSKITA_MASTER_ADMIN_EMAIL`. Kata sandi acaknya tercetak **sekali** di `~/koskita-playstore-deploy.log` (baris "Password digenerate otomatis").
-2. Login di `https://app.<domain-klien>/login`, lalu segera ganti kata sandinya.
+1. Kata sandi awal master admin tersimpan di VPS: `cat /root/koskita-kredensial.txt`.
+2. Login di `https://koskitaapp.com/login`, lalu segera ganti kata sandinya. Setelah dicatat, hapus file itu (`rm /root/koskita-kredensial.txt`).
 3. Admin operasional tambahan: daftarkan akun biasa, lalu master admin mengubah role-nya di **Data Pengguna → Ubah**.
 
 ### 2g. Mengisi kos klien (hanya yang sudah bekerja sama)
-1. Klien (atau kamu atas nama klien) daftar di aplikasi sebagai **Penyedia Kos**, verifikasi email, lalu tambahkan kos lengkap dengan foto.
-2. Admin → menu **Kos** → tandai kos itu **Terverifikasi**. Kos baru muncul di aplikasi setelah langkah ini.
-3. Kos yang belum diverifikasi tetap terlihat di panel admin dan panel pemilik, tetapi **tidak pernah tampil** ke pengguna aplikasi atau situs.
-4. Admin juga bisa menambah kos langsung lewat **Kelola Kos → Tambah Kos Baru**, lalu menandainya Terverifikasi. Kos seperti ini tidak punya akun pemilik, jadi pengajuan booking-nya dikelola admin lewat menu **Booking**. Kalau klien ingin menerima booking & chat sendiri, pakai cara nomor 1.
+1. Klien daftar di aplikasi atau website sebagai **Penyedia Kos**, verifikasi email, lalu tambahkan kos lengkap dengan foto.
+2. Master admin → **Kelola Kos** → **Tandai terverifikasi**. Kos baru muncul di aplikasi & website setelah langkah ini.
+3. Kos yang belum diverifikasi tetap terlihat di panel admin dan panel pemilik, tetapi **tidak pernah tampil** ke publik.
+4. Admin juga bisa menambah kos langsung lewat **Kelola Kos → Tambah Kos Baru**. Kos seperti ini tidak punya akun pemilik, jadi booking-nya dikelola admin lewat menu **Booking**. Kalau klien ingin menerima booking & chat sendiri, pakai cara nomor 1.
 5. Versi rilis tidak punya fitur scraping/impor data riset, dan `db:seed` hanya mengisi master fasilitas & aturan, jadi data skripsi tidak mungkin masuk.
-6. Area kos yang bisa dipilih masih **Karawaci, BSD, Serpong, dan Alam Sutera** (sama dengan skripsi). Kalau kos klien di luar area ini, kabari saya dulu sebelum rilis supaya daftar areanya ditambah.
+6. Area kos yang bisa dipilih: **Karawaci, BSD, Serpong, dan Alam Sutera**. Kalau kos klien di luar area ini, kabari saya dulu sebelum rilis.
 
-### 2h. Cron (email & notifikasi)
-Email verifikasi, reset kata sandi, dan notifikasi booking/pesan dikirim lewat antrean. cPanel → **Cron Jobs → Add New Cron Job**, pilih *Once Per Minute*, lalu isi command:
+### 2h. Cek server
+Buka di browser: `https://koskitaapp.com`, `/privacy`, `/terms`, `/hapus-akun`, dan `/login`. Untuk melihat log bila ada masalah:
 
 ```bash
-cd $HOME/koskita-playstore/rilis-playstore/backend && /usr/local/bin/php artisan queue:work --stop-when-empty --max-time=50 --tries=3 > /dev/null 2>&1
+tail -n 50 /var/www/koskita/rilis-playstore/backend/storage/logs/laravel.log
 ```
 
-Tanpa cron ini, pengguna tidak akan menerima email verifikasi sehingga tidak bisa booking atau chat.
-
-### 2i. Cadangan database
-Aktifkan **cPanel → Backup** (atau JetBackup kalau tersedia) untuk database produksi. Perintah backup bawaan KosKita khusus Windows/XAMPP dan tidak dipakai di cPanel.
-
+Backup database harian ada di `/var/www/koskita/rilis-playstore/backend/storage/app/backups/`. Sesekali unduh salinannya ke luar server.
 
 ## Langkah 3 — Kunci tanda tangan (upload key)
 
@@ -120,11 +155,11 @@ Mac ini belum punya Android SDK. Ada dua pilihan: pasang **Android Studio** (bes
 2. Jalankan build:
    - Mac/Linux:
      ```bash
-     API_BASE_URL=https://app.domain-klien/api bash rilis-playstore/build-aab.sh
+     API_BASE_URL=https://koskitaapp.com/api bash rilis-playstore/build-aab.sh
      ```
-   - Windows (dari folder `rilis-playstore`): `build-aab.bat https://app.domain-klien/api`
+   - Windows (dari folder `rilis-playstore`): `build-aab.bat https://koskitaapp.com/api`
 3. Hasilnya ada di `rilis-playstore/hasil-build/`.
-4. **Uji dulu di HP sungguhan**: buka `rilis-playstore/app` lalu jalankan `flutter run --release --dart-define=API_BASE_URL=https://app.domain-klien/api`. Pastikan daftar, login, kos tampil, booking, dan Profil → Hapus Akun semuanya berjalan.
+4. **Uji dulu di HP sungguhan**: buka `rilis-playstore/app` lalu jalankan `flutter run --release --dart-define=API_BASE_URL=https://koskitaapp.com/api`. Pastikan daftar, login, kos tampil, booking, dan Profil → Hapus Akun semuanya berjalan.
 5. Setiap kali mengunggah build baru, naikkan `version:` di `rilis-playstore/app/pubspec.yaml`, misalnya `1.0.0+1` → `1.0.1+2`. Angka setelah `+` wajib selalu naik.
 
 ## Langkah 5 — Buat aplikasi di Play Console
@@ -135,7 +170,7 @@ Di **Dashboard → Set up your app**, isi semua bagian berikut.
 
 | Bagian | Isi |
 |---|---|
-| **Privacy policy** | `https://app.<domain-klien>/privacy` |
+| **Privacy policy** | `https://koskitaapp.com/privacy` |
 | **App access** | *All or some functionality is restricted*. Berikan **akun demo penyewa dan akun demo pemilik** (email sudah terverifikasi) supaya reviewer Google bisa login. Tanpa ini, aplikasi biasanya ditolak. |
 | **Ads** | No, my app does not contain ads |
 | **Content rating** | Isi kuesioner IARC: kategori *Utility/Productivity* atau *Lifestyle*. Jawab "ya" untuk *users can interact/communicate* (fitur chat), sisanya "tidak". |
@@ -143,7 +178,7 @@ Di **Dashboard → Set up your app**, isi semua bagian berikut.
 | **News app** | No |
 | **Data safety** | Lihat tabel di bawah |
 | **Government app / Financial features / Health** | No / Tidak ada / Tidak ada |
-| **Delete account URL** (di Data safety) | `https://app.<domain-klien>/hapus-akun` |
+| **Delete account URL** (di Data safety) | `https://koskitaapp.com/hapus-akun` |
 
 **Data safety**: data dikirim terenkripsi (HTTPS) dan pengguna bisa meminta penghapusan (ya, tersedia in-app dan lewat URL).
 
@@ -191,7 +226,11 @@ Akun organisasi, atau akun yang dibuat sebelum November 2023, bisa langsung ke l
   ```bash
   git checkout rilis-playstore && git merge feat/tampilkan-data-riset-lengkap && git push && git checkout feat/tampilkan-data-riset-lengkap
   ```
-  Lalu di cPanel, pada repo `koskita-playstore`: **Update from Remote → Deploy HEAD Commit**.
+  Lalu di VPS:
+  ```bash
+  sudo bash /var/www/koskita/rilis-playstore/server/update.sh
+  ```
+- Mengubah `.env` produksi (mis. ganti SMTP): edit `/var/www/koskita/rilis-playstore/backend/.env`, lalu jalankan `update.sh` yang sama.
 
 ## Perbedaan isi aplikasi rilis dibanding aplikasi skripsi
 
