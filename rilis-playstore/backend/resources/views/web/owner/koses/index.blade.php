@@ -9,14 +9,14 @@
             <h4 class="fw-bold mb-1">Kos Kamu</h4>
             <p class="text-muted small mb-0">Tambah kos baru & unggah foto lewat aplikasi KosKita.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('web.owner.koses.export') }}" class="btn btn-outline-koskita btn-sm">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('web.owner.koses.export') }}" class="btn btn-outline-koskita btn-sm text-nowrap">
                 <i class="bi bi-download me-1"></i> Ekspor CSV
             </a>
-            <button type="button" class="btn btn-outline-koskita btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
+            <button type="button" class="btn btn-outline-koskita btn-sm text-nowrap" data-bs-toggle="modal" data-bs-target="#importModal">
                 <i class="bi bi-upload me-1"></i> Impor CSV
             </button>
-            <a href="{{ route('web.owner.dashboard') }}" class="btn btn-outline-koskita btn-sm">
+            <a href="{{ route('web.owner.dashboard') }}" class="btn btn-outline-koskita btn-sm text-nowrap">
                 <i class="bi bi-arrow-left me-1"></i> Dashboard
             </a>
         </div>
