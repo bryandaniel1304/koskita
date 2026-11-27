@@ -6,12 +6,12 @@
 @section('content')
 <div class="row">
     <!-- Stat 1: Total Users -->
-    <div class="col-md-3">
+    <div class="col-12 col-lg-6 col-xl-3">
         <div class="card-custom d-flex align-items-center gap-3">
-            <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-3">
+            <div class="p-3 bg-primary bg-opacity-10 text-primary rounded-3 flex-shrink-0">
                 <i class="bi bi-people-fill fs-3"></i>
             </div>
-            <div>
+            <div style="min-width: 0">
                 <p class="text-muted mb-0 small">Total Penyewa</p>
                 <h3 class="mb-0 fw-bold text-dark">{{ $totalUsers }}</h3>
             </div>
@@ -19,12 +19,12 @@
     </div>
 
     <!-- Stat 2: Total Kos -->
-    <div class="col-md-3">
+    <div class="col-12 col-lg-6 col-xl-3">
         <div class="card-custom d-flex align-items-center gap-3">
-            <div class="p-3 bg-success bg-opacity-10 text-success rounded-3">
+            <div class="p-3 bg-success bg-opacity-10 text-success rounded-3 flex-shrink-0">
                 <i class="bi bi-houses-fill fs-3"></i>
             </div>
-            <div>
+            <div style="min-width: 0">
                 <p class="text-muted mb-0 small">Kos Terdaftar</p>
                 <h3 class="mb-0 fw-bold text-dark">{{ $totalKoses }}</h3>
             </div>
@@ -32,12 +32,12 @@
     </div>
 
     <!-- Stat 3: Total Interactions -->
-    <div class="col-md-3">
+    <div class="col-12 col-lg-6 col-xl-3">
         <div class="card-custom d-flex align-items-center gap-3">
-            <div class="p-3 bg-info bg-opacity-10 text-info rounded-3">
+            <div class="p-3 bg-info bg-opacity-10 text-info rounded-3 flex-shrink-0">
                 <i class="bi bi-activity fs-3"></i>
             </div>
-            <div>
+            <div style="min-width: 0">
                 <p class="text-muted mb-0 small">Total Interaksi</p>
                 <h3 class="mb-0 fw-bold text-dark">{{ $totalInteractions }}</h3>
             </div>
@@ -45,12 +45,12 @@
     </div>
 
     <!-- Stat 4: Average Rating -->
-    <div class="col-md-3">
+    <div class="col-12 col-lg-6 col-xl-3">
         <div class="card-custom d-flex align-items-center gap-3">
-            <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3">
+            <div class="p-3 bg-warning bg-opacity-10 text-warning rounded-3 flex-shrink-0">
                 <i class="bi bi-star-fill fs-3"></i>
             </div>
-            <div>
+            <div style="min-width: 0">
                 <p class="text-muted mb-0 small">Rata-rata Rating</p>
                 <h3 class="mb-0 fw-bold text-dark">{{ number_format($avgRating, 1) }}</h3>
             </div>
@@ -59,13 +59,13 @@
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-3">
+    <div class="col-12 col-lg-6 col-xl-3">
         <a href="{{ route('admin.bookings.index', ['status' => 'pending']) }}" class="text-decoration-none">
             <div class="card-custom d-flex align-items-center gap-3">
-                <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-3">
+                <div class="p-3 bg-danger bg-opacity-10 text-danger rounded-3 flex-shrink-0">
                     <i class="bi bi-calendar-exclamation fs-3"></i>
                 </div>
-                <div>
+                <div style="min-width: 0">
                     <p class="text-muted mb-0 small">Booking Menunggu</p>
                     <h3 class="mb-0 fw-bold text-dark">{{ $pendingBookings }}</h3>
                 </div>
@@ -75,16 +75,16 @@
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-6">
+    <div class="col-12 col-xl-6">
         <div class="card-custom h-100">
             <h6 class="fw-bold mb-3">Status Rekomendasi Pengguna</h6>
-            <canvas id="coldWarmChart" height="180"></canvas>
+            <div style="position: relative; height: 260px"><canvas id="coldWarmChart"></canvas></div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-12 col-xl-6">
         <div class="card-custom h-100">
             <h6 class="fw-bold mb-3">Status Booking</h6>
-            <canvas id="bookingStatusChart" height="180"></canvas>
+            <div style="position: relative; height: 260px"><canvas id="bookingStatusChart"></canvas></div>
         </div>
     </div>
 </div>
@@ -107,7 +107,7 @@
                 backgroundColor: ['#22C55E', '#94A3B8'],
             }]
         },
-        options: { plugins: { legend: { position: 'bottom' } } }
+        options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 
     new Chart(document.getElementById('bookingStatusChart'), {
@@ -126,7 +126,7 @@
                 backgroundColor: '#355DDB',
             }]
         },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
     });
 </script>
 @endsection
