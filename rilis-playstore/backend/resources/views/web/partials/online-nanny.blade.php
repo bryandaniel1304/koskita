@@ -2,6 +2,14 @@
      yang dipakai app Flutter (OnlineNannyService), sekarang tersedia juga
      di situs web supaya pengalamannya setara di kedua platform. --}}
 <style>
+    /* Tombol chat melayang di pojok kanan bawah: beri ruang kosong di
+       bawah footer supaya baris hak cipta & tautan terakhir tidak
+       tertutup tombol saat halaman digulir sampai paling bawah. Hanya
+       berlaku kalau tombol ini ada (pengguna sudah login). */
+    .footer-koskita { padding-bottom: 96px; }
+    @media (min-width: 992px) {
+        .footer-koskita { padding-bottom: 40px; }
+    }
     #nannyBubble {
         position: fixed; right: 22px; bottom: 22px; z-index: 9000;
         width: 58px; height: 58px; border-radius: 50%;
