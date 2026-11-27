@@ -1,17 +1,23 @@
 # KosKita — Panduan Rilis ke Google Play Store
 
-Folder `rilis-playstore/` adalah **duplikasi KosKita khusus Play Store**. Semua yang dipakai untuk skripsi tetap seperti semula:
+Folder `rilis-playstore/` adalah **sistem KosKita lengkap versi rilis**: aplikasi Android, backend (website publik, portal pemilik, panel admin & master admin, API), dan skrip deploy. Folder ini **berdiri sendiri** dan tidak memakai satu pun file skripsi (`frontend/`, `backend/`, `deploy/`), jadi skripsi tetap seperti semula:
 
 | | Skripsi (tidak berubah) | Rilis Play Store (baru) |
 |---|---|---|
 | Aplikasi Flutter | `frontend/` | `rilis-playstore/app/` |
+| Backend (website, admin, API) | `backend/` | `rilis-playstore/backend/` |
 | ID aplikasi Android | `com.koskita.frontend` | `com.koskita.app` |
 | Server/backend | `~/koskita` → koskita.kreasidigital-si.my.id | `~/koskita-playstore` → subdomain baru |
 | Database | database skripsi (data scraping, responden, SUS) | **database baru**, kosong |
 | Kos yang tampil | semua | **hanya kos yang diverifikasi admin** |
 | Branch git yang di-deploy | `main` | `rilis-playstore` |
 
-Kode backend dipakai bersama, tetapi fitur produksi hanya menyala lewat `.env` produksi (`KOSKITA_HANYA_KOS_TERVERIFIKASI=true`). Server skripsi tidak mengisi variabel itu, jadi perilakunya sama persis seperti sebelumnya. Seluruh 294 tes backend lulus.
+**Isi backend rilis dibanding skripsi:**
+- **Sistem rekomendasi identik byte-per-byte** dengan yang diuji di skripsi: `RecommendationService`, Content-Based, Collaborative Filtering, Cosine Similarity, dan Switching-Weighted Combiner. Tes rekomendasinya juga sama dan lulus.
+- Website publik, portal pemilik, panel admin, dan master admin semuanya ikut. Istilah riset ("Responden", "skripsi", "penelitian") diganti istilah produk.
+- **Dibuang karena khusus riset:** kuesioner & menu SUS, scraper Mamikos/Infokost/Rukita, impor/ekspor data riset, dan seeder data contoh (`db:seed` hanya mengisi master fasilitas & aturan).
+- **Ditambah:** filter "hanya kos terverifikasi" (selalu aktif), hapus akun mandiri + halaman `/hapus-akun`, dan pembuatan master admin pertama otomatis saat deploy.
+- 271 tes backend rilis lulus. Alur end-to-end juga sudah dicoba di database kosong: pemilik daftar & tambah kos → kos tersembunyi → admin verifikasi di panel → kos tampil di website, API, dan rekomendasi → hapus akun.
 
 ---
 
@@ -53,25 +59,7 @@ Akun sebaiknya **milik klien**, karena aplikasi akan tercatat atas namanya.
 2. **Jangan memakai database skripsi.**
 
 ### 2c. Branch `rilis-playstore`
-Jalankan di komputer setelah perubahan ini di-commit ke `main`:
-
-```bash
-git checkout main && git pull
-```
-
-```bash
-git checkout -b rilis-playstore
-```
-
-```bash
-cp rilis-playstore/server/cpanel.yml .cpanel.yml && git commit -am "Deploy instance produksi Play Store" && git push -u origin rilis-playstore
-```
-
-```bash
-git checkout main
-```
-
-`.cpanel.yml` di `main` (milik skripsi) **tidak diubah**. Hanya branch `rilis-playstore` yang menjalankan `rilis-playstore/server/deploy.sh`.
+Branch ini **sudah dibuat dan ada di GitHub**. Isinya sama dengan branch skripsi, kecuali `.cpanel.yml`-nya menjalankan `rilis-playstore/server/deploy.sh`. Branch skripsi tetap memakai `.cpanel.yml` aslinya.
 
 ### 2d. Clone kedua di cPanel
 1. cPanel → **Git™ Version Control → Create**.
@@ -79,26 +67,38 @@ git checkout main
 3. Buka **Manage** pada repo itu, ubah *Checked-Out Branch* menjadi `rilis-playstore`, lalu klik **Update from Remote**.
 
 ### 2e. `.env` produksi
-1. File Manager: salin `~/koskita/backend/.env` (milik skripsi) ke `~/koskita-playstore/backend/.env`.
-2. Ubah isinya sesuai `rilis-playstore/server/env-produksi.contoh`: `APP_URL`, `DB_*`, `APP_KEY` dikosongkan, dan **tiga baris `KOSKITA_*`**.
+1. File Manager: salin `~/koskita/backend/.env` (milik skripsi) ke `~/koskita-playstore/rilis-playstore/backend/.env`.
+2. Ubah isinya sesuai `rilis-playstore/server/env-produksi.contoh`: `APP_URL`, `DB_*`, `APP_KEY` dikosongkan, `QUEUE_CONNECTION`, dan baris `KOSKITA_*` (email kontak & email master admin).
 3. Kalau `.env` skripsi memakai Pusher, buat app Pusher baru untuk produksi (penjelasannya ada di file contoh).
 4. Di cPanel Git → **Deploy HEAD Commit**. Hasilnya bisa dicek di `~/koskita-playstore-deploy.log`; baris terakhir harus `== selesai`.
-   Script deploy **menolak berjalan** kalau `KOSKITA_HANYA_KOS_TERVERIFIKASI=true` belum ada, sebagai pengaman.
+   Script deploy **menolak berjalan** kalau `.env` mencoba mematikan filter kos terverifikasi, sebagai pengaman.
 5. Buka `https://app.<domain-klien>/privacy` dan `/hapus-akun` di browser untuk memastikan servernya hidup.
 
-### 2f. Akun admin produksi
-1. Daftar akun biasa di `https://app.<domain-klien>/daftar`.
-2. cPanel → **phpMyAdmin** → pilih database produksi → tab SQL, lalu jalankan:
-   ```sql
-   UPDATE users SET role='admin', is_master_admin=1, email_verified_at=NOW() WHERE email='email-admin@contoh.com';
-   ```
-3. Login panel admin di `https://app.<domain-klien>/login`.
+### 2f. Akun master admin
+1. Deploy pertama otomatis membuat master admin dari `KOSKITA_MASTER_ADMIN_EMAIL`. Kata sandi acaknya tercetak **sekali** di `~/koskita-playstore-deploy.log` (baris "Password digenerate otomatis").
+2. Login di `https://app.<domain-klien>/login`, lalu segera ganti kata sandinya.
+3. Admin operasional tambahan: daftarkan akun biasa, lalu master admin mengubah role-nya di **Data Pengguna → Ubah**.
 
 ### 2g. Mengisi kos klien (hanya yang sudah bekerja sama)
 1. Klien (atau kamu atas nama klien) daftar di aplikasi sebagai **Penyedia Kos**, verifikasi email, lalu tambahkan kos lengkap dengan foto.
 2. Admin → menu **Kos** → tandai kos itu **Terverifikasi**. Kos baru muncul di aplikasi setelah langkah ini.
 3. Kos yang belum diverifikasi tetap terlihat di panel admin dan panel pemilik, tetapi **tidak pernah tampil** ke pengguna aplikasi atau situs.
-4. **Jangan** jalankan `db:seed` biasa atau fitur impor/scraping di server produksi. Kalaupun terlanjur, hasilnya tidak tampil selama belum diverifikasi.
+4. Admin juga bisa menambah kos langsung lewat **Kelola Kos → Tambah Kos Baru**, lalu menandainya Terverifikasi. Kos seperti ini tidak punya akun pemilik, jadi pengajuan booking-nya dikelola admin lewat menu **Booking**. Kalau klien ingin menerima booking & chat sendiri, pakai cara nomor 1.
+5. Versi rilis tidak punya fitur scraping/impor data riset, dan `db:seed` hanya mengisi master fasilitas & aturan, jadi data skripsi tidak mungkin masuk.
+6. Area kos yang bisa dipilih masih **Karawaci, BSD, Serpong, dan Alam Sutera** (sama dengan skripsi). Kalau kos klien di luar area ini, kabari saya dulu sebelum rilis supaya daftar areanya ditambah.
+
+### 2h. Cron (email & notifikasi)
+Email verifikasi, reset kata sandi, dan notifikasi booking/pesan dikirim lewat antrean. cPanel → **Cron Jobs → Add New Cron Job**, pilih *Once Per Minute*, lalu isi command:
+
+```bash
+cd $HOME/koskita-playstore/rilis-playstore/backend && /usr/local/bin/php artisan queue:work --stop-when-empty --max-time=50 --tries=3 > /dev/null 2>&1
+```
+
+Tanpa cron ini, pengguna tidak akan menerima email verifikasi sehingga tidak bisa booking atau chat.
+
+### 2i. Cadangan database
+Aktifkan **cPanel → Backup** (atau JetBackup kalau tersedia) untuk database produksi. Perintah backup bawaan KosKita khusus Windows/XAMPP dan tidak dipakai di cPanel.
+
 
 ## Langkah 3 — Kunci tanda tangan (upload key)
 
@@ -186,12 +186,12 @@ Akun organisasi, atau akun yang dibuat sebelum November 2023, bisa langsung ke l
 
 ## Memperbarui aplikasi/server di kemudian hari
 
-- **Perbaikan dari `main` ingin ikut ke produksi**:
+- Semua perubahan versi rilis dikerjakan **di dalam `rilis-playstore/`** (`app/` untuk aplikasi, `backend/` untuk website/admin/API). Perubahan di `frontend/` atau `backend/` skripsi **tidak** ikut ke rilis, dan sebaliknya.
+- Setelah commit, bawa perubahan ke branch rilis lalu deploy:
   ```bash
-  git checkout rilis-playstore && git merge main && git push && git checkout main
+  git checkout rilis-playstore && git merge feat/tampilkan-data-riset-lengkap && git push && git checkout feat/tampilkan-data-riset-lengkap
   ```
   Lalu di cPanel, pada repo `koskita-playstore`: **Update from Remote → Deploy HEAD Commit**.
-- **Perubahan tampilan aplikasi**: edit di `rilis-playstore/app/`, bukan di `frontend/`. Ubahan di `frontend/` (skripsi) **tidak** otomatis ikut ke sini; salin manual kalau memang diinginkan.
 
 ## Perbedaan isi aplikasi rilis dibanding aplikasi skripsi
 
