@@ -1453,7 +1453,7 @@ class _SimilarKosSection extends StatelessWidget {
         final similar = snapshot.data ?? [];
         if (similar.isEmpty) {
           return Text(
-            'Belum ada kos lain di lokasi ini.',
+            'Kos mitra terverifikasi lainnya di lokasi ini akan segera hadir.',
             style: Theme.of(context).textTheme.bodySmall,
           );
         }

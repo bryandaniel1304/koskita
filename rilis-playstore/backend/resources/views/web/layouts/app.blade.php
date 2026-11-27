@@ -392,7 +392,7 @@
                         <img src="{{ asset('images/logo_icon.png') }}" alt="KosKita">
                         KosKita
                     </div>
-                    <p class="small mb-0">Platform rekomendasi kos untuk mahasiswa di Karawaci, BSD, Serpong, dan Alam Sutera -- mencocokkan kamu dengan kos yang paling sesuai budget, preferensi, dan gaya hidup lewat sistem rekomendasi hybrid.</p>
+                    <p class="small mb-0">Platform kos terverifikasi di Karawaci, BSD, Serpong, dan Alam Sutera. Setiap kos diperiksa langsung bersama pemiliknya, dan sistem rekomendasi kami mencocokkan kamu dengan kos yang paling sesuai budget, preferensi, dan gaya hidupmu.</p>
                 </div>
                 <div class="col-lg-2 col-6">
                     <h6>Jelajahi</h6>
